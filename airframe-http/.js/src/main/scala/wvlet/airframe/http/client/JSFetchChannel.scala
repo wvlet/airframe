@@ -13,12 +13,16 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, ServerAddress}
+import org.scalajs.dom.Headers
+import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, Request, Response, StringMessage}
+import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, HttpMultiMap, HttpStatus, ServerAddress}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Promise}
+import scala.scalajs.js
+import scala.scalajs.js.JSConverters.*
+import scala.util.{Failure, Success, Try}
 
 /**
   * An http channel implementation based on Fetch API
@@ -27,7 +31,6 @@ import scala.concurrent.{ExecutionContext, Promise}
   * @param config
   */
 class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
-
   private[client] implicit val executionContext: ExecutionContext = Compat.defaultExecutionContext
 
   override def close(): Unit = {
@@ -35,6 +38,7 @@ class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) ext
   }
 
   override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
+    // Blocking call cannot be supported in JS
     ???
   }
 
@@ -42,26 +46,45 @@ class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) ext
     val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
     val uri  = s"${serverAddress.uri}${path}"
 
-    val requestInit = new org.scalajs.dom.RequestInit {
-      method = request.method match {
-        case HttpMethod.GET => org.scalajs.dom.HttpMethod.GET
-      }
+    val req = new org.scalajs.dom.RequestInit {}
+    req.method = request.method match {
+      case HttpMethod.GET     => org.scalajs.dom.HttpMethod.GET
+      case HttpMethod.POST    => org.scalajs.dom.HttpMethod.POST
+      case HttpMethod.PUT     => org.scalajs.dom.HttpMethod.PUT
+      case HttpMethod.HEAD    => org.scalajs.dom.HttpMethod.HEAD
+      case HttpMethod.DELETE  => org.scalajs.dom.HttpMethod.DELETE
+      case HttpMethod.OPTIONS => org.scalajs.dom.HttpMethod.OPTIONS
+      case HttpMethod.PATCH   => org.scalajs.dom.HttpMethod.PATCH
+      case _                  => throw new IllegalArgumentException(s"Unsupported HTTP method: ${request.method}")
+    }
+    req.headers = new Headers(request.header.entries.map { e =>
+      Array[String](e.key, e.value).toJSArray
+    }.toJSArray)
 
+    // For converting Array[Byte] to js.typedarray.ArrayBuffer
+    import js.typedarray.*
+    req.body = request.message match {
+      case EmptyMessage              => js.undefined
+      case StringMessage(content)    => content
+      case ByteArrayMessage(content) => content.toTypedArray
+      case other                     => other.toContentBytes.toTypedArray
     }
 
-    val fetchRequest = new org.scalajs.dom.Request(uri, requestInit)
+    val future = org.scalajs.dom
+      .fetch(uri, req).toFuture
+      .flatMap { resp =>
+        var r      = wvlet.airframe.http.Http.response(HttpStatus.ofCode(resp.status))
+        val header = HttpMultiMap.newBuilder
+        resp.headers.foreach { h =>
+          header.add(h(0), h(1))
+        }
+        r = r.withHeader(header.result())
+        resp.arrayBuffer().toFuture.map { body =>
+          r.withContent(new Int8Array(body).toArray)
+        }
+      }
 
-    val promise = Promise[HttpMessage.Response]()
-
-//    val response = org.scalajs.dom.window.fetch(jsRequest).toFuture
-//    val result   = org.scalajs.dom.ext.Await.result(response, config.responseTimeout)
-//    val status   = result.status
-//    val headers  = result.headers.toMap.map { case (k, v) => k -> v.split(",").toSeq }
-//    val body     = org.scalajs.dom.ext.Await.result(result.text(), config.responseTimeout)
-//
-//    Response(status, headers, body)
-
-    Rx.future(promise.future)
+    Rx.future(future)
   }
 
 }
