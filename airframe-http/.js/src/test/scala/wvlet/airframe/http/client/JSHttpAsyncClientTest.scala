@@ -38,7 +38,7 @@ class JSHttpAsyncClientTest extends AirSpec {
           .newAsyncClient(PUBLIC_REST_SERVICE)
       }
 
-  test("java http sync client") { (client: AsyncClient) =>
+  test("js http sync client") { (client: AsyncClient) =>
     test("GET") {
       flaky {
         client

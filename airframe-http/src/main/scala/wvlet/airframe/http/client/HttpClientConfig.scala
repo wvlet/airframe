@@ -52,7 +52,9 @@ case class HttpClientConfig(
     clientFilter: RxHttpFilter = RxHttpFilter.identity,
     httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_client.json"),
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = Compat.defaultHttpClientLoggerFactory,
-    loggingFilter: HttpLogger => HttpClientFilter = { (l: HttpLogger) => new HttpClientLoggingFilter(l) }
+    loggingFilter: HttpLogger => HttpClientFilter = { (l: HttpLogger) => new HttpClientLoggingFilter(l) },
+    // [Scala.js] Use Fetch API instead of Ajax.
+    useFetchAPI: Boolean = false
 ) extends HttpChannelConfig {
 
   def newSyncClient(serverAddress: String): SyncClient =
@@ -172,5 +174,9 @@ case class HttpClientConfig(
 
   def newLoggingFilter(logger: HttpLogger): HttpClientFilter = {
     loggingFilter(logger)
+  }
+
+  def withFetchAPI: HttpClientConfig = {
+    this.copy(useFetchAPI = true)
   }
 }

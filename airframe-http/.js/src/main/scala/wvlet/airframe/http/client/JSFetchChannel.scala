@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.client
 
-import org.scalajs.dom.Headers
+import org.scalajs.dom.{Headers, RequestRedirect}
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, Request, Response, StringMessage}
 import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, HttpMultiMap, HttpStatus, ServerAddress}
 import wvlet.airframe.rx.Rx
@@ -46,22 +46,27 @@ class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) ext
     val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
     val uri  = s"${serverAddress.uri}${path}"
 
-    val req = new org.scalajs.dom.RequestInit {}
-    req.method = request.method match {
-      case HttpMethod.GET     => org.scalajs.dom.HttpMethod.GET
-      case HttpMethod.POST    => org.scalajs.dom.HttpMethod.POST
-      case HttpMethod.PUT     => org.scalajs.dom.HttpMethod.PUT
-      case HttpMethod.HEAD    => org.scalajs.dom.HttpMethod.HEAD
-      case HttpMethod.DELETE  => org.scalajs.dom.HttpMethod.DELETE
-      case HttpMethod.OPTIONS => org.scalajs.dom.HttpMethod.OPTIONS
-      case HttpMethod.PATCH   => org.scalajs.dom.HttpMethod.PATCH
-      case _                  => throw new IllegalArgumentException(s"Unsupported HTTP method: ${request.method}")
-    }
-    req.headers = new Headers(request.header.entries.map { e =>
-      Array[String](e.key, e.value).toJSArray
-    }.toJSArray)
+    val req = new org.scalajs.dom.RequestInit {
+      method = request.method match {
+        case HttpMethod.GET     => org.scalajs.dom.HttpMethod.GET
+        case HttpMethod.POST    => org.scalajs.dom.HttpMethod.POST
+        case HttpMethod.PUT     => org.scalajs.dom.HttpMethod.PUT
+        case HttpMethod.HEAD    => org.scalajs.dom.HttpMethod.HEAD
+        case HttpMethod.DELETE  => org.scalajs.dom.HttpMethod.DELETE
+        case HttpMethod.OPTIONS => org.scalajs.dom.HttpMethod.OPTIONS
+        case HttpMethod.PATCH   => org.scalajs.dom.HttpMethod.PATCH
+        case _                  => throw new IllegalArgumentException(s"Unsupported HTTP method: ${request.method}")
+      }
+      headers = new Headers(request.header.entries.map { e =>
+        Array[String](e.key, e.value).toJSArray
+      }.toJSArray)
+      // Follow redirect by default
+      redirect = RequestRedirect.follow
 
-    // For converting Array[Byte] to js.typedarray.ArrayBuffer
+      // TODO set timeout with signal parameter
+    }
+
+    // Import typedarray package for converting Array[Byte] to js.typedarray.ArrayBuffer
     import js.typedarray.*
     req.body = request.message match {
       case EmptyMessage              => js.undefined

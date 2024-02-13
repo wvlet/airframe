@@ -1,3 +1,4 @@
+import scalajsbundler.JSDOMNodeJSEnv
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.18"
@@ -698,7 +699,11 @@ lazy val http =
     )
     .jsSettings(
       jsBuildSettings,
-      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      Test / jsEnv := {
+        import org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
+        val config = JSDOMNodeJSEnv.Config().withArgs(List("--experimental-fetch"))
+        new JSDOMNodeJSEnv(config)
+      },
       libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
