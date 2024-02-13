@@ -84,8 +84,14 @@ class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) ext
           header.add(h(0), h(1))
         }
         r = r.withHeader(header.result())
-        resp.arrayBuffer().toFuture.map { body =>
-          r.withContent(new Int8Array(body).toArray)
+        if (r.isContentTypeJson) {
+          resp.text().toFuture.map { body =>
+            r.withContent(body)
+          }
+        } else {
+          resp.arrayBuffer().toFuture.map { body =>
+            r.withContent(new Int8Array(body).toArray)
+          }
         }
       }
 
