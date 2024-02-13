@@ -699,11 +699,7 @@ lazy val http =
     )
     .jsSettings(
       jsBuildSettings,
-      Test / jsEnv := {
-        import org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
-        val config = JSDOMNodeJSEnv.Config().withArgs(List("--experimental-fetch"))
-        new JSDOMNodeJSEnv(config)
-      },
+      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
