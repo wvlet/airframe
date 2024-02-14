@@ -7,7 +7,7 @@ val buildSettings: Seq[Def.Setting[_]] = Seq(
   libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
-ThisBuild / scalaVersion := "3.3.1"
+ThisBuild / scalaVersion := "3.3.2"
 
 lazy val root =
   project
