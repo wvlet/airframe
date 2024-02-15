@@ -23,6 +23,12 @@ import scala.util.{Failure, Success, Try}
   */
 object RxTest extends AirSpec {
 
+  /**
+    * TODO This test needs to be rewritten to utilize async testing of AirSpec.
+    * @param rx
+    * @tparam A
+    * @return
+    */
   private def eval[A](rx: Rx[A]): Seq[RxEvent] = {
     val b = Seq.newBuilder[RxEvent]
     RxRunner.run(rx)(b += _)
@@ -858,4 +864,9 @@ object RxTest extends AirSpec {
     }
   }
 
+  test("rx.run without argument") {
+    Rx.single(1).run()
+    Rx.single(1).runContinuously()
+    Rx.single(1).subscribe()
+  }
 }
