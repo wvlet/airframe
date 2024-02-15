@@ -91,7 +91,7 @@ trait RxOps[+A] { self =>
     * @tparam U
     * @return
     */
-  def run[U](effect: A => U): Cancelable = {
+  def run[U](effect: A => U = Rx.doNothing): Cancelable = {
     RxRunner.run(self) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
@@ -105,7 +105,7 @@ trait RxOps[+A] { self =>
   /**
     * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported. This is useful for keep processing streams.
     */
-  def runContinuously[U](effect: A => U): Cancelable = {
+  def runContinuously[U](effect: A => U = Rx.doNothing): Cancelable = {
     RxRunner.runContinuously(this) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
@@ -116,7 +116,7 @@ trait RxOps[+A] { self =>
     }
   }
 
-  def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
+  def subscribe[U](subscriber: A => U = Rx.doNothing): Cancelable = runContinuously(subscriber)
 
   /**
     * Await the completion of the first Rx result. This method is available only in Scala JVM.
@@ -417,6 +417,7 @@ trait RxCache[A] extends Rx[A] {
 }
 
 object Rx extends LogSupport {
+  private[rx] def doNothing[U]: Function[Any, U] = { (x: Any) => null.asInstanceOf[U] }
 
   /**
     * Provide a constant value by immediately evaluating the given input
