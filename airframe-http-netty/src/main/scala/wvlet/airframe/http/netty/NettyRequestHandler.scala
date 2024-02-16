@@ -35,6 +35,8 @@ import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters.*
 import NettyRequestHandler.*
 
+import java.io.ByteArrayOutputStream
+
 class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
     extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
@@ -73,12 +75,14 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
       msg.headers().names().asScala.map { x =>
         req = req.withHeader(x, msg.headers().get(x))
       }
-      val requestBody     = msg.content()
-      val requestBodySize = requestBody.readableBytes()
-      if (requestBodySize > 0) {
-        val buf = new Array[Byte](requestBodySize)
-        requestBody.getBytes(requestBody.readerIndex(), buf)
-        req = req.withContent(buf)
+      val bodyBuf     = new ByteArrayOutputStream()
+      val requestBody = msg.content()
+      while (requestBody.isReadable) {
+        val size = requestBody.readableBytes()
+        requestBody.readBytes(bodyBuf, size)
+      }
+      if (bodyBuf.size() > 0) {
+        req = req.withContent(bodyBuf.toByteArray)
       }
 
       val rxResponse: Rx[Response] = dispatcher.apply(
