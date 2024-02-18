@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.Retry
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{HttpClientException, ServerAddress}
+import scalajs.js
 
 object JSHttpClientBackend extends HttpClientBackend {
 
@@ -28,7 +29,8 @@ object JSHttpClientBackend extends HttpClientBackend {
   }
 
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
-    if (config.useFetchAPI)
+    // Use Fetch API if available
+    if (config.useFetchAPI && js.typeOf(js.Dynamic.global.fetch) != "undefined")
       new JSFetchChannel(serverAddress, config)
     else
       new JSHttpClientChannel(serverAddress, config)

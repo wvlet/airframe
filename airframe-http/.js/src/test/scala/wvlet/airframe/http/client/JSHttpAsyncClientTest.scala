@@ -35,6 +35,7 @@ class JSHttpAsyncClientTest extends AirSpec {
       .bind[AsyncClient].toInstance {
         Http.client
           .withBackend(JSHttpClientBackend)
+          .withFetchAPI
           .newAsyncClient(PUBLIC_REST_SERVICE)
       }
 
