@@ -1054,7 +1054,7 @@ lazy val integrationTestJs =
       scala3Only,
       name        := "airframe-integration-test-js",
       description := "browser integration test for Scala.js",
-      jsEnv := new jsenv.playwright.PWEnv(
+      Test / jsEnv := new jsenv.playwright.PWEnv(
         browserName = "chrome",
         headless = true,
         showLogs = false
