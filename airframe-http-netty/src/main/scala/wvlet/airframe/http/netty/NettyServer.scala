@@ -213,8 +213,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
     // For performance enhancement
     b.option(ChannelOption.AUTO_READ, Boolean.box(true))
-    b.childOption(ChannelOption.SO_SNDBUF, Int.box(2626560))
-    b.childOption(ChannelOption.SO_RCVBUF, Int.box(131072))
+    b.childOption(ChannelOption.SO_SNDBUF, Int.box(5 * 1024 * 1024 / 2)) // 2.5MB
+    b.childOption(ChannelOption.SO_RCVBUF, Int.box(128 * 1024))          // 128KB
     b.childOption(ChannelOption.AUTO_CLOSE, Boolean.box(true))
 
     val allocator = PooledByteBufAllocator.DEFAULT
