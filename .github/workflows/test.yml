@@ -142,7 +142,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '21'
       - name: Scala 3 integration test
         run: ./sbt "++ 3; integrationTest/test"
