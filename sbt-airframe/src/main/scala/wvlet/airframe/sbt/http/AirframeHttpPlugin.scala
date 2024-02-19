@@ -153,7 +153,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             withResource(new GZIPInputStream(new FileInputStream(tgz))) { in =>
               val tgzInput = new TarArchiveInputStream(in)
               Iterator
-                .continually(tgzInput.getNextTarEntry)
+                .continually(tgzInput.getNextEntry)
                 .takeWhile(entry => entry != null)
                 .filter(tgzInput.canReadEntryData(_))
                 .foreach { entry =>
