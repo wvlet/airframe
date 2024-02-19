@@ -165,7 +165,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       val context = new NettyRPCContext(request)
       wvlet.airframe.http.Compat.attachRPCContext(context)
       next(request)
-        .tapOn(_ => wvlet.airframe.http.Compat.detachRPCContext(context))
+        .tapOn { case _ => wvlet.airframe.http.Compat.detachRPCContext(context) }
     }
   }
 
