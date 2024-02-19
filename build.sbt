@@ -1,5 +1,5 @@
 import scalajsbundler.JSDOMNodeJSEnv
-import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
+import xerial.sbt.pack.PackPlugin.{projectSettings, publishPackArchiveTgz}
 
 val SCALA_2_12          = "2.12.18"
 val SCALA_2_13          = "2.13.12"
@@ -321,8 +321,9 @@ lazy val projectDotty =
       rxHtml.jvm,
       sql,
       ulid.jvm,
-      integrationTestApi,
+      integrationTestApi.jvm,
       integrationTest,
+      integrationTestJs,
       examples
     )
 
@@ -1016,7 +1017,7 @@ lazy val dottyTest =
 
 // Integration test for Scala 3
 lazy val integrationTestApi =
-  project
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-integration-test-api"))
     .settings(buildSettings)
     .settings(noPublish)
@@ -1025,7 +1026,7 @@ lazy val integrationTestApi =
       name        := "airframe-integration-test-api",
       description := "APIs for integration test"
     )
-    .dependsOn(http.jvm)
+    .dependsOn(http)
 
 // Integration test for Scala 3
 lazy val integrationTest =
@@ -1040,4 +1041,22 @@ lazy val integrationTest =
       description         := "integration test project",
       airframeHttpClients := Seq("wvlet.airframe.test.api:rpc")
     )
-    .dependsOn(integrationTestApi, netty)
+    .dependsOn(integrationTestApi.jvm, netty)
+
+lazy val integrationTestJs =
+  project
+    .enablePlugins(ScalaJSPlugin)
+    .in(file("airframe-integration-test-js"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      scala3Only,
+      name                := "airframe-integration-test-js",
+      description         := "browser integration test for Scala.js",
+      jsEnv := new jsenv.playwright.PWEnv(
+        browserName = "chrome",
+        headless = true,
+        showLogs = false
+      )
+    )
+    .dependsOn(integrationTestApi.js)
