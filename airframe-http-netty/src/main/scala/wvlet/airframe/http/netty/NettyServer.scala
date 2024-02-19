@@ -164,17 +164,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
       val context = new NettyRPCContext(request)
       wvlet.airframe.http.Compat.attachRPCContext(context)
-      next(request).toRx
-        // TODO use transformTry
-        .transformRx { v =>
-          wvlet.airframe.http.Compat.detachRPCContext(context)
-          v match {
-            case Success(v) =>
-              Rx.single(v)
-            case Failure(e) =>
-              Rx.exception(e)
-          }
-        }
+      next(request)
+        .tapOn(_ => wvlet.airframe.http.Compat.detachRPCContext(context))
     }
   }
 
@@ -208,13 +199,13 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     b.option(ChannelOption.SO_BACKLOG, Int.box(1024))
 
     // For performance enhancement
-    b.childOption(ChannelOption.AUTO_READ, Boolean.box(true))
+    b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
+    b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
     b.childOption(ChannelOption.SO_SNDBUF, Int.box(5 * 1024 * 1024 / 2)) // 2.5MB
     b.childOption(ChannelOption.SO_RCVBUF, Int.box(128 * 1024))          // 128KB
-    b.childOption(ChannelOption.AUTO_CLOSE, Boolean.box(true))
-    b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
-    b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
     b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
+    b.childOption(ChannelOption.AUTO_READ, Boolean.box(true))
+    b.childOption(ChannelOption.AUTO_CLOSE, Boolean.box(true))
 
     val allocator = PooledByteBufAllocator.DEFAULT
     b.option(ChannelOption.ALLOCATOR, allocator)

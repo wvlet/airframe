@@ -65,6 +65,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           throw RPCStatus.INVALID_REQUEST_U1.newException(s"Unsupported HTTP method: ${msg.method()}")
       }
 
+      // Set remote address for logging purpose
       ctx.channel().remoteAddress() match {
         case x: InetSocketAddress =>
           // TODO This address might be IPv6
@@ -72,19 +73,27 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         case _ =>
       }
 
+      // Read request headers
       msg.headers().names().asScala.map { x =>
         req = req.withHeader(x, msg.headers().get(x))
       }
-      val bodyBuf     = new ByteArrayOutputStream()
-      val requestBody = msg.content()
+
+      // Read request body
+      var bodyBuf: ByteArrayOutputStream = null
+      val requestBody                    = msg.content()
       while (requestBody.isReadable) {
+        // the returned size is greater than 0 when isReadable = true
         val size = requestBody.readableBytes()
+        if (bodyBuf == null) {
+          bodyBuf = new ByteArrayOutputStream(size)
+        }
         requestBody.readBytes(bodyBuf, size)
       }
-      if (bodyBuf.size() > 0) {
+      if (bodyBuf != null && bodyBuf.size() > 0) {
         req = req.withContent(bodyBuf.toByteArray)
       }
 
+      // Dispatch the request and get an async response, Rx[Response]
       val rxResponse: Rx[Response] = dispatcher.apply(
         req,
         NettyBackend.newContext { (request: Request) =>
@@ -97,6 +106,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
           writeResponse(msg, ctx, nettyResponse)
         case OnError(ex) =>
+          // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
