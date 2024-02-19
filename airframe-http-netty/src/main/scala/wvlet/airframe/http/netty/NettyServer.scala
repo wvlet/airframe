@@ -164,17 +164,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
       val context = new NettyRPCContext(request)
       wvlet.airframe.http.Compat.attachRPCContext(context)
-      next(request).toRx
-        // TODO use transformTry
-        .transformRx { v =>
-          wvlet.airframe.http.Compat.detachRPCContext(context)
-          v match {
-            case Success(v) =>
-              Rx.single(v)
-            case Failure(e) =>
-              Rx.exception(e)
-          }
-        }
+      next(request)
+        .tapOn { case _ => wvlet.airframe.http.Compat.detachRPCContext(context) }
     }
   }
 
@@ -203,18 +194,17 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     } else {
       b.channel(classOf[NioServerSocketChannel])
     }
-    // b.channel(classOf[LocalServerChannel])
-    b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Int.box(TimeUnit.SECONDS.toMillis(1).toInt))
+    b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Int.box(TimeUnit.SECONDS.toMillis(30000).toInt))
     b.option(ChannelOption.SO_REUSEADDR, Boolean.box(true))
     b.option(ChannelOption.SO_BACKLOG, Int.box(1024))
-    b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
-    b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
-    b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
 
     // For performance enhancement
-    b.option(ChannelOption.AUTO_READ, Boolean.box(true))
+    b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
+    b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
     b.childOption(ChannelOption.SO_SNDBUF, Int.box(5 * 1024 * 1024 / 2)) // 2.5MB
     b.childOption(ChannelOption.SO_RCVBUF, Int.box(128 * 1024))          // 128KB
+    b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
+    b.childOption(ChannelOption.AUTO_READ, Boolean.box(true))
     b.childOption(ChannelOption.AUTO_CLOSE, Boolean.box(true))
 
     val allocator = PooledByteBufAllocator.DEFAULT
@@ -222,14 +212,6 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     b.childOption(ChannelOption.ALLOCATOR, allocator)
 
     b.childHandler(new ChannelInitializer[Channel] {
-      // private[this] val activeConnections = new AtomicLong()
-      // private val maxConnections          = 50
-      //      private val closeListener = new ChannelFutureListener {
-      //        override def operationComplete(future: ChannelFuture): Unit = {
-      //          activeConnections.decrementAndGet()
-      //        }
-      //      }
-
       private val dispatcher = {
         NettyBackend
           .rxFilterAdapter(
@@ -251,16 +233,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       }
 
       override def initChannel(ch: Channel): Unit = {
-        //        val numConns = activeConnections.incrementAndGet()
-        //        if (numConns > maxConnections) {
-        //          activeConnections.decrementAndGet()
-        //          ch.close()
-        //        } else {
-        //          ch.closeFuture().addListener(closeListener)
-
         val pipeline = ch.pipeline()
-
-        // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
         pipeline.addLast(
           new HttpServerCodec(
             4096,      // the same with Netty's default MAX_INITIAL_LINE_LENGTH
@@ -270,7 +243,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
             true // validate headers
           )
         )
-        // pipeline.addLast(new HttpServerKeepAliveHandler())
+        pipeline.addLast(new HttpServerKeepAliveHandler())
         pipeline.addLast(new HttpObjectAggregator(Int.MaxValue))
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
