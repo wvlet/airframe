@@ -211,10 +211,11 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
     b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
 
-    // b.option(ChannelOption.AUTO_READ, Boolean.box(false))
-
-    // b.childOption(ChannelOption.SO_SNDBUF, Int.box(1024 * 1024))
-    // b.childOption(ChannelOption.SO_RCVBUF, Int.box(32 * 1024))
+    // For performance enhancement
+    b.option(ChannelOption.AUTO_READ, Boolean.box(true))
+    b.childOption(ChannelOption.SO_SNDBUF, Int.box(5 * 1024 * 1024 / 2)) // 2.5MB
+    b.childOption(ChannelOption.SO_RCVBUF, Int.box(128 * 1024))          // 128KB
+    b.childOption(ChannelOption.AUTO_CLOSE, Boolean.box(true))
 
     val allocator = PooledByteBufAllocator.DEFAULT
     b.option(ChannelOption.ALLOCATOR, allocator)
