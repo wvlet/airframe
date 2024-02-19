@@ -261,7 +261,15 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         val pipeline = ch.pipeline()
 
         // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
-        pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
+        pipeline.addLast(
+          new HttpServerCodec(
+            4096,      // the same with Netty's default MAX_INITIAL_LINE_LENGTH
+            64 * 1024, // Upto ALB's max request header size
+            // No need to limit the chunk size in Netty. Ref https://github.com/twitter/finagle/commit/990c8650366e5374ea062c753a4628c5971fc40e
+            Int.MaxValue,
+            false // Skip header validation
+          )
+        )
         // pipeline.addLast(new HttpServerKeepAliveHandler())
         pipeline.addLast(new HttpObjectAggregator(Int.MaxValue))
         pipeline.addLast(new HttpContentCompressor())
