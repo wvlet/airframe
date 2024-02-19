@@ -321,9 +321,6 @@ lazy val projectDotty =
       rxHtml.jvm,
       sql,
       ulid.jvm,
-      integrationTestApi.jvm,
-      integrationTest,
-      integrationTestJs,
       examples
     )
 
