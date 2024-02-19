@@ -1018,6 +1018,7 @@ lazy val dottyTest =
 // Integration test for Scala 3
 lazy val integrationTestApi =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-integration-test-api"))
     .settings(buildSettings)
     .settings(noPublish)
@@ -1051,8 +1052,8 @@ lazy val integrationTestJs =
     .settings(noPublish)
     .settings(
       scala3Only,
-      name                := "airframe-integration-test-js",
-      description         := "browser integration test for Scala.js",
+      name        := "airframe-integration-test-js",
+      description := "browser integration test for Scala.js",
       jsEnv := new jsenv.playwright.PWEnv(
         browserName = "chrome",
         headless = true,
