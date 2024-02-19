@@ -27,6 +27,9 @@ libraryDependencies ++= (
   Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.0")
 )
 
+// For Scala.js + Playwright test
+libraryDependencies += "io.github.gmkumar2005" %% "scala-js-env-playwright" % "0.1.11"
+
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.0.1")
 
