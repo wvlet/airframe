@@ -28,7 +28,7 @@ libraryDependencies ++= (
 )
 
 // For Scala.js + Playwright test
-libraryDependencies += "io.github.gmkumar2005" %% "scala-js-env-playwright" % "0.1.11"
+libraryDependencies += "io.github.gmkumar2005" %% "scala-js-env-playwright" % "0.1.12"
 
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.0.1")
