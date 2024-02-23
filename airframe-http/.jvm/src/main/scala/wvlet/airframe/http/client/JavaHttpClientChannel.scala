@@ -15,14 +15,14 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.IO
-import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.*
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.io.InputStream
 import java.net.URI
-import java.net.http.HttpClient.Redirect
+import java.net.http.HttpClient.{Redirect, Version}
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
@@ -41,16 +41,20 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
   private val javaHttpClient: HttpClient = initClient(config)
 
   private def initClient(config: HttpClientConfig): HttpClient = {
-    HttpClient
+    var builder = HttpClient
       .newBuilder()
       .followRedirects(Redirect.NORMAL)
-      // Note: We tried to set a custom executor here for Java HttpClient, but
-      // internally the executor will be shared between multiple HttpClients and closing the executor will block
-      // other http clients, so we do not use the custom executor here.
-      // .executor(new Executor {
-      //  override def execute(command: Runnable): Unit = executionContext.execute(command)
-      // })
-      .build()
+
+    if (config.useHttp1) {
+      builder = builder.version(Version.HTTP_1_1)
+    }
+    // Note: We tried to set a custom oexecutor here for Java HttpClient, but
+    // internally the executor will be shared between multiple HttpClients and closing the executor will block
+    // other http clients, so we do not use the custom executor here.
+    // .executor(new Executor {
+    //  override def execute(command: Runnable): Unit = executionContext.execute(command)
+    // })
+    builder.build()
   }
 
   override def close(): Unit = {

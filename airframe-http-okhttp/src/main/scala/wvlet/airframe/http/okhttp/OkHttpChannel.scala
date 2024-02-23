@@ -24,10 +24,16 @@ import java.util.concurrent.TimeUnit
 
 class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
   private[this] val client = {
-    new okhttp3.OkHttpClient.Builder()
+    var builder = new okhttp3.OkHttpClient.Builder()
       .readTimeout(config.readTimeout.toMillis, TimeUnit.MILLISECONDS)
       .connectTimeout(config.connectTimeout.toMillis, TimeUnit.MILLISECONDS)
-      .build()
+
+    if (config.useHttp1) {
+      // Enforce using HTTP/1.1
+      import scala.jdk.CollectionConverters.*
+      builder = builder.protocols(List(okhttp3.Protocol.HTTP_1_1).asJava)
+    }
+    builder.build()
   }
 
   override def close(): Unit = {

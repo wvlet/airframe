@@ -75,7 +75,5 @@ class HelloRPCTest extends AirSpec {
         ret shouldBe "Hello RPC!"
       }
     }
-
   }
-
 }

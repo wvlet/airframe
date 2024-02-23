@@ -14,11 +14,12 @@
 package wvlet.airframe.test.api
 
 import wvlet.airframe.test.api.HelloRPC.VariousParams
-import wvlet.airframe.test.api.Status
 import wvlet.log.LogSupport
 
 class HelloRPCImpl extends HelloRPC with LogSupport {
-  override def hello(name: String): String = s"Hello ${name}!"
+  override def hello(name: String): String = {
+    s"Hello ${name}!"
+  }
 
   override def serverStatus: Status = Status.OK
   override def ackStatus(status: Status): Status = {
