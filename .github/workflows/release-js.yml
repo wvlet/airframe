@@ -13,8 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 10000
-      # Fetch all tags so that sbt-dynver can find the previous release version
+          # Fetch all tags so that sbt-dynver can find the previous release version
+          fetch-depth: 0
       - run: git fetch --tags -f
       - uses: actions/setup-java@v4
         with:
