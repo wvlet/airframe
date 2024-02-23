@@ -6,9 +6,10 @@ pull_request_rules:
       - check-success=sbt-airframe
       - check-success=Code format
       - check-success=Scala 2.12
-      - check-success=Scala 2.13 + JDK21
+      - check-success=Scala 2.13
       - check-success=Scala 3
-      - check-success=Scala 3 + JDK21
+      - check-success=Scala 3 / JDK17
+      - check-success=Scala 3 / Integration Test
       - check-success=Scala.js / Scala 2.12
       - check-success=Scala.js / Scala 2.13
       - check-success=Scala.js / Scala 3
