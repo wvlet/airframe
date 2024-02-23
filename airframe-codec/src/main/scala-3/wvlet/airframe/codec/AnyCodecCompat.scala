@@ -13,11 +13,8 @@
  */
 package wvlet.airframe.codec
 
-trait AnyCodecCompat {
-  protected def isEnum(o: Any): Boolean = {
-    o match {
+trait AnyCodecCompat:
+  protected def isEnum(o: Any): Boolean =
+    o match
       case _: scala.runtime.EnumValue => true
       case _                          => false
-    }
-  }
-}

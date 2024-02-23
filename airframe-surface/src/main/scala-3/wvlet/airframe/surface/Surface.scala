@@ -18,7 +18,7 @@ package wvlet.airframe.surface
   * Note: This interface is the same with scala-2 Surface interface, but Scala compiler requires defining Surface object
   * in the same file, so this interface is copied.
   */
-trait Surface extends Serializable {
+trait Surface extends Serializable:
   def rawType: Class[?]
   def typeArgs: Seq[Surface]
   def params: Seq[Parameter]
@@ -41,16 +41,14 @@ trait Surface extends Serializable {
 
   def objectFactory: Option[ObjectFactory] = None
   def withOuter(outer: AnyRef): Surface    = this
-}
 
 /**
   * Scala 3 implementation of Surface
   */
-object Surface {
+object Surface:
   private[surface] val scalaMajorVersion: Int = 3
 
   import scala.quoted.*
 
   inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
-}

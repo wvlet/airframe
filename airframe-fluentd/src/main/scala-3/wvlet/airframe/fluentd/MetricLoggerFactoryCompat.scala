@@ -14,14 +14,11 @@
 package wvlet.airframe.fluentd
 import wvlet.airframe.surface.Surface
 
-trait MetricLoggerFactoryCompat {
+trait MetricLoggerFactoryCompat:
   self: MetricLoggerFactory =>
 
-  inline def getTypedLogger[T <: TaggedMetric]: TypedMetricLogger[T] = {
+  inline def getTypedLogger[T <: TaggedMetric]: TypedMetricLogger[T] =
     self.getTypedLoggerInternal[T](Surface.of[T], None)
-  }
 
-  inline def getTypedLoggerWithTagPrefix[T <: TaggedMetric](tagPrefix: String): TypedMetricLogger[T] = {
+  inline def getTypedLoggerWithTagPrefix[T <: TaggedMetric](tagPrefix: String): TypedMetricLogger[T] =
     self.getTypedLoggerInternal[T](Surface.of[T], Some(tagPrefix))
-  }
-}

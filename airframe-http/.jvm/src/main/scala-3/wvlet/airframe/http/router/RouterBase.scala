@@ -18,42 +18,36 @@ import wvlet.airframe.http.HttpFilterType
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.Session
 
-trait RouterBase { self: Router =>
-  inline def add[Controller]: Router = {
+trait RouterBase:
+  self: Router =>
+  inline def add[Controller]: Router =
     // TODO registerTraitFactory
     self.addInternal(Surface.of[Controller], Surface.methodsOf[Controller])
-  }
 
-  inline def andThen[Controller]: Router = {
+  inline def andThen[Controller]: Router =
     self.andThen(Router.add[Controller])
-  }
-}
 
-trait RouterObjectBase {
+trait RouterObjectBase:
   @deprecated("Use RxRouter.of[Controller] instead", "23.5.0")
   inline def of[Controller]: Router = ${ RouterObjectMacros.routerOf[Controller] }
 
   @deprecated("Use RxRouter.of[Controller] instead", "23.5.0")
   inline def add[Controller]: Router = ${ RouterObjectMacros.routerOf[Controller] }
-}
 
-private[router] object RouterObjectMacros {
+private[router] object RouterObjectMacros:
   import scala.quoted.*
 
-  def routerOf[Controller: Type](using quotes: Quotes): Expr[Router] = {
+  def routerOf[Controller: Type](using quotes: Quotes): Expr[Router] =
     import quotes.*
     import quotes.reflect.*
 
-    if TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType] then {
+    if TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType] then
       '{
         wvlet.airframe.registerTraitFactory[Controller]
         Router(filterSurface = Some(Surface.of[Controller]))
       }
-    } else {
+    else
       '{
         wvlet.airframe.registerTraitFactory[Controller]
         Router.empty.add[Controller]
       }
-    }
-  }
-}

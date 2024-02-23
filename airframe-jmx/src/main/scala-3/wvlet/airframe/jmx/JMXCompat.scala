@@ -15,15 +15,12 @@ package wvlet.airframe.jmx
 
 import wvlet.airframe.surface.Surface
 
-trait JMXMBeanCompat {
-  inline def of[A](obj: A): JMXMBean = {
+trait JMXMBeanCompat:
+  inline def of[A](obj: A): JMXMBean =
     JMXMBean.of(obj, Surface.of[A], Surface.methodsOf[A])
-  }
 
-}
-trait JMXRegistryCompat { self: JMXRegistry =>
-  inline def register[A](obj: A): Unit = {
+trait JMXRegistryCompat:
+  self: JMXRegistry =>
+  inline def register[A](obj: A): Unit =
     val mbean = JMXMBean.of[A](obj)
     self.register(mbean, obj)
-  }
-}

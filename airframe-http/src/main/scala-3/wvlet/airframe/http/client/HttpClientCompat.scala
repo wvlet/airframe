@@ -23,7 +23,8 @@ import scala.concurrent.Future
 /**
   * Scala 3 specific helper method to make an RPC request
   */
-trait SyncClientCompat { self: SyncClient =>
+trait SyncClientCompat:
+  self: SyncClient =>
 
   /**
     * Read the response as a specified type
@@ -35,27 +36,22 @@ trait SyncClientCompat { self: SyncClient =>
     * @throws HttpClientException
     *   if failed to read or process the response
     */
-  inline def readAs[Resp](req: Request): Resp = {
+  inline def readAs[Resp](req: Request): Resp =
     self.readAsInternal[Resp](req, Surface.of[Resp])
-  }
 
   inline def call[Req, Resp](
       req: Request,
       requestContent: Req
-  ): Resp = {
+  ): Resp =
     self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
-  }
-}
 
-trait AsyncClientCompat { self: AsyncClient =>
-  inline def readAs[Resp](req: Request): Rx[Resp] = {
+trait AsyncClientCompat:
+  self: AsyncClient =>
+  inline def readAs[Resp](req: Request): Rx[Resp] =
     self.readAsInternal[Resp](req, Surface.of[Resp])
-  }
 
   inline def call[Req, Resp](
       req: Request,
       requestContent: Req
-  ): Rx[Resp] = {
+  ): Rx[Resp] =
     self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
-  }
-}

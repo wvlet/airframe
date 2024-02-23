@@ -15,43 +15,30 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 
-trait HttpMessageBase[Raw] {
+trait HttpMessageBase[Raw]:
 
   private def self: HttpMessage[Raw] = this.asInstanceOf[HttpMessage[Raw]]
 
-  inline def withJsonOf[A](a: A): Raw = {
+  inline def withJsonOf[A](a: A): Raw =
     self.withJson(MessageCodec.of[A].toJson(a))
-  }
-  inline def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw = {
+  inline def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw =
     self.withJson(codecFactory.of[A].toJson(a))
-  }
-  inline def withMsgPackOf[A](a: A): Raw = {
+  inline def withMsgPackOf[A](a: A): Raw =
     self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
-  }
-  inline def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): Raw = {
+  inline def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): Raw =
     self.withMsgPack(codecFactory.of[A].toMsgPack(a))
-  }
 
   /**
     * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
     */
-  inline def withContentOf[A](a: A): Raw = {
-    if self.isContentTypeMsgPack then {
-      self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
-    } else {
-      self.withJson(MessageCodec.of[A].toJson(a))
-    }
-  }
+  inline def withContentOf[A](a: A): Raw =
+    if self.isContentTypeMsgPack then self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
+    else self.withJson(MessageCodec.of[A].toJson(a))
 
   /**
     * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type
     * header.
     */
-  inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = {
-    if self.isContentTypeMsgPack then {
-      self.withMsgPack(codecFactory.of[A].toMsgPack(a))
-    } else {
-      self.withJson(codecFactory.of[A].toJson(a))
-    }
-  }
-}
+  inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw =
+    if self.isContentTypeMsgPack then self.withMsgPack(codecFactory.of[A].toMsgPack(a))
+    else self.withJson(codecFactory.of[A].toJson(a))

@@ -25,20 +25,16 @@ import scala.language.{higherKinds, implicitConversions}
   * @return
   *   rendered element or empty
   */
-def when(cond: Boolean, body: => HtmlNode): HtmlNode = {
-  if cond then {
-    body
-  } else {
-    HtmlNode.empty
-  }
-}
+def when(cond: Boolean, body: => HtmlNode): HtmlNode =
+  if cond then body
+  else HtmlNode.empty
 
 implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 
 @implicitNotFound(msg = "Unsupported type as an attribute value")
 private[html] trait EmbeddableAttribute[X]
 
-private[html] object EmbeddableAttribute {
+private[html] object EmbeddableAttribute:
   type EA[A] = EmbeddableAttribute[A]
 
   @inline implicit def embedNone: EA[None.type] = null
@@ -66,12 +62,11 @@ private[html] object EmbeddableAttribute {
   @inline implicit def embedRxOption[C[x] <: RxOption[x], A: EA]: EA[C[A]] = null
 
   @inline implicit def embedSeq[C[x] <: Iterable[x], A: EA]: EA[C[A]] = null
-}
 
 @implicitNotFound(msg = "Unsupported type as an HtmlNode")
 private[html] trait EmbeddableNode[A]
 
-private[html] object EmbeddableNode extends compat.PlatformEmbeddableNode {
+private[html] object EmbeddableNode extends compat.PlatformEmbeddableNode:
   type EN[A] = EmbeddableNode[A]
 
   @inline implicit def embedNil: EN[Nil.type] = null
@@ -105,4 +100,3 @@ private[html] object EmbeddableNode extends compat.PlatformEmbeddableNode {
   @inline implicit def embedSeq[C[x] <: Iterable[x], A: EN]: EN[C[A]] = null
 
   @inline implicit def embedOption[C[x] <: Option[x], A: EN]: EN[C[A]] = null
-}

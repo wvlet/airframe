@@ -19,6 +19,5 @@ import wvlet.airframe.surface.CompileTimeSurfaceFactory
 
 /**
   */
-object RuntimeSurface extends LogSupport {
+object RuntimeSurface extends LogSupport:
   inline def of[A]: Surface = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
-}

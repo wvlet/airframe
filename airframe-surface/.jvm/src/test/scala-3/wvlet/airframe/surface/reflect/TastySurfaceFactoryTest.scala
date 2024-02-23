@@ -3,16 +3,14 @@ package wvlet.airframe.surface.reflect
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.AirSpecBridge
 
-case class Person(id: Int, name: String) {
+case class Person(id: Int, name: String):
   def hello: String = "hello"
-}
 
 sealed trait Status
-object Status {
+object Status:
   case object Ok extends Status
-}
 
-class TastySurfaceFactoryTest extends munit.FunSuite with AirSpecBridge with LogSupport {
+class TastySurfaceFactoryTest extends munit.FunSuite with AirSpecBridge with LogSupport:
 
   test("of[A]") {
     val s = TastySurfaceFactory.of[Person]
@@ -37,4 +35,3 @@ class TastySurfaceFactoryTest extends munit.FunSuite with AirSpecBridge with Log
     TastySurfaceFactory.ofClass(classOf[Status])
     TastySurfaceFactory.ofClass(classOf[Status.Ok.type])
   }
-}
