@@ -13,22 +13,27 @@
  */
 package wvlet.airframe.test.api
 
-import wvlet.airframe.test.api.HelloRPC.VariousParams
-import wvlet.log.LogSupport
+import wvlet.airframe.http.*
 
-class HelloRPCImpl extends HelloRPC with LogSupport {
-  override def hello(name: String): String = {
-    s"Hello ${name}!"
-  }
+@RPC
+trait HelloRPC:
+  import HelloRPC.*
 
-  override def serverStatus: Status = Status.OK
-  override def ackStatus(status: Status): Status = {
-    info(s"acked: ${status}")
-    status
-  }
+  def hello(name: String): String
+  def serverStatus: Status
+  def ackStatus(status: Status): Status
+  def variousParams(params: VariousParams): VariousParams
 
-  override def variousParams(params: VariousParams): VariousParams = {
-    info(s"received: ${params}")
-    params
-  }
-}
+object HelloRPC extends RxRouterProvider:
+  override def router: RxRouter = RxRouter.of[HelloRPC]
+
+  case class VariousParams(
+      p1: Long,
+      p2: Boolean,
+      p3: Double
+  )
+
+enum Status(isDone: Boolean):
+  def name: String = this.toString
+  case OK extends Status(isDone = true)
+  case NG extends Status(isDone = true)

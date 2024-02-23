@@ -195,7 +195,7 @@ lazy val root =
         }
       }
     )
-    .aggregate((jvmProjects ++ jsProjects): _*)
+    .aggregate((jvmProjects ++ jsProjects ++ itProjects): _*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
@@ -252,6 +252,14 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   widgetJS
 )
 
+// Integration test projects
+lazy val itProjects: Seq[ProjectReference] = Seq(
+    integrationTestApi.jvm,
+    integrationTestApi.js,
+    integrationTest,
+    integrationTestJs
+)
+
 // For community-build
 lazy val communityBuild =
   project
@@ -282,6 +290,15 @@ lazy val projectJS =
       ideSkipProject := true
     )
     .aggregate(jsProjects: _*)
+
+lazy val projectIt =
+  project
+    .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
+    .aggregate(itProjects: _*)
 
 // A scoped project only for Dotty (Scala 3).
 // This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects

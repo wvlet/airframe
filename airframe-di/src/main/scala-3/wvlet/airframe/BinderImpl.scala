@@ -15,23 +15,21 @@ private[airframe] trait BinderImpl[A] extends LogSupport:
     *
     * @tparam B
     */
-  inline def to[B <: A]: DesignWithContext[B] = {
+  inline def to[B <: A]: DesignWithContext[B] =
     // registerTraitFactory[B]
     val to = Surface.of[B]
     if self.from == to then
       wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
       throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(List(to), SourceCode())
     self.design.addBinding[B](SingletonBinding(self.from, to, false, self.sourceCode))
-  }
 
-  inline def toEagerSingletonOf[B <: A]: DesignWithContext[B] = {
+  inline def toEagerSingletonOf[B <: A]: DesignWithContext[B] =
     // registerTraitFactory[B]
     val to = Surface.of[B]
     if self.from == to then
       wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
       throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(List(to), SourceCode())
     self.design.addBinding[B](SingletonBinding(self.from, to, true, self.sourceCode))
-  }
 
   inline def toProvider[D1](factory: D1 => A): DesignWithContext[A] =
     // registerTraitFactory[D1]
