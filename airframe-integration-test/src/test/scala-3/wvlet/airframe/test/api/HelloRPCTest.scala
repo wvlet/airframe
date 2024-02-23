@@ -19,9 +19,9 @@ import wvlet.airframe.http.{Http, HttpServer, RPCEncoding, RxRouter}
 import wvlet.airframe.test.api.HelloRPC.VariousParams
 import wvlet.airspec.AirSpec
 
-class HelloRPCTest extends AirSpec {
+class HelloRPCTest extends AirSpec:
 
-  override protected def design: Design = {
+  override protected def design: Design =
     Netty.server
       .withName("hello-rpc-test")
       .withRouter(RxRouter.of[HelloRPCImpl])
@@ -32,7 +32,6 @@ class HelloRPCTest extends AirSpec {
       .bind[ServiceRPC.RPCAsyncClient].toProvider { (server: HttpServer) =>
         ServiceRPC.newRPCAsyncClient(Http.client.newAsyncClient(server.localAddress))
       }
-  }
 
   test("rpc") { (server: HttpServer) =>
     test("sync client") { (client: ServiceRPC.RPCSyncClient) =>
@@ -76,4 +75,3 @@ class HelloRPCTest extends AirSpec {
       }
     }
   }
-}

@@ -23,18 +23,17 @@ case class SourceCode(
     fileName: String,
     line: Int,
     col: Int
-) {
+):
   override def toString = s"${fileName}:${line}"
-}
 
-object SourceCode {
+object SourceCode:
   def apply()(implicit code: SourceCode) = code
 
   import scala.quoted.*
 
   inline implicit def generate: SourceCode = ${ generateImpl }
 
-  private def generateImpl(using q: Quotes): Expr[SourceCode] = {
+  private def generateImpl(using q: Quotes): Expr[SourceCode] =
     import q.reflect.*
     val pos    = Position.ofMacroExpansion
     val line   = Expr(pos.startLine)
@@ -44,5 +43,3 @@ object SourceCode {
     val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
     val fileName                    = Expr(srcPath.getFileName().toString)
     '{ SourceCode("", ${ fileName }, ${ line } + 1, ${ column }) }
-  }
-}

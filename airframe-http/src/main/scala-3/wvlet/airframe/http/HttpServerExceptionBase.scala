@@ -15,45 +15,32 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 
-trait HttpServerExceptionBase {
+trait HttpServerExceptionBase:
   // WARNING: Using a self reference hits compiler VerifyError https://github.com/lampepfl/dotty/issues/9270
   // self: HttpServerException =>
 
   private def self: HttpServerException = this.asInstanceOf[HttpServerException]
 
-  inline def withJsonOf[A](a: A): HttpServerException = {
+  inline def withJsonOf[A](a: A): HttpServerException =
     self.withJson(MessageCodec.of[A].toJson(a))
-  }
-  inline def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException = {
+  inline def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException =
     self.withJson(codecFactory.of[A].toJson(a))
-  }
-  inline def withMsgPackOf[A](a: A): HttpServerException = {
+  inline def withMsgPackOf[A](a: A): HttpServerException =
     self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
-  }
-  inline def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException = {
+  inline def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException =
     self.withMsgPack(codecFactory.of[A].toMsgPack(a))
-  }
 
   /**
     * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
     */
-  inline def withContentOf[A](a: A): HttpServerException = {
-    if self.isContentTypeMsgPack then {
-      self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
-    } else {
-      self.withJson(MessageCodec.of[A].toJson(a))
-    }
-  }
+  inline def withContentOf[A](a: A): HttpServerException =
+    if self.isContentTypeMsgPack then self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
+    else self.withJson(MessageCodec.of[A].toJson(a))
 
   /**
     * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type
     * header.
     */
-  inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException = {
-    if self.isContentTypeMsgPack then {
-      self.withMsgPack(codecFactory.of[A].toMsgPack(a))
-    } else {
-      self.withJson(codecFactory.of[A].toJson(a))
-    }
-  }
-}
+  inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException =
+    if self.isContentTypeMsgPack then self.withMsgPack(codecFactory.of[A].toMsgPack(a))
+    else self.withJson(codecFactory.of[A].toJson(a))

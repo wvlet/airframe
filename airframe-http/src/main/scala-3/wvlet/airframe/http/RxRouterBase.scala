@@ -17,31 +17,25 @@ import wvlet.airframe.http.RxHttpFilter
 import wvlet.airframe.http.RxRouter
 import wvlet.airframe.surface.Surface
 
-trait RxRouterObjectBase {
-  inline def of[Controller]: RxRouter = {
+trait RxRouterObjectBase:
+  inline def of[Controller]: RxRouter =
     // wvlet.airframe.registerTraitFactory[Controller]
     RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller], None)
-  }
 
-  inline def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode = {
+  inline def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode =
     // wvlet.airframe.registerTraitFactory[Filter]
     RxRouter.FilterNode(None, Surface.of[Filter])
-  }
 
-  inline def filter[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode = {
+  inline def filter[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode =
     // wvlet.airframe.registerTraitFactory[Filter]
     RxRouter.FilterNode(None, Surface.of[Filter], Some(filterInstance))
-  }
-}
 
-trait RxRouteFilterBase { self: RxRouter.FilterNode =>
-  inline def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode = {
+trait RxRouteFilterBase:
+  self: RxRouter.FilterNode =>
+  inline def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode =
     // wvlet.airframe.registerTraitFactory[Filter]
     val next = RxRouter.FilterNode(None, Surface.of[Filter])
     self.andThen(next)
-  }
 
-  inline def andThen[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode = {
+  inline def andThen[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode =
     self.andThen(RxRouter.FilterNode(None, Surface.of[Filter], Some(filterInstance)))
-  }
-}

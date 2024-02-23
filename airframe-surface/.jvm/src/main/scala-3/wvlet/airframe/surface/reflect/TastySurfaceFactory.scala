@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.quoted.*
 import scala.tasty.inspector.*
 
-object TastySurfaceFactory extends LogSupport {
+object TastySurfaceFactory extends LogSupport:
 
   given staging.Compiler = staging.Compiler.make(getClass.getClassLoader)
 
@@ -17,7 +17,7 @@ object TastySurfaceFactory extends LogSupport {
   import scala.jdk.CollectionConverters.*
   private val cache = new ConcurrentHashMap[Class[_], Surface]().asScala
 
-  def ofClass(cl: Class[?]): Surface = {
+  def ofClass(cl: Class[?]): Surface =
     debug(s"ofClass: ${cl}")
     cache.getOrElseUpdate(
       cl, {
@@ -28,19 +28,17 @@ object TastySurfaceFactory extends LogSupport {
           val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
           debug(tastyType)
           val f = new CompileTimeSurfaceFactory(using quotes)
-          tastyType match {
+          tastyType match
             case t if t.show.endsWith(".<none>") =>
               // Example use case is MessageCodec.of[Any] or case objects
               f.surfaceFromClass(cl)
             case _ =>
               f.surfaceOf(tastyType.asType)
-          }
         }
       }
     )
-  }
 
-  def methodsOfClass(cl: Class[?]): Seq[MethodSurface] = {
+  def methodsOfClass(cl: Class[?]): Seq[MethodSurface] =
     // Generates Surface from a runtime class
     val code: Seq[MethodSurface] = staging.run { (quotes: Quotes) ?=>
       import quotes.reflect.*
@@ -50,6 +48,3 @@ object TastySurfaceFactory extends LogSupport {
       f.methodsOf(tastyType.asType)
     }
     code
-  }
-
-}

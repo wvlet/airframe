@@ -19,7 +19,7 @@ import wvlet.airframe.http.netty.Netty
 import wvlet.airframe.test.api.ServiceRPC.RPCSyncClient
 import wvlet.airspec.AirSpec
 
-class Http1Test extends AirSpec {
+class Http1Test extends AirSpec:
 
   initDesign {
     _ + Netty.server
@@ -35,4 +35,3 @@ class Http1Test extends AirSpec {
   test("rpc") { (client: RPCSyncClient) =>
     client.HelloRPC.hello("RPC") shouldBe "Hello RPC!"
   }
-}

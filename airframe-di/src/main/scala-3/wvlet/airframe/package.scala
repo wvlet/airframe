@@ -39,9 +39,8 @@ import scala.jdk.CollectionConverters.*
 // This will not be used in Scala 3, but left for the compatibility with Scala 2
 val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
 
-def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
+def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any =
   traitFactoryCache.getOrElseUpdate(s, factory)
-}
 
 @deprecated("Instantiating trait is still experimental in Scala 3.3.1", "23.9.1")
 inline def registerTraitFactory[A]: Unit = {
@@ -53,7 +52,7 @@ import scala.quoted.*
 private def shouldGenerateTrait[A](using
     tpe: Type[A],
     q: Quotes
-): Boolean = {
+): Boolean =
   import quotes.*
   import quotes.reflect.*
 
@@ -61,46 +60,41 @@ private def shouldGenerateTrait[A](using
   val a = t.typeSymbol
 
   // Find the public default constructor that has no arguments
-  val hasPublicDefaultConstructor: Boolean = {
+  val hasPublicDefaultConstructor: Boolean =
     val pc = a.primaryConstructor
     pc.paramSymss.size == 1 && pc.paramSymss(0).size == 0
-  }
 
-  val hasAbstractMethods: Boolean = {
+  val hasAbstractMethods: Boolean =
     a.methodMembers.exists { x =>
       x.flags.is(Flags.Method) &&
       (x.flags.is(Flags.Abstract) || x.flags.is(Flags.Deferred))
     }
-  }
   val isTaggedType = a.fullName.startsWith("wvlet.airframe.surface.tag.")
   val isSealedType = a.flags.is(Flags.Sealed)
   val isStatic     = a.flags.is(Flags.JavaStatic)
   val isLocal      = a.flags.is(Flags.Local)
   val isTrait      = a.flags.is(Flags.Trait)
 
-  val shouldInstantiateTrait = if !isStatic then {
-    // = Non static type
-    // If X is non static type (= local class or trait),
-    // we need to instantiate it first in order to populate its $outer variables
+  val shouldInstantiateTrait =
+    if !isStatic then
+      // = Non static type
+      // If X is non static type (= local class or trait),
+      // we need to instantiate it first in order to populate its $outer variables
 
-    // We cannot instantiate path-dependent types
-    if a.fullName.contains("#") then {
-      false
-    } else {
-      !hasAbstractMethods && hasPublicDefaultConstructor
-    }
-  } else if a.isAbstractType then {
-    // = Abstract type
-    // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
-    // needs to be found in the design
+      // We cannot instantiate path-dependent types
+      if a.fullName.contains("#") then false
+      else !hasAbstractMethods && hasPublicDefaultConstructor
+    else if a.isAbstractType then
+      // = Abstract type
+      // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
+      // needs to be found in the design
 
-    // If there is no abstract methods, it might be a trait without any method
-    !hasAbstractMethods
-  } else {
-    // We cannot instantiate any trait or class without the default constructor
-    // So binding needs to be found in the Design.
-    hasPublicDefaultConstructor
-  }
+      // If there is no abstract methods, it might be a trait without any method
+      !hasAbstractMethods
+    else
+      // We cannot instantiate any trait or class without the default constructor
+      // So binding needs to be found in the Design.
+      hasPublicDefaultConstructor
 
   // Tagged type or sealed class binding should be found in Design
   val result = isTrait && !isTaggedType && !isSealedType && shouldInstantiateTrait
@@ -109,18 +103,16 @@ private def shouldGenerateTrait[A](using
   //  s"has pstr: ${hasPublicDefaultConstructor} is tagged: ${isTaggedType}, has abstract method: ${hasAbstractMethods}")
 
   result
-}
 
 @experimental def registerTraitFactoryImpl[A](using
     tpe: Type[A],
     q: Quotes
-): quoted.Expr[Unit] = {
+): quoted.Expr[Unit] =
   import quotes.*
   import quotes.reflect.*
 
-  if !shouldGenerateTrait[A] then {
-    '{}
-  } else {
+  if !shouldGenerateTrait[A] then '{}
+  else
     val name    = "$anon"
     val parents = List(TypeTree.of[Object], TypeTree.of[A], TypeTree.of[DISupport])
 
@@ -130,21 +122,19 @@ private def shouldGenerateTrait[A](using
     val cls = Symbol.newClass(Symbol.spliceOwner, name, parents = parents.map(_.tpe), decls, selfType = None)
     val sessionMethodSym          = cls.declaredMethod("session").head
     def sessionMethodDef(s: Term) = DefDef(sessionMethodSym, argss => Some(s))
-    def newCls(s: Term) = {
+    def newCls(s: Term) =
       val clsDef = ClassDef(cls, parents, body = List(sessionMethodDef(s)))
       val newCls = Typed(Apply(Select(New(TypeIdent(cls)), cls.primaryConstructor), Nil), TypeTree.of[A])
       Block(List(clsDef), newCls)
-    }
 
     // Generate code { (s: Session) => new A with DISupport { def sesion: Session = s } }
     val body = Lambda(
       owner = Symbol.spliceOwner,
       tpe = MethodType(List("s"))(_ => List(TypeRepr.of[Session]), _ => TypeRepr.of[A]),
-      rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
+      rhsFn = (sym: Symbol, paramRefs: List[Tree]) =>
         val s  = paramRefs.head.asExprOf[Session].asTerm
         val fn = newCls(s)
         fn.changeOwner(sym)
-      }
     )
     // Register trait factory
     // { (s: Session) => new A with DISupport { def session = s } }
@@ -156,5 +146,3 @@ private def shouldGenerateTrait[A](using
         }
       )
     }
-  }
-}

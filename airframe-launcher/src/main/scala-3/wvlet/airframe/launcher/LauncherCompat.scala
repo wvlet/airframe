@@ -18,7 +18,7 @@ import wvlet.airframe.launcher.Launcher.newCommandLauncher
 import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.Surface
 
-trait LauncherCompat {
+trait LauncherCompat:
 
   /**
     * Create a new Launcher of the given type
@@ -26,20 +26,18 @@ trait LauncherCompat {
     * @tparam A
     * @return
     */
-  inline def of[A]: Launcher = {
+  inline def of[A]: Launcher =
     val cl = newCommandLauncher(Surface.of[A], Surface.methodsOf[A], name = "", description = "")
     Launcher(LauncherConfig(), cl)
-  }
 
   inline def execute[A](argLine: String): A = execute[A](CommandLineTokenizer.tokenize(argLine))
-  inline def execute[A](args: Array[String]): A = {
+  inline def execute[A](args: Array[String]): A =
     val l      = of[A]
     val result = l.execute(args)
     result.getRootInstance.asInstanceOf[A]
-  }
-}
 
-trait LauncherBaseCompat { self: Launcher =>
+trait LauncherBaseCompat:
+  self: Launcher =>
 
   /**
     * Add a sub command module to the launcher
@@ -50,14 +48,11 @@ trait LauncherBaseCompat { self: Launcher =>
     * @tparam M
     * @return
     */
-  inline def addModule[M](name: String, description: String): Launcher = {
+  inline def addModule[M](name: String, description: String): Launcher =
     Launcher(config, mainLauncher.addCommandModule[M](name, description))
-  }
-}
 
-trait CommandLauncherBaseCompat { self: CommandLauncher =>
-  inline private[launcher] def addCommandModule[B](name: String, description: String): CommandLauncher = {
+trait CommandLauncherBaseCompat:
+  self: CommandLauncher =>
+  inline private[launcher] def addCommandModule[B](name: String, description: String): CommandLauncher =
     val subLauncher = Launcher.newCommandLauncher(Surface.of[B], Surface.methodsOf[B], name, description)
     add(name, description, subLauncher)
-  }
-}

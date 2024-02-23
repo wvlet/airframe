@@ -62,9 +62,8 @@ object Scala3NewTypeTest extends AirSpec:
     s.params(0).surface.name shouldBe "MyEnv"
   }
 
-  class A {
+  class A:
     def hello(env: MyEnv): String = env
-  }
 
   test("opaque type in method args") {
     val m = Surface.methodsOf[A].find(_.name == "hello")

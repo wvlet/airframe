@@ -18,21 +18,18 @@ import scala.language.experimental
 import wvlet.airframe.*
 import wvlet.airframe.surface.Surface
 
-object TraitFactoryTest extends AirSpec {
+object TraitFactoryTest extends AirSpec:
 
   trait A
 
   test("register trait factory") {
-    if isScala3 then {
-      pending("In Scala 3.3.1, creating a new trait instance via macro is still experimental")
-    }
+    if isScala3 then pending("In Scala 3.3.1, creating a new trait instance via macro is still experimental")
     registerTraitFactory[A]
     traitFactoryCache.get(Surface.of[A]) shouldBe defined
   }
 
-  trait B {
+  trait B:
     def hello: Unit
-  }
 
   test("do not create trait factory for abstract classes") {
     registerTraitFactory[B]
@@ -59,5 +56,3 @@ object TraitFactoryTest extends AirSpec {
     registerTraitFactory[D]
     traitFactoryCache.get(Surface.of[B]) shouldBe empty
   }
-
-}

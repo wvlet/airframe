@@ -5,7 +5,7 @@ import wvlet.airframe.newSilentDesign
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
-object DI3Test extends AirSpec {
+object DI3Test extends AirSpec:
 
   trait NonAbstractTrait {}
 
@@ -15,5 +15,3 @@ object DI3Test extends AirSpec {
     }
     e.stack.contains(Surface.of[NonAbstractTrait]) shouldBe true
   }
-
-}

@@ -13,14 +13,12 @@
  */
 package wvlet.airframe.rx.html
 
-object HtmlCompat {
+object HtmlCompat:
 
   /**
     * Extracting the source code of rxElement for demoing purpose
     * @param rxElements
     * @return
     */
-  private[rx] def extractCode(rxElements: RxElement*): RxCode = {
+  private[rx] def extractCode(rxElements: RxElement*): RxCode =
     ???
-  }
-}
