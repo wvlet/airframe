@@ -45,8 +45,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - name: Scala 2.12 test
         run: ./sbt "++2.12; projectJVM/test"
       - name: Publish Test Report
@@ -64,8 +64,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - name: Scala 2.13 test
         run: ./sbt "++2.13; projectJVM/test"
       - name: Publish Test Report
@@ -76,25 +76,6 @@ jobs:
           check_name: Test Report Scala 2.13
           annotate_only: true
           detailed_summary: true
-  test_2_13_latest_jdk:
-    name: Scala 2.13 + JDK21
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-      - name: Scala 2.13 + JDK21 test
-        run: ./sbt ++2.13 projectJVM/test
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v4
-        if: always() # always run even if the previous step fails
-        with:
-          report_paths: '**/target/test-reports/TEST-*.xml'
-          check_name: Test Report Scala 2.13 + JDK21
-          annotate_only: true
-          detailed_summary: true
   test_3:
     name: Scala 3
     runs-on: ubuntu-latest
@@ -102,8 +83,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - name: Scala 3.x test
         # Test only Scala 3 supported projects
         run: ./sbt "++ 3; projectDotty/test; dottyTest/run"
@@ -116,14 +97,14 @@ jobs:
           annotate_only: true
           detailed_summary: true
   test_3_latest_jdk:
-    name: Scala 3 + JDK21
+    name: Scala 3 / Latest JDK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '21'
+          java-version: '23-ea'
       - name: Scala 3 test
         # Test only Scala 3 supported projects
         run: ./sbt "++ 3; projectDotty/test; dottyTest/run"
@@ -136,7 +117,7 @@ jobs:
           annotate_only: true
           detailed_summary: true
   test_integration:
-    name: Scala 3 integration test
+    name: Scala 3 / Integration Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -144,33 +125,19 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - name: Scala 3 integration test
-        run: ./sbt "++ 3; integrationTest/test"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Node.js setup
+        run: ./scripts/setup-scalajs.sh
+      - name: Integration Test
+        run: ./sbt "++ 3; projectIt/test"
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Integration Test
-          annotate_only: true
-          detailed_summary: true
-  test_integration_js:
-    name: Scala 3 + Playwright integration test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '21'
-      - name: Scala 3 + Playwright integration test
-        run: ./sbt "++ 3; integrationTestJs/test"
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v4
-        if: always() # always run even if the previous step fails
-        with:
-          report_paths: '**/target/test-reports/TEST-*.xml'
-          check_name: Test Report Integration (js) Test
           annotate_only: true
           detailed_summary: true
   test_js:
@@ -180,8 +147,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -204,8 +171,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -228,8 +195,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -252,8 +219,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: 'zulu'
+          java-version: '21'
       - name: Scala JVM and Scala.js Test
         run: ../sbt "++airspecJVM/test; ++airspecJS/test"
         working-directory: ./airspec
