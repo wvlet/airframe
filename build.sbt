@@ -254,10 +254,10 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 
 // Integration test projects
 lazy val itProjects: Seq[ProjectReference] = Seq(
-    integrationTestApi.jvm,
-    integrationTestApi.js,
-    integrationTest,
-    integrationTestJs
+  integrationTestApi.jvm,
+  integrationTestApi.js,
+  integrationTest,
+  integrationTestJs
 )
 
 // For community-build
