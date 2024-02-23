@@ -54,7 +54,8 @@ case class HttpClientConfig(
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = Compat.defaultHttpClientLoggerFactory,
     loggingFilter: HttpLogger => HttpClientFilter = { (l: HttpLogger) => new HttpClientLoggingFilter(l) },
     // [Scala.js] Use Fetch API instead of Ajax.
-    useFetchAPI: Boolean = false
+    useFetchAPI: Boolean = false,
+    useHttp1: Boolean = false
 ) extends HttpChannelConfig {
 
   def newSyncClient(serverAddress: String): SyncClient =
@@ -178,5 +179,12 @@ case class HttpClientConfig(
 
   def withFetchAPI: HttpClientConfig = {
     this.copy(useFetchAPI = true)
+  }
+
+  /**
+    * Enforce using Http/1.1 if you experience GOAWAY error in HTTP/2
+    */
+  def withHttp1: HttpClientConfig = {
+    this.copy(useHttp1 = true)
   }
 }
