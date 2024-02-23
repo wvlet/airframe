@@ -30,7 +30,8 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
 
     if (config.useHttp1) {
       // Enforce using HTTP/1.1
-      builder = builder.protocols(java.util.List.of(okhttp3.Protocol.HTTP_1_1))
+      import scala.jdk.CollectionConverters.*
+      builder = builder.protocols(List(okhttp3.Protocol.HTTP_1_1).asJava)
     }
     builder.build()
   }
