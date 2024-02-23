@@ -184,7 +184,7 @@ case class HttpClientConfig(
   /**
     * Enforce using Http/1.1 if you experience GOAWAY error in HTTP/2
     */
-  def withHttp1: HttpClientConfig = {
+  def withHTTP1: HttpClientConfig = {
     this.copy(useHttp1 = true)
   }
 }
