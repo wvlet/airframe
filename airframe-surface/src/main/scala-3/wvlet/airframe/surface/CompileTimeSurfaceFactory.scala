@@ -595,10 +595,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       // Generate a field accessor { (x:Any) => x.asInstanceOf[A].(field name) }
       val paramIsAccessible =
         t.typeSymbol.fieldMember(paramName) match
-          case nt if nt == Symbol.noSymbol     => false
-          case m if m.flags.is(Flags.Private)  => false
-          case m if m.flags.is(Flags.Artifact) => false
-          case _                               => true
+          case nt if nt == Symbol.noSymbol      => false
+          case m if m.flags.is(Flags.Private)   => false
+          case m if m.flags.is(Flags.Protected) => false
+          case m if m.flags.is(Flags.Artifact)  => false
+          case _                                => true
       // println(s"${paramName} ${paramIsAccessible}")
 
       val accessor: Expr[Option[Any => Any]] = if method.isClassConstructor && paramIsAccessible then
