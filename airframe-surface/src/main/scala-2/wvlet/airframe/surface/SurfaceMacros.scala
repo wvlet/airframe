@@ -502,7 +502,13 @@ private[surface] object SurfaceMacros {
           case other   => q"None"
         }
 
-        val accessor = if (method.isConstructor) {
+        val isPublic: Boolean = targetType.member(arg.paramName.name) match {
+          case NoSymbol =>
+            false
+          case s =>
+            s.asTerm.isPublic
+        }
+        val accessor = if (method.isConstructor && isPublic) {
           arg.accessor(targetType)
         } else {
           q"None"
