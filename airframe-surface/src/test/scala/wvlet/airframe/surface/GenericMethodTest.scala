@@ -13,22 +13,20 @@
  */
 package wvlet.airframe.surface
 
-object GenericMethodTest {
+import wvlet.airspec.AirSpec
+
+object GenericMethodTest extends AirSpec {
   class A {
     def helloX[X](v: X): String = "hello"
   }
-}
-
-class GenericMethodTest extends SurfaceSpec {
-  import GenericMethodTest.*
 
   test("generic method") {
     val methods = Surface.methodsOf[A]
-    assertEquals(methods.size, 1)
+    methods.size shouldBe 1
     val m = methods(0)
 
     val obj = new GenericMethodTest.A
-    assertEquals(m.call(obj, "dummy"), "hello")
+    m.call(obj, "dummy") shouldBe "hello"
   }
 
 }

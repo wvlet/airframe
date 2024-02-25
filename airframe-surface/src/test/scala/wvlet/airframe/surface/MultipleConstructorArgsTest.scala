@@ -13,21 +13,20 @@
  */
 package wvlet.airframe.surface
 
-object MultipleConstructorArgsTest {
+import wvlet.airspec.AirSpec
+
+object MultipleConstructorArgsTest extends AirSpec {
   case class MultiC(a: Int)(implicit val s: String) {
     def msg: String = s"${a}:${s}"
   }
-}
 
-import MultipleConstructorArgsTest.*
-class MultipleConstructorArgsTest extends SurfaceSpec {
   test("support muliple constructor args") {
     val s: Surface = Surface.of[MultiC]
-    assert(s.objectFactory.nonEmpty)
+    s.objectFactory shouldBe defined
 
     val f = s.objectFactory.get
-    assert(s.params.size == 2)
+    s.params.size shouldBe 2
     val i = f.newInstance(Seq(1, "hello"))
-    assert(i.asInstanceOf[MultiC].msg == "1:hello")
+    i.asInstanceOf[MultiC].msg shouldBe "1:hello"
   }
 }

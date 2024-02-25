@@ -2,6 +2,7 @@ package wvlet.airframe.surface
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListMap
 import scala.quoted.*
+import scala.reflect.ClassTag
 
 private[surface] object CompileTimeSurfaceFactory:
 
@@ -505,12 +506,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
     val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
-    val origParamSymss = method.paramSymss
+    // val origParamSymss = method.paramSymss
+    // val declaredTypes = t.typeSymbol.declaredTypes.filterNot(_.flags.is(Flags.Module))
+    //      if origParamSymss.nonEmpty && declaredTypes.nonEmpty then origParamSymss.tail
+    //      else origParamSymss
 
-    val declaredTypes = t.typeSymbol.declaredTypes.filterNot(_.flags.is(Flags.Module))
-    val paramss =
-      if origParamSymss.nonEmpty && declaredTypes.nonEmpty then origParamSymss.tail
-      else origParamSymss
+    val paramss = method.paramSymss.filterNot { lst =>
+      lst.forall(x => x.isTypeParam || (x.flags.is(Flags.Implicit) && x.typeRef <:< TypeRepr.of[ClassTag[_]]))
+    }
 
     paramss.map { params =>
       params.zipWithIndex
@@ -799,7 +802,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
               clsCast(extracted, arg.tpe)
           }
         }
-        if argList.isEmpty then
+        if argList.flatten.isEmpty then
           val newExpr = m.tree match
             case d: DefDef if d.trailingParamss.nonEmpty =>
               // An empty arg method, e.g., def methodName()
@@ -821,6 +824,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
                 .appliedToArgss(argList)
           newExpr.changeOwner(sym)
     )
+    println(lambda.show)
     '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] =
