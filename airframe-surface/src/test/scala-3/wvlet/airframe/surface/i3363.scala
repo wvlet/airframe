@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 /**
   * Test generic types with default values
   */
-object i3353 extends AirSpec {
+object i3353 extends AirSpec:
   case class FValue[V](value: Option[Int] = None)
 
   test("With an optional value default argument") {
@@ -48,4 +48,3 @@ object i3353 extends AirSpec {
   test("With a default value of a boolean type") {
     Surface.of[ZValue[String]]
   }
-}
