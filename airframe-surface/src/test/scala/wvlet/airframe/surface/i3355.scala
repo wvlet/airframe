@@ -15,18 +15,12 @@ package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
 
-object GenericMethodTest extends AirSpec {
-  class A {
-    def helloX[X](v: X): String = "hello"
+object i3355 extends AirSpec {
+  case class ParamLists() {
+    def multiParam()(): Unit = ()
   }
 
-  test("generic method") {
-    val methods = Surface.methodsOf[A]
-    methods.size shouldBe 1
-    val m = methods(0)
-
-    val obj = new GenericMethodTest.A
-    m.call(obj, "dummy") shouldBe "hello"
+  test("find methods of multiple method params") {
+    Surface.methodsOf[ParamLists]
   }
-
 }
