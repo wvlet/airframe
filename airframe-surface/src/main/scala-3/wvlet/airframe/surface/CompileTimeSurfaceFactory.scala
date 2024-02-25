@@ -584,7 +584,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       // https://github.com/lampepfl/dotty-macro-examples/blob/aed51833db652f67741089721765ad5a349f7383/defaultParamsInference/src/macro.scala
       val defaultValue: Expr[Option[Any]] = field.defaultValueGetter match
         case Some(m) =>
-          val dv = Ref(m.owner.companionModule).select(m)
+          val companion = Ref(t.typeSymbol.companionModule)
+          // Populate method type parameters with Any type
+          val dummyTypeList: List[TypeRepr] = m.paramSymss.flatten.map { tp => TypeRepr.of[Any] }.toList
+          val dv: Term                      = companion.select(m).appliedToTypes(dummyTypeList)
           '{ Some(${ dv.asExprOf[Any] }) }
         case _ => '{ None }
 
