@@ -750,7 +750,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         val ret = surfaceOf(df.returnTpt.tpe)
         // println(s"==== method of: def ${m.name}")
         val params       = methodParametersOf(targetType, m)
-        val args         = methodArgsOf(targetType, m).flatten
+        val args         = methodArgsOf(targetType, m)
         val methodCaller = createMethodCaller(targetType, m, args)
         '{
           ClassMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${ methodCaller })
@@ -770,7 +770,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
   private def createMethodCaller(
       objectType: TypeRepr,
       m: Symbol,
-      methodArgs: Seq[MethodArg]
+      methodArgss: List[List[MethodArg]]
   ): Expr[Option[(Any, Seq[Any]) => Any]] =
     // Build { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].<method>(.. args) }
     val methodTypeParams: List[TypeParamClause] = m.tree match
@@ -788,11 +788,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         val x    = params(0).asInstanceOf[Term]
         val args = params(1).asInstanceOf[Term]
         val expr = clsCast(x, objectType).select(m)
-        val argList = methodArgs.zipWithIndex.collect {
-          // If the arg is implicit, no need to explicitly bind it
-          case (arg, i) if !arg.isImplicit =>
-            val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
-            clsCast(extracted, arg.tpe)
+
+        var index = 0
+        val argList: List[List[Term]] = methodArgss.map { lst =>
+          lst.collect {
+            // If the arg is implicit, no need to explicitly bind it
+            case arg if !arg.isImplicit =>
+              val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(index)))
+              index += 1
+              clsCast(extracted, arg.tpe)
+          }
         }
         if argList.isEmpty then
           val newExpr = m.tree match
@@ -806,14 +811,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         else
           // Bind to function arguments
           val newExpr =
-            if methodTypeParams.isEmpty then expr.appliedToArgs(argList.toList)
+            if methodTypeParams.isEmpty then expr.appliedToArgss(argList)
             else
               // For generic functions, type params also need to be applied
               val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
               // println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
               expr
                 .appliedToTypes(dummyTypeParams)
-                .appliedToArgs(argList.toList)
+                .appliedToArgss(argList)
           newExpr.changeOwner(sym)
     )
     '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
