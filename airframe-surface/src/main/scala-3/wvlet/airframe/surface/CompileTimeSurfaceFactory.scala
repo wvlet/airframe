@@ -506,13 +506,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
     val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
-    // val origParamSymss = method.paramSymss
-    // val declaredTypes = t.typeSymbol.declaredTypes.filterNot(_.flags.is(Flags.Module))
-    //      if origParamSymss.nonEmpty && declaredTypes.nonEmpty then origParamSymss.tail
-    //      else origParamSymss
-
-    val paramss = method.paramSymss.filterNot { lst =>
-      lst.forall(x => x.isTypeParam || (x.flags.is(Flags.Implicit) && x.typeRef <:< TypeRepr.of[ClassTag[_]]))
+    val paramss: List[List[Symbol]] = method.paramSymss.filter { lst =>
+      // Empty arg is allowed
+      lst.isEmpty ||
+      // Remove type params or implicit ClassTag evidences as MethodSurface can't pass type parameters
+      !lst.forall(x => x.isTypeParam || (x.flags.is(Flags.Implicit) && x.typeRef <:< TypeRepr.of[ClassTag[_]]))
     }
 
     paramss.map { params =>
@@ -802,7 +800,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
               clsCast(extracted, arg.tpe)
           }
         }
-        if argList.flatten.isEmpty then
+        if argList.isEmpty then
           val newExpr = m.tree match
             case d: DefDef if d.trailingParamss.nonEmpty =>
               // An empty arg method, e.g., def methodName()
@@ -824,7 +822,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
                 .appliedToArgss(argList)
           newExpr.changeOwner(sym)
     )
-    println(lambda.show)
     '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] =

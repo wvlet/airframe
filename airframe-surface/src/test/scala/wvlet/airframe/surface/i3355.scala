@@ -17,7 +17,7 @@ import wvlet.airspec.AirSpec
 
 object i3355 extends AirSpec {
   case class ParamLists() {
-    def m()(): Unit = ()
+    def multiParam()(): Unit = ()
   }
 
   test("find methods of multiple method params") {
