@@ -781,11 +781,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       methodArgss: List[List[MethodArg]]
   ): Expr[Option[(Any, Seq[Any]) => Any]] =
     // Build { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].<method>(.. args) }
-    val methodTypeParams: List[TypeParamClause] = m.tree match
+    val methodTypeParams: List[ParamClause] = m.tree match
       case df: DefDef =>
-        df.paramss.collect { case t: TypeParamClause =>
-          t
+        df.paramss.foreach { p =>
+          if m.name == "collectFirst" then println(s"--- ${p}")
         }
+        df.paramss.collect { case t: TypeParamClause => t }
       case _ =>
         List.empty
 
@@ -823,12 +824,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             else
               // For generic functions, type params also need to be applied
               val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
+              // if m.name == "collectFirst" then println(s"${m.name}. ${m.declaredTypes}")
               expr
                 .appliedToTypes(dummyTypeParams)
                 .appliedToArgss(argList)
           newExpr.changeOwner(sym)
     )
-    if m.name == "aggregate" then println(s"--- ${lambda.show}")
     '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] =
