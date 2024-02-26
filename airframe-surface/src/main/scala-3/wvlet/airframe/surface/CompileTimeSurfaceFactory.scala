@@ -3,6 +3,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListMap
 import scala.quoted.*
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 private[surface] object CompileTimeSurfaceFactory:
 
@@ -516,11 +517,15 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     paramss.map { params =>
       params.zipWithIndex
         .map((x, i) => (x, i + 1, x.tree))
-        .collect { case (s: Symbol, i: Int, v: ValDef) =>
+        .collect { case (s: Symbol, i: Int, d: Definition) =>
           // E.g. case class Foo(a: String)(implicit b: Int)
           // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
-          // Substitue type param to actual types
-          val resolved: TypeRepr = v.tpt.tpe match
+          // Substitute type param to actual types
+          val (name: String, tpe: TypeRepr) = d match
+            case v: ValDef => (v.name, v.tpt.tpe)
+            case d: DefDef => (d.symbol.name, d.returnTpt.tpe)
+
+          val resolved: TypeRepr = tpe match
             case a: AppliedType =>
               val resolvedTypeArgs = a.args.map {
                 case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
@@ -545,7 +550,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
               // println(s"=== target: ${m.name}, ${m.owner.name}")
               m.name == targetMethodName
             }
-          MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
+
+          MethodArg(name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
         }
     }
 
@@ -817,12 +823,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             else
               // For generic functions, type params also need to be applied
               val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
-              // println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
               expr
                 .appliedToTypes(dummyTypeParams)
                 .appliedToArgss(argList)
           newExpr.changeOwner(sym)
     )
+    if m.name == "aggregate" then println(s"--- ${lambda.show}")
     '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] =
