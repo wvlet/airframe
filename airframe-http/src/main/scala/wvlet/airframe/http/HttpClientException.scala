@@ -17,7 +17,7 @@ import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.control.{CircuitBreakerOpenException, ResultClass}
 import wvlet.log.LogSupport
 
-import java.io.EOFException
+import java.io.{IOException, EOFException}
 import java.lang.reflect.InvocationTargetException
 import java.net.*
 import java.nio.channels.ClosedChannelException
@@ -181,14 +181,18 @@ object HttpClientException extends LogSupport {
     case e: SocketTimeoutException => retryableFailure(e)
     case e: SocketException =>
       e match {
-        case se: BindException                      => retryableFailure(e)
-        case se: ConnectException                   => retryableFailure(e)
-        case se: NoRouteToHostException             => retryableFailure(e)
-        case se: PortUnreachableException           => retryableFailure(e)
-        case se if se.getMessage == "Socket closed" => retryableFailure(e)
+        case se: BindException                        => retryableFailure(e)
+        case se: ConnectException                     => retryableFailure(e)
+        case se: NoRouteToHostException               => retryableFailure(e)
+        case se: PortUnreachableException             => retryableFailure(e)
+        case se if se.getMessage() == "Socket closed" => retryableFailure(e)
         case other =>
           nonRetryableFailure(e)
       }
+    // HTTP/2 may disconnects the connection with "GOAWAY received" error https://github.com/wvlet/airframe/issues/3421
+    // See also the code of jdk.internal.net.http.Http2Connection.handleGoAway
+    case e: IOException if Option(e.getMessage()).exists(_.contains("GOAWAY received")) =>
+      retryableFailure(e)
     // Exceptions from Finagle. Using the string class names so as not to include Finagle dependencies.
     case e: Throwable if isRetryableFinagleException(e) =>
       retryableFailure(e)
