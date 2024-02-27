@@ -17,6 +17,7 @@ import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all.*
 import wvlet.airspec.*
+import wvlet.airframe.rx.html.embedAsNode
 
 class HtmlRenderingTest extends AirSpec {
 

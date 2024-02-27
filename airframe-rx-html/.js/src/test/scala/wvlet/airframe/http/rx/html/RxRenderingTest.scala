@@ -19,6 +19,7 @@ import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.html.*
 import wvlet.airframe.rx.html.all.*
+import wvlet.airframe.rx.html.embedAsNode
 
 /**
   */
