@@ -120,7 +120,7 @@ val buildSettings = Seq[Setting[_]](
         // Necessary for tracking source code range in airframe-rx demo
         "-Yrangepos",
         // For using the new import * syntax even in Scala 2.x
-        "-Xsource:3-cross"
+        "-Xsource:3"
       )
     }
   },
