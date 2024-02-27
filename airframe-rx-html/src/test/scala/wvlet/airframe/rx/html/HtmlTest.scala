@@ -15,12 +15,14 @@ package wvlet.airframe.rx.html
 
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.*
+import wvlet.airframe.rx.html.embedAsNode
 import wvlet.airframe.rx.html.all.*
 import wvlet.airspec.AirSpec
 
 /**
   */
 class HtmlTest extends AirSpec {
+
   test("embedding values") {
     div(
       1,
