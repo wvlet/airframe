@@ -235,6 +235,15 @@ object HttpMessage {
     def withUri(uri: String): Request                            = this.copy(uri = uri)
     def withRemoteAddress(remoteAddress: ServerAddress): Request = this.copy(remoteAddress = Some(remoteAddress))
 
+    // Enable multi-part upload
+    def withMultipartUpload(upload: MultipartUpload): Request = {
+      val boundary = upload.boundary
+      val body     = upload.toMultipartString(boundary)
+      this
+        .withHeader(HttpHeader.ContentType, s"multipart/form-data; boundary=${boundary}")
+        .withContent(body)
+    }
+
     override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
   }
