@@ -40,7 +40,8 @@ class CloseableShutdownHookTest extends AirSpec {
 
   trait A1 {
     val onShutdownIsCalled = new AtomicBoolean(false)
-    val a                  = bind[A].onShutdown { x => onShutdownIsCalled.set(true) }
+    import wvlet.airframe.LifeCycleSupport
+    val a = bind[A].onShutdown { x => onShutdownIsCalled.set(true) }
   }
 
   test("favor onShutdownHook") {

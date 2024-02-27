@@ -15,6 +15,7 @@ package wvlet.airframe.rx.html
 
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.airframe.rx.html.all.*
+import wvlet.airframe.rx.html.embedAsNode
 import wvlet.airspec.AirSpec
 
 /**
