@@ -772,8 +772,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
             targetTypeParent
 
           case TypeRef(ThisType(parent), _) =>
-            val result = simplifyTypeRef(parent).typeSymbol.typeMember(typeRepr.typeSymbol.name).typeRef
-            println(s"  case non-base ${typeRepr.show} $typeRepr -> $result")
+            println(s"  case non-base ${typeRepr.show} $typeRepr")
+            val parentRef = simplifyTypeRef(parent)
+            val result = parentRef.typeSymbol.typeMember(typeRepr.typeSymbol.name).typeRef
+            println(s"    -> parentRef: $result")
+            println(s"    -> result: $result")
             result
 
           case _ =>
