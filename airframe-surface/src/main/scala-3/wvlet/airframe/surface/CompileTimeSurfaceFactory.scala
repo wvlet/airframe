@@ -764,20 +764,20 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val TypeRef(targetTypeParent, _) = targetType: @unchecked  // it seems irefutable, but compiler does not agree
       //println(s"  ${targetTypeParent.baseClasses}")
       def simplifyTypeRef(typeRepr: TypeRepr): TypeRepr = {
-        //println(s"simplifyTypeRef ${typeRepr.show} in ${targetType.show}: ${typeRepr}")
+        println(s"simplifyTypeRef ${typeRepr.show} in ${targetType.show}: ${typeRepr}")
         typeRepr match {
           // Pattern matching to skip 'Base' and directly access 'InnerType'
           case _ if targetTypeParent.baseClasses.exists(_.typeRef == typeRepr) =>
-            //println(s"  case base ${typeRepr.show} $typeRepr -> $targetType")
-            targetType
+            println(s"  case base ${typeRepr.show} $typeRepr -> $targetTypeParent")
+            targetTypeParent
 
           case TypeRef(ThisType(parent), _) =>
             val result = simplifyTypeRef(parent).typeSymbol.typeMember(typeRepr.typeSymbol.name).typeRef
-            //println(s"  case non-base ${typeRepr.show} $typeRepr -> $result")
+            println(s"  case non-base ${typeRepr.show} $typeRepr -> $result")
             result
 
           case _ =>
-            //println(s"  case other ${typeRepr.show} $typeRepr")
+            println(s"  case other ${typeRepr.show} $typeRepr")
             typeRepr
         }
       }
