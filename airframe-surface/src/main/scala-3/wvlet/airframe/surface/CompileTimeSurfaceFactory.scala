@@ -1,5 +1,6 @@
 package wvlet.airframe.surface
 import java.util.concurrent.atomic.AtomicInteger
+import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.quoted.*
 import scala.reflect.ClassTag
@@ -556,6 +557,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
               // println(s"=== target: ${m.name}, ${m.owner.name}")
               m.name == targetMethodName
             }
+          // println(s"MethodArg ${v.name} $resolved")
           MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
         }
     }
@@ -754,17 +756,49 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     if seenMethodParent.contains(targetType) then
       sys.error(s"recursive method found in: ${targetType.typeSymbol.fullName}")
     else
+      println(s"=== targetType ${targetType.show} ${targetType}")
       seenMethodParent += targetType
       val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
+
+      // check for a type like OuterType.InnerType and get OuterType from it
+      val TypeRef(targetTypeParent, _) = targetType: @unchecked  // it seems irefutable, but compiler does not agree
+      //println(s"  ${targetTypeParent.baseClasses}")
+      def simplifyTypeRef(typeRepr: TypeRepr): TypeRepr = {
+        //println(s"simplifyTypeRef ${typeRepr.show} in ${targetType.show}: ${typeRepr}")
+        typeRepr match {
+          // Pattern matching to skip 'Base' and directly access 'InnerType'
+          case _ if targetTypeParent.baseClasses.exists(_.typeRef == typeRepr) =>
+            //println(s"  case base ${typeRepr.show} $typeRepr -> $targetType")
+            targetType
+
+          case TypeRef(ThisType(parent), _) =>
+            val result = simplifyTypeRef(parent).typeSymbol.typeMember(typeRepr.typeSymbol.name).typeRef
+            //println(s"  case non-base ${typeRepr.show} $typeRepr -> $result")
+            result
+
+          case _ =>
+            //println(s"  case other ${typeRepr.show} $typeRepr")
+            typeRepr
+        }
+      }
+
       val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
         val mod   = Expr(modifierBitMaskOf(m))
         val owner = surfaceOf(targetType)
         val name  = Expr(m.name)
-        // println(s"======= ${df.returnTpt.show}")
-        val ret = surfaceOf(df.returnTpt.tpe)
-        // println(s"==== method of: def ${m.name}")
+        val tpt = df.returnTpt
+        println(s"======= tpt ${tpt.show} ${simplifyTypeRef(tpt.tpe).show}")
+
+        println(s"======= dealias: ${tpt.tpe.dealias.show}")
+        val ret = surfaceOf(tpt.tpe)
+        println(s"==== method of: def ${m.name}")
         val params       = methodParametersOf(targetType, m)
-        val args         = methodArgsOf(targetType, m)
+        val args         = methodArgsOf(targetType, m).map { list =>
+          list.map { arg =>
+            println(s"======= arg ${arg.name}: ${arg.tpe.show} ==> ${simplifyTypeRef(arg.tpe).show}")
+            arg.copy(tpe = simplifyTypeRef(arg.tpe))
+          }
+        }
         val methodCaller = createMethodCaller(targetType, m, args)
         '{
           ClassMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${ methodCaller })
