@@ -23,7 +23,6 @@ object i3416 extends AirSpec {
     }
   }
 
-
   test("List package private fields as parameters") {
     val s = Surface.of[O.C]
     debug(s.params)

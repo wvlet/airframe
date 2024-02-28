@@ -286,7 +286,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           && Option(t.typeSymbol.primaryConstructor)
             .exists { p =>
               p.exists && !p.flags.is(Flags.Private) && !p.flags.is(Flags.Protected) &&
-                p.privateWithin.isEmpty && p.paramSymss.nonEmpty
+              p.privateWithin.isEmpty && p.paramSymss.nonEmpty
             } =>
       val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
@@ -598,12 +598,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       // Generate a field accessor { (x:Any) => x.asInstanceOf[A].(field name) }
       val paramIsAccessible =
         t.typeSymbol.fieldMember(paramName) match
-          case nt if nt == Symbol.noSymbol              => false
-          case m if m.flags.is(Flags.Private)           => false
-          case m if m.flags.is(Flags.Protected)         => false
-          case m if m.flags.is(Flags.Artifact)          => false
-          case m if m.privateWithin.nonEmpty => false
-          case _                                        => true
+          case nt if nt == Symbol.noSymbol      => false
+          case m if m.flags.is(Flags.Private)   => false
+          case m if m.flags.is(Flags.Protected) => false
+          case m if m.flags.is(Flags.Artifact)  => false
+          case m if m.privateWithin.nonEmpty    => false
+          case _                                => true
       // println(s"${paramName} ${paramIsAccessible}")
 
       val accessor: Expr[Option[Any => Any]] = if method.isClassConstructor && paramIsAccessible then
