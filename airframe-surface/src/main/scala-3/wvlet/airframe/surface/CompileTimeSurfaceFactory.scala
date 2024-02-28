@@ -284,7 +284,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     case t
         if !t.typeSymbol.flags.is(Flags.Abstract) && !t.typeSymbol.flags.is(Flags.Trait)
           && Option(t.typeSymbol.primaryConstructor)
-            .exists(p => p.exists && !p.flags.is(Flags.Private) && p.paramSymss.nonEmpty) =>
+            .exists { p =>
+              p.exists && !p.flags.is(Flags.Private) && !p.flags.is(Flags.Protected) &&
+                p.privateWithin.isEmpty && p.paramSymss.nonEmpty
+            } =>
       val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
       // val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
