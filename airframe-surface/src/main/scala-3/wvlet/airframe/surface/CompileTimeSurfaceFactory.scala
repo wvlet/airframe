@@ -522,21 +522,29 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         .collect { case (s: Symbol, i: Int, v: ValDef) =>
           // E.g. case class Foo(a: String)(implicit b: Int)
           // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
-          // Substitue type param to actual types
-          val resolved: TypeRepr = v.tpt.tpe match
-            case a: AppliedType =>
-              val resolvedTypeArgs = a.args.map {
-                case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
-                  typeArgTable(p.typeSymbol.name)
-                case other =>
-                  other
-              }
-              // Need to use the base type of the applied type to replace the type parameters
-              a.tycon.appliedTo(resolvedTypeArgs)
-            case TypeRef(_, name) if typeArgTable.contains(name) =>
-              typeArgTable(name)
-            case other =>
-              other
+          // Substitute type param to actual types
+
+          def resolveType(t: TypeRepr): TypeRepr =
+            t match
+              case a: AppliedType =>
+                // println(s"===  a.args ${a.args}")
+                // println(s"===  typeArgTable ${typeArgTable}")
+                val resolvedTypeArgs = a.args.map {
+                  case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
+                    typeArgTable(p.typeSymbol.name)
+                  case other =>
+                    resolveType(other)
+                }
+                // println(s"===  resolvedTypeArgs ${resolvedTypeArgs}")
+                // Need to use the base type of the applied type to replace the type parameters
+                a.tycon.appliedTo(resolvedTypeArgs)
+              case TypeRef(_, name) if typeArgTable.contains(name) =>
+                typeArgTable(name)
+              case other =>
+                other
+
+          val resolved: TypeRepr = resolveType(v.tpt.tpe)
+
           val isSecret           = hasSecretAnnotation(s)
           val isRequired         = hasRequiredAnnotation(s)
           val isImplicit         = s.flags.is(Flags.Implicit)
