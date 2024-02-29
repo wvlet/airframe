@@ -761,15 +761,18 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
 
       // check for a type like OuterType.InnerType and get OuterType from it
-      val TypeRef(targetTypeParent, _) = targetType: @unchecked  // it seems irefutable, but compiler does not agree
+      val targetTypeParent = targetType match {
+        case TypeRef(parent, _) => Some(parent)
+        case _ => None
+      }
       //println(s"  ${targetTypeParent.baseClasses}")
       def simplifyTypeRef(typeRepr: TypeRepr): TypeRepr = {
         println(s"simplifyTypeRef ${typeRepr.show} in ${targetType.show}: ${typeRepr}")
         typeRepr match {
           // Pattern matching to skip 'Base' and directly access 'InnerType'
-          case _ if targetTypeParent.baseClasses.exists(_.typeRef == typeRepr) =>
+          case _ if targetTypeParent.exists(_.baseClasses.exists(_.typeRef == typeRepr)) =>
             println(s"  case base ${typeRepr.show} $typeRepr -> $targetTypeParent")
-            targetTypeParent
+            targetTypeParent.get
 
           case TypeRef(ThisType(parent), _) =>
             println(s"  case non-base ${typeRepr.show} $typeRepr")
