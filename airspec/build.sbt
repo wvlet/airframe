@@ -15,7 +15,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val SCALA_2_12          = "2.12.19"
 val SCALA_2_13          = "2.13.13"
-val SCALA_3             = "3.3.3"
+val SCALA_3             = "3.4.0"
 val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALACHECK_VERSION           = "1.17.0"
