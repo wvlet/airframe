@@ -17,20 +17,19 @@ import wvlet.airspec.AirSpec
 
 object i3411 extends AirSpec {
 
-  object SomeEnum extends Enumeration {
-    type SomeEnum = Value
-
-    val A, B, C = Value
+  trait Base {
+    class InnerType {
+      def compare(that: InnerType): Int = 0
+    }
   }
 
-  import SomeEnum.SomeEnum
+  object OuterType extends Base {
+    def create: InnerType = new InnerType
+  }
 
-  test("Handle a Scala 2 enumeration") {
-    val s = Surface.of[SomeEnum] // just check there is no error - no expected properties
-    val m = Surface.methodsOf[SomeEnum]
-    debug(s.params)
-    // enumeration type (value) usually contains at least the compare method
-    // note: we are unable to handle compare at the moment and some other methods inherited from Value, see https://github.com/lampepfl/dotty/issues/19825
-    // m.map(_.name) shouldContain "compare"
+  test("Handle inherited inner class") {
+    //val mm = Surface.methodsOf[OuterType.type]
+    val m = Surface.methodsOf[OuterType.InnerType]
+    //m.map(_.name) shouldContain "compare"
   }
 }
