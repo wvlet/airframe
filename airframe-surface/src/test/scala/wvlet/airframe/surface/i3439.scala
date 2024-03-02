@@ -15,7 +15,7 @@ package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
 
-object i3411 extends AirSpec {
+object i3439 extends AirSpec {
 
   trait Base {
     class InnerType {
