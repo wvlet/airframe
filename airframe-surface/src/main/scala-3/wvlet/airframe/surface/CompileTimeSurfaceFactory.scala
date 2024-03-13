@@ -703,9 +703,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       .toSeq
       // Exclude primitive surfaces as it is already defined in Primitive object
       .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
-      .sortBy(_._2)
+      .map { (tpe, order) =>
+        // first list all lazy vals, otherwise there is a risk of forward reference error across strict vals
+        (tpe, (!lazySurface.contains(tpe), order))
+      }.sortBy(_._2)
       .reverse
-      .map { case (tpe, order) =>
+      .foreach { (tpe, order) =>
         // Update the cache so that the next call of surfaceOf method will use the local varaible reference
         surfaceToVar += tpe -> Symbol.newVal(
           Symbol.spliceOwner,
