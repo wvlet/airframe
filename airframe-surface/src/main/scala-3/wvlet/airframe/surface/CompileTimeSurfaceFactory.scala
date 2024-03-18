@@ -312,10 +312,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       case _              => List.empty[TypeRepr]
 
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
-    (classTypeParams zip classTypeArgs)
-      .map { (paramType, argType) =>
-        paramType.name -> argType
-      }.toMap[String, TypeRepr]
+    (classTypeParams zip classTypeArgs).map { (paramType, argType) =>
+      paramType.name -> argType
+    }.toMap[String, TypeRepr]
 
   // Get a constructor with its generic types are resolved
   private def getResolvedConstructorOf(t: TypeRepr): Option[Term] =
