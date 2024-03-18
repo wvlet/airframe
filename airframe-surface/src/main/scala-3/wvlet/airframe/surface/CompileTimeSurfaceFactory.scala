@@ -305,16 +305,17 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       }
   }
 
+  // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
   private def typeMappingTable(t: TypeRepr, method: Symbol): Map[String, TypeRepr] =
     val classTypeParams = t.typeSymbol.typeMembers.filter(_.isTypeParam)
     val classTypeArgs: List[TypeRepr] = t match
       case a: AppliedType => a.args
       case _              => List.empty[TypeRepr]
 
-    // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
-    (classTypeParams zip classTypeArgs).map { (paramType, argType) =>
-      paramType.name -> argType
-    }.toMap[String, TypeRepr]
+    (classTypeParams zip classTypeArgs)
+      .map { (paramType, argType) =>
+        paramType.name -> argType
+      }.toMap[String, TypeRepr]
 
   // Get a constructor with its generic types are resolved
   private def getResolvedConstructorOf(t: TypeRepr): Option[Term] =
@@ -491,6 +492,25 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       isSecret: Boolean
   )
 
+  private def resolveType(t: TypeRepr, typeArgTable: Map[String, TypeRepr]): TypeRepr =
+    t match
+      case a: AppliedType =>
+        // println(s"===  a.args ${a.args}")
+        // println(s"===  typeArgTable ${typeArgTable}")
+        val resolvedTypeArgs = a.args.map {
+          case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
+            typeArgTable(p.typeSymbol.name)
+          case other =>
+            resolveType(other, typeArgTable)
+        }
+        // println(s"===  resolvedTypeArgs ${resolvedTypeArgs}")
+        // Need to use the base type of the applied type to replace the type parameters
+        a.tycon.appliedTo(resolvedTypeArgs)
+      case TypeRef(_, name) if typeArgTable.contains(name) =>
+        typeArgTable(name)
+      case other =>
+        other
+
   private def methodArgsOf(t: TypeRepr, method: Symbol): List[List[MethodArg]] =
     // println(s"==== method args of ${fullTypeNameOf(t)}")
 
@@ -498,8 +518,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       m.name.startsWith("apply$default$") || m.name.startsWith("$lessinit$greater$default$")
     }
 
-    // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
-    val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
+    val typeArgTable = typeMappingTable(t, method)
 
     val paramss: List[List[Symbol]] = method.paramSymss.filter { lst =>
       // Empty arg is allowed
@@ -516,26 +535,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
           // Substitute type param to actual types
 
-          def resolveType(t: TypeRepr): TypeRepr =
-            t match
-              case a: AppliedType =>
-                // println(s"===  a.args ${a.args}")
-                // println(s"===  typeArgTable ${typeArgTable}")
-                val resolvedTypeArgs = a.args.map {
-                  case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
-                    typeArgTable(p.typeSymbol.name)
-                  case other =>
-                    resolveType(other)
-                }
-                // println(s"===  resolvedTypeArgs ${resolvedTypeArgs}")
-                // Need to use the base type of the applied type to replace the type parameters
-                a.tycon.appliedTo(resolvedTypeArgs)
-              case TypeRef(_, name) if typeArgTable.contains(name) =>
-                typeArgTable(name)
-              case other =>
-                other
-
-          val resolved: TypeRepr = resolveType(v)
+          val resolved = resolveType(v, typeArgTable)
 
           val isSecret           = hasSecretAnnotation(s)
           val isRequired         = hasRequiredAnnotation(s)
@@ -752,11 +752,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       seenMethodParent += targetType
       val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
       val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
-        val mod   = Expr(modifierBitMaskOf(m))
-        val owner = surfaceOf(targetType)
-        val name  = Expr(m.name)
-        // println(s"======= ${df.returnTpt.show}")
-        val ret = surfaceOf(df.returnTpt.tpe)
+        val mod          = Expr(modifierBitMaskOf(m))
+        val owner        = surfaceOf(targetType)
+        val name         = Expr(m.name)
+        val typeArgTable = typeMappingTable(targetType, m)
+        val returnType   = resolveType(df.returnTpt.tpe, typeArgTable)
+        // println(s"======= ${returnType.show}")
+        val ret = surfaceOf(returnType)
         // println(s"==== method of: def ${m.name}")
         val params       = methodParametersOf(targetType, m)
         val args         = methodArgsOf(targetType, m)
