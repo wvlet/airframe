@@ -904,7 +904,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.5.1" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "440" % Test
+      "io.trino" % "trino-main" % "442" % Test
     )
   } else {
     Seq.empty
