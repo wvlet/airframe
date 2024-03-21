@@ -451,17 +451,6 @@ val surfaceDependencies = { scalaVersion: String =>
   }
 }
 
-val surfaceJVMDependencies = { scalaVersion: String =>
-  scalaVersion match {
-    case s if s.startsWith("3.") =>
-      Seq(
-        "org.scala-lang" %% "scala3-tasty-inspector" % s,
-        "org.scala-lang" %% "scala3-staging"         % s
-      )
-    case _ => Seq.empty
-  }
-}
-
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -476,7 +465,6 @@ lazy val surface =
     )
     .jvmSettings(
       // For adding PreDestroy, PostConstruct annotations to Java9
-      libraryDependencies ++= surfaceJVMDependencies(scalaVersion.value),
       libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(jsBuildSettings)

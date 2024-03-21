@@ -130,7 +130,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -249,16 +250,6 @@ lazy val airspecCore =
     )
     .jvmSettings(
       airspecJVMBuildSettings,
-      libraryDependencies ++= {
-        scalaVersion.value match {
-          case s if s.startsWith("3.") =>
-            Seq(
-              "org.scala-lang" %% "scala3-tasty-inspector" % s,
-              "org.scala-lang" %% "scala3-staging"         % s
-            )
-          case _ => Seq.empty
-        }
-      },
       Compile / packageBin / mappings ++= (airspecLog.jvm / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecLog.js / Compile / packageSrc / mappings).value
     )

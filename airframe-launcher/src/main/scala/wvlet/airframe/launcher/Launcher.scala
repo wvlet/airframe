@@ -27,7 +27,6 @@ import wvlet.airframe.codec.{MessageCodecFactory, MessageContext, ParamListCodec
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 

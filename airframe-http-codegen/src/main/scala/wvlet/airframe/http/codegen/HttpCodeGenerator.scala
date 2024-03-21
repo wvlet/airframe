@@ -112,7 +112,7 @@ object HttpCodeGenerator extends LogSupport {
   }
 
   def generate(config: HttpClientGeneratorConfig, cl: ClassLoader): String = {
-    val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+    val router = RouteScanner.buildRxRouter(Seq(config.apiPackageName), cl)
     val code   = generate(router, config)
     code
   }
