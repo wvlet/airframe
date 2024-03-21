@@ -15,7 +15,6 @@ package wvlet.airframe.launcher
 
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.Launcher.newCommandLauncher
-import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.Surface
 
 trait LauncherCompat:

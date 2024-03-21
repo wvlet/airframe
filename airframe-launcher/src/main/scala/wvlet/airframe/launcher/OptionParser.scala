@@ -23,7 +23,7 @@ package wvlet.airframe.launcher
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.StringTree.{Leaf, SeqLeaf}
 import wvlet.airframe.surface.*
-import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, ReflectSurfaceFactory}
+import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path}
 import wvlet.log.{LogSupport, Logger}
 
 import scala.collection.mutable.ArrayBuffer

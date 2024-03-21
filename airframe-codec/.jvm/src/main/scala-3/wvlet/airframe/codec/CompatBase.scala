@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
+import wvlet.airframe.surface.{AnyRefSurface, Surface}
 
 trait CompatBase:
   inline def codecOf[A]: MessageCodec[A] =
     MessageCodecFactory.defaultFactory.of[A]
-  // TODO Remove this method usage as runtime-reflection in Scala 3 is unstable and slow
-  def surfaceOfClass(cl: Class[?]): Surface = ReflectSurfaceFactory.ofClass(cl)
+
+  def surfaceOfClass(cl: Class[?]): Surface = AnyRefSurface
