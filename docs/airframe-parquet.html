@@ -68,11 +68,11 @@
 <pre><code class="hljs css language-scala">libraryDependencies ++= <span class="hljs-type">Seq</span>(
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-parquet"</span> % <span class="hljs-string">"(version)"</span>
   <span class="hljs-comment">// Use your own hadoop version</span>
-  <span class="hljs-string">"org.apache.hadoop"</span>  % <span class="hljs-string">"hadoop-client"</span>  % <span class="hljs-string">"3.3.1"</span>,
+  <span class="hljs-string">"org.apache.hadoop"</span>  % <span class="hljs-string">"hadoop-client"</span>  % <span class="hljs-string">"3.4.0"</span>,
   <span class="hljs-comment">// [Optional] For supporting S3</span>
-  <span class="hljs-string">"org.apache.hadoop"</span>  % <span class="hljs-string">"hadoop-aws"</span>  % <span class="hljs-string">"3.3.1"</span>,
+  <span class="hljs-string">"org.apache.hadoop"</span>  % <span class="hljs-string">"hadoop-aws"</span>  % <span class="hljs-string">"3.4.0"</span>,
   <span class="hljs-comment">// [Optional] For using custom AWS credential provider</span>
-  <span class="hljs-string">"software.amazon.awssdk"</span> % <span class="hljs-string">"auth"</span> % <span class="hljs-string">"2.17.18"</span>
+  <span class="hljs-string">"software.amazon.awssdk"</span> % <span class="hljs-string">"auth"</span> % <span class="hljs-string">"2.25.13"</span>
 )
 </code></pre>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.parquet.<span class="hljs-type">Parquet</span>
