@@ -14,11 +14,11 @@ airframe-parquet is a library for reading and writing for Scala objects using Pa
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-parquet" % "(version)"
   // Use your own hadoop version
-  "org.apache.hadoop"  % "hadoop-client"  % "3.3.1",
+  "org.apache.hadoop"  % "hadoop-client"  % "3.4.0",
   // [Optional] For supporting S3
-  "org.apache.hadoop"  % "hadoop-aws"  % "3.3.1",
+  "org.apache.hadoop"  % "hadoop-aws"  % "3.4.0",
   // [Optional] For using custom AWS credential provider
-  "software.amazon.awssdk" % "auth" % "2.17.18"
+  "software.amazon.awssdk" % "auth" % "2.25.13"
 )
 ```
 

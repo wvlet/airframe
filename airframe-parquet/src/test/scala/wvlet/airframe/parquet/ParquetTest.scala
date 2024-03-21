@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.parquet
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.filter2.predicate.FilterApi
@@ -178,27 +177,4 @@ object ParquetTest extends AirSpec {
       }
     }
   }
-
-  test("write to S3") {
-    skip("Requires a real S3 bucket to test this code")
-
-    val conf = new Configuration()
-    conf.set("fs.s3a.aws.credentials.provider", "wvlet.airframe.parquet.CustomCredentialProvider")
-    val path = "s3a://leo-prizm-dev/test.parquet"
-    withResource(
-      Parquet.newWriter[SampleRecord](path = path, hadoopConf = conf)
-    ) { writer =>
-      writer.write(r1)
-      writer.write(r2)
-    }
-
-    withResource(Parquet.newReader[SampleRecord](path = path, hadoopConf = conf)) { reader =>
-      reader.read() shouldBe r1
-      reader.read() shouldBe r2
-      reader.read() shouldBe null
-    }
-    Parquet.readSchema(path, conf)
-  }
 }
-
-class CustomCredentialProvider extends ProfileCredentialsProvider("engineering")
