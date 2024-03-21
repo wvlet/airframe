@@ -201,11 +201,9 @@ class HttpCodeGenerator(
     debug(s"Target API packages: ${apiPackageNames.mkString(", ")}")
     val rxRouter = RouteScanner.buildRxRouter(apiPackageNames, classLoader)
     if (rxRouter.routes.isEmpty) {
-      warn(s"Scanning classes implementing @RPC or @Endpoint from the classpath...")
-      RouteScanner.buildRouter(apiPackageNames, classLoader)
-    } else {
-      Router.fromRxRouter(rxRouter)
+      warn(s"No router definition is found. Forgot to implement RxRouterProvider interface?")
     }
+    Router.fromRxRouter(rxRouter)
   }
 
   @command(description = "Generate HTTP client code using a JSON configuration file")
