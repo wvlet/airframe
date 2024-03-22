@@ -306,23 +306,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
   }
 
   private def typeMappingTable(t: TypeRepr, method: Symbol): Map[String, TypeRepr] =
-    val classTypeParams: List[TypeRepr] = t match
+    val classTypeParams = t.typeSymbol.typeMembers.filter(_.isTypeParam)
+    val classTypeArgs: List[TypeRepr] = t match
       case a: AppliedType => a.args
       case _              => List.empty[TypeRepr]
 
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
-    method.paramSymss match
-      // tpeArgs for case fields, methodArgs for method arguments
-      case tpeArgs :: tail if t.typeSymbol.typeMembers.nonEmpty =>
-        val typeArgTable = tpeArgs
-          .map(_.tree).zipWithIndex.collect {
-            case (td: TypeDef, i: Int) if i < classTypeParams.size =>
-              td.name -> classTypeParams(i)
-          }.toMap[String, TypeRepr]
-        // pri ntln(s"type args: ${typeArgTable}")
-        typeArgTable
-      case _ =>
-        Map.empty
+    (classTypeParams zip classTypeArgs)
+      .map { (paramType, argType) =>
+        paramType.name -> argType
+      }.toMap[String, TypeRepr]
 
   // Get a constructor with its generic types are resolved
   private def getResolvedConstructorOf(t: TypeRepr): Option[Term] =
@@ -337,8 +330,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         else
           val lookupTable = typeMappingTable(t, pc)
           // println(s"--- ${lookupTable}")
-          val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).map(_.tree).collect { case t: TypeDef =>
-            lookupTable.getOrElse(t.name, TypeRepr.of[AnyRef])
+          val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).filter(_.isTypeParam).map { p =>
+            lookupTable.getOrElse(p.name, TypeRepr.of[AnyRef])
           }
           Some(cstr.appliedToTypes(typeArgs))
 
@@ -518,8 +511,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
     paramss.map { params =>
       params.zipWithIndex
-        .map((x, i) => (x, i + 1, x.tree))
-        .collect { case (s: Symbol, i: Int, v: ValDef) =>
+        .map((x, i) => (x, i + 1, t.memberType(x)))
+        .collect { case (s: Symbol, i: Int, v: TypeRepr) =>
           // E.g. case class Foo(a: String)(implicit b: Int)
           // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
           // Substitute type param to actual types
@@ -543,7 +536,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
               case other =>
                 other
 
-          val resolved: TypeRepr = resolveType(v.tpt.tpe)
+          val resolved: TypeRepr = resolveType(v)
 
           val isSecret           = hasSecretAnnotation(s)
           val isRequired         = hasRequiredAnnotation(s)
@@ -556,7 +549,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
               // println(s"=== target: ${m.name}, ${m.owner.name}")
               m.name == targetMethodName
             }
-          MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
+          MethodArg(s.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
         }
     }
 
