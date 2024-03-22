@@ -306,23 +306,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
   }
 
   private def typeMappingTable(t: TypeRepr, method: Symbol): Map[String, TypeRepr] =
-    val classTypeParams: List[TypeRepr] = t match
+    val classTypeParams = t.typeSymbol.typeMembers.filter(_.isTypeParam)
+    val classTypeArgs: List[TypeRepr] = t match
       case a: AppliedType => a.args
       case _              => List.empty[TypeRepr]
 
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
-    method.paramSymss match
-      // tpeArgs for case fields, methodArgs for method arguments
-      case tpeArgs :: tail if t.typeSymbol.typeMembers.nonEmpty =>
-        val typeArgTable = tpeArgs
-          .map(_.tree).zipWithIndex.collect {
-            case (td: TypeDef, i: Int) if i < classTypeParams.size =>
-              td.name -> classTypeParams(i)
-          }.toMap[String, TypeRepr]
-        // pri ntln(s"type args: ${typeArgTable}")
-        typeArgTable
-      case _ =>
-        Map.empty
+    (classTypeParams zip classTypeArgs)
+      .map { (paramType, argType) =>
+        paramType.name -> argType
+      }.toMap[String, TypeRepr]
 
   // Get a constructor with its generic types are resolved
   private def getResolvedConstructorOf(t: TypeRepr): Option[Term] =
