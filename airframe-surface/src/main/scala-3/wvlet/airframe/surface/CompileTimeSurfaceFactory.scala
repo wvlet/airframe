@@ -330,8 +330,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
         else
           val lookupTable = typeMappingTable(t, pc)
           // println(s"--- ${lookupTable}")
-          val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).map(_.tree).collect { case t: TypeDef =>
-            lookupTable.getOrElse(t.name, TypeRepr.of[AnyRef])
+          val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).filter(_.isTypeParam).map { p =>
+            lookupTable.getOrElse(p.name, TypeRepr.of[AnyRef])
           }
           Some(cstr.appliedToTypes(typeArgs))
 
