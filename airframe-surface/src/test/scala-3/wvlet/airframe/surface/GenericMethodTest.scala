@@ -15,10 +15,9 @@ package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
 
-object GenericMethodTest extends AirSpec {
-  class A {
+object GenericMethodTest extends AirSpec:
+  class A:
     def helloX[X](v: X): String = "hello"
-  }
 
   test("generic method") {
     val methods = Surface.methodsOf[A]
@@ -29,4 +28,21 @@ object GenericMethodTest extends AirSpec {
     m.call(obj, "dummy") shouldBe "hello"
   }
 
-}
+  case class Gen[X](value: X):
+    def pass(x: X): X        = x
+    def myself: Gen[X]       = this
+    def wrap(x: X): Gen[X]   = Gen[X](value)
+    def unwrap(x: Gen[X]): X = x.value
+
+  test("Methods of generic type") {
+    val typeSurface = Surface.of[Gen[String]]
+    val methods     = Surface.methodsOf[Gen[String]]
+    val pass        = methods.find(_.name == "pass").get
+    pass.returnType shouldBe Surface.of[String]
+    val myself = methods.find(_.name == "myself").get
+    myself.returnType shouldBe typeSurface
+    val wrap = methods.find(_.name == "wrap").get
+    wrap.returnType shouldBe typeSurface
+    val unwrap = methods.find(_.name == "unwrap").get
+    unwrap.returnType shouldBe Surface.of[String]
+  }
