@@ -238,7 +238,8 @@ private[surface] object SurfaceMacros {
         }
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        q"wvlet.airframe.surface.Alias(${name}, ${fullName}, $inner)"
+        val typeArgs = args.map(surfaceOf(_))
+        q"wvlet.airframe.surface.Alias(${name}, ${fullName}, ${inner}, Seq(..${typeArgs}))"
     }
 
     private val higherKindedTypeFactory: SurfaceFactory = {
@@ -632,7 +633,7 @@ private[surface] object SurfaceMacros {
 
     private val genericSurfaceFactory: SurfaceFactory = {
       case t if t =:= typeOf[Any] =>
-        q"wvlet.airframe.surface.Alias(${"Any"}, ${"scala.Any"}, wvlet.airframe.surface.AnyRefSurface)"
+        q"wvlet.airframe.surface.Alias(${"Any"}, ${"scala.Any"}, wvlet.airframe.surface.AnyRefSurface, Seq.empty)"
       case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(surfaceOf(_))
         q"new wvlet.airframe.surface.GenericSurface(classOf[$t], typeArgs = IndexedSeq(..$typeArgs))"

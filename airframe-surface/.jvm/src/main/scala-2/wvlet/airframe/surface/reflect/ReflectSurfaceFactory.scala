@@ -55,7 +55,7 @@ object ReflectSurfaceFactory extends LogSupport {
     val tpe = cs.toType
     ofType(tpe) match {
       // Workaround for sbt's layered class loader, which cannot find the original classes using the reflect mirror
-      case Alias(_, _, AnyRefSurface) if cs.isTrait =>
+      case Alias(_, _, AnyRefSurface, _) if cs.isTrait =>
         new GenericSurface(cls)
       case other => other
     }
@@ -436,7 +436,8 @@ object ReflectSurfaceFactory extends LogSupport {
 
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        val a        = Alias(name, fullName, inner)
+        val typeArgs = typeArgsOf(alias).map(surfaceOf(_)).toIndexedSeq
+        val a        = Alias(name, fullName, inner, typeArgs)
         a
     }
 
@@ -619,7 +620,7 @@ object ReflectSurfaceFactory extends LogSupport {
         // For example, trait MyTag, which has no implementation will be just an java.lang.Object
         val name     = t.typeSymbol.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        Alias(name, fullName, AnyRefSurface)
+        Alias(name, fullName, AnyRefSurface, Seq.empty)
       case t @ RefinedType(List(_, baseType), decl) =>
         // For traits with extended methods
         new GenericSurface(resolveClass(baseType))
