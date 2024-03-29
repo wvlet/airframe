@@ -7,7 +7,7 @@ ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION = sys.props("airspec.version")
 
-val buildSettings: Seq[Def.Setting[_]] = Seq(
+val buildSettings: Seq[Def.Setting[?]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )

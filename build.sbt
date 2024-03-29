@@ -80,7 +80,7 @@ ThisBuild / dynverSonatypeSnapshots := true
 // Use coursier friendly version separator
 ThisBuild / dynverSeparator := "-"
 
-val buildSettings = Seq[Setting[_]](
+val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
@@ -136,23 +136,23 @@ val buildSettings = Seq[Setting[_]](
   }
 )
 
-val scala2Only = Seq[Setting[_]](
+val scala2Only = Seq[Setting[?]](
   scalaVersion       := SCALA_2_13,
   crossScalaVersions := uptoScala2
 )
 
-val scala3Only = Seq[Setting[_]](
+val scala3Only = Seq[Setting[?]](
   scalaVersion       := SCALA_3,
   crossScalaVersions := List(SCALA_3)
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
-val runTestSequentially = Seq[Setting[_]](Test / parallelExecution := false)
+val runTestSequentially = Seq[Setting[?]](Test / parallelExecution := false)
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
-val jsBuildSettings = Seq[Setting[_]](
+val jsBuildSettings = Seq[Setting[?]](
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
   libraryDependencies ++= Seq(
     ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test).cross(CrossVersion.for3Use2_13),

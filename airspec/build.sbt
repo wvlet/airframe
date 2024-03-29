@@ -53,7 +53,7 @@ val noPublish = Seq(
   Compile / packageDoc / publishArtifact := false
 )
 
-val buildSettings = Seq[Setting[_]](
+val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
@@ -155,7 +155,7 @@ val airspecDependsOn =
   settingKey[Seq[String]]("Dependent module names of airspec projects")
 
 // Read sources from the sibling projects
-val airspecBuildSettings = Seq[Setting[_]](
+val airspecBuildSettings = Seq[Setting[?]](
   Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
@@ -167,7 +167,7 @@ val airspecBuildSettings = Seq[Setting[_]](
   }
 )
 
-val airspecJVMBuildSettings = Seq[Setting[_]](
+val airspecJVMBuildSettings = Seq[Setting[?]](
   Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
@@ -179,7 +179,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
   }
 )
 
-val airspecJSBuildSettings = Seq[Setting[_]](
+val airspecJSBuildSettings = Seq[Setting[?]](
   Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value

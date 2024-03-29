@@ -13,7 +13,7 @@ ThisBuild / dynverSonatypeSnapshots := true
 ThisBuild / dynverSeparator := "-"
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-val buildSettings = Seq[Setting[_]](
+val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
