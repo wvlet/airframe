@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.{Cancelable, OnNext, Rx, RxOps, RxRunner}
+import wvlet.airframe.rx.{Cancelable, OnNext, OnError, Rx, RxOps, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js
@@ -153,6 +153,9 @@ object DOMRenderer extends LogSupport {
                 val ctx = new RenderingContext()
                 c1 = traverse(value, Some(start), ctx)
                 ctx.onFinish()
+              case OnError(e) =>
+                warn(s"An unhandled error occurred while rendering ${rx}", e)
+                c1 = Cancelable.empty
               case other =>
                 c1 = Cancelable.empty
             }
@@ -288,6 +291,9 @@ object DOMRenderer extends LogSupport {
             ev match {
               case OnNext(value) =>
                 c1 = traverse(value)
+              case OnError(e) =>
+                warn(s"An unhandled error occurred while rendering ${rx}", e)
+                c1 = Cancelable.empty
               case other =>
                 c1 = Cancelable.empty
             }
