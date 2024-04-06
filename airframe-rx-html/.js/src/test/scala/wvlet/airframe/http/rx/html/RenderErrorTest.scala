@@ -31,7 +31,7 @@ object RenderErrorTest extends AirSpec {
   }
 
   test("report an error during rendering") {
-    val el   = MyElem()
+    val el   = new MyElem()
     val node = el.renderTo("main")
     node.node shouldMatch { case h: HTMLElement =>
       h.innerHTML shouldBe "<div>hello world: 1</div>"
@@ -54,7 +54,7 @@ object RenderErrorTest extends AirSpec {
   }
 
   test("report an error during rendering nested Rx elements") {
-    val el   = RxElem()
+    val el   = new RxElem()
     val node = el.renderTo("main2")
     node.node shouldMatch { case h: HTMLElement =>
       h.innerHTML shouldBe "<div>hello world:<i>1</i></div>"
