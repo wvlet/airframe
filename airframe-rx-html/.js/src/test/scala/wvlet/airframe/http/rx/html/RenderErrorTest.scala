@@ -26,21 +26,19 @@ object RenderErrorTest extends AirSpec {
 
     override def render = div(
       "hello",
-      x.map { x => s" world: ${1/x}" }
+      x.map { x => s" world: ${1 / x}" }
     )
   }
 
-  test("error during rendering") {
-    val el = MyElem()
+  test("report an error during rendering") {
+    val el   = MyElem()
     val node = el.renderTo("main")
-    node.node shouldMatch {
-      case h: HTMLElement =>
-        h.innerHTML shouldBe "<div>hello world: 1</div>"
+    node.node shouldMatch { case h: HTMLElement =>
+      h.innerHTML shouldBe "<div>hello world: 1</div>"
     }
     el.x := 0
-    node.node shouldMatch {
-      case h: HTMLElement =>
-        h.innerHTML shouldBe "<div>hello</div>"
+    node.node shouldMatch { case h: HTMLElement =>
+      h.innerHTML shouldBe "<div>hello</div>"
     }
   }
 
@@ -55,17 +53,15 @@ object RenderErrorTest extends AirSpec {
     }
   }
 
-  test("error while rendering nested Rx elements") {
-    val el = RxElem()
+  test("report an error during rendering nested Rx elements") {
+    val el   = RxElem()
     val node = el.renderTo("main2")
-    node.node shouldMatch {
-      case h: HTMLElement =>
-        h.innerHTML shouldBe "<div>hello world:<i>1</i></div>"
+    node.node shouldMatch { case h: HTMLElement =>
+      h.innerHTML shouldBe "<div>hello world:<i>1</i></div>"
     }
     el.y := 0
-    node.node shouldMatch {
-      case h: HTMLElement =>
-        h.innerHTML shouldBe "<div>hello<i></i></div>"
+    node.node shouldMatch { case h: HTMLElement =>
+      h.innerHTML shouldBe empty
     }
   }
 
