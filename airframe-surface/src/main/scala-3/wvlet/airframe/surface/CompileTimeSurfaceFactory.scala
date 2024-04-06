@@ -725,7 +725,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     seenMethodParent.clear()
 
     val surfaceDefs: List[ValDef] = surfaceToVar.toSeq.map { case (tpe, sym) =>
-      ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm))
+      ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm.changeOwner(sym)))
     }.toList
 
     /**
