@@ -192,7 +192,7 @@ object DOMRenderer extends LogSupport {
               Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
             case Failure(e) =>
               warn(s"Failed to render ${rx}", e)
-              Cancelable.empty
+              Cancelable(() => rx.beforeUnmount)
           }
         case s: String =>
           val textNode = newTextNode(s)
