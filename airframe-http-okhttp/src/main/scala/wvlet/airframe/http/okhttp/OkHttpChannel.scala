@@ -22,7 +22,7 @@ import wvlet.log.LogSupport
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
+class OkHttpChannel(val destination: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
   private[this] val client = {
     var builder = new okhttp3.OkHttpClient.Builder()
       .readTimeout(config.readTimeout.toMillis, TimeUnit.MILLISECONDS)
@@ -56,7 +56,10 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     newClient
   }
 
-  override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
+  override def send(
+      req: HttpMessage.Request,
+      channelConfig: HttpChannelConfig
+  ): HttpMessage.Response = {
     val request: okhttp3.Request = convertRequest(req)
 
     val newClient = prepareClient(channelConfig)
@@ -64,7 +67,10 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     response.toHttpResponse
   }
 
-  override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[HttpMessage.Response] = {
+  override def sendAsync(
+      req: HttpMessage.Request,
+      channelConfig: HttpChannelConfig
+  ): Rx[HttpMessage.Response] = {
     val request: okhttp3.Request = convertRequest(req)
     val newClient                = prepareClient(channelConfig)
     val v                        = Rx.variable[Option[HttpMessage.Response]](None)
@@ -93,7 +99,8 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     }
 
     val url = HttpUrl
-      .get(serverAddress.uri).newBuilder()
+      .get(request.dest.getOrElse(destination).uri)
+      .newBuilder()
       .encodedPath(request.path)
       .encodedQuery(queryParams)
       .build()

@@ -23,14 +23,21 @@ import wvlet.log.LogSupport
 class HttpClientLoggingFilterTest extends AirSpec {
 
   class DummyHttpChannel extends HttpChannel with LogSupport {
-    override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
+    override def destination: ServerAddress = ServerAddress("localhost:8080")
+    override def send(
+        req: HttpMessage.Request,
+        channelConfig: HttpChannelConfig
+    ): HttpMessage.Response = {
       Http
         .response(HttpStatus.Ok_200).withJson("""{"message":"hello"}""")
         .withHeader(HttpHeader.xAirframeRPCStatus, RPCStatus.SUCCESS_S0.code.toString)
     }
 
-    override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[HttpMessage.Response] = ???
-    override def close(): Unit                                                                                   = {}
+    override def sendAsync(
+        req: HttpMessage.Request,
+        channelConfig: HttpChannelConfig
+    ): Rx[HttpMessage.Response] = ???
+    override def close(): Unit = {}
   }
 
   protected override def design: Design = {

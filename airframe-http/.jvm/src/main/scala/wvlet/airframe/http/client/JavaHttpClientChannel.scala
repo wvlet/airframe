@@ -32,10 +32,10 @@ import scala.jdk.CollectionConverters.*
 
 /**
   * Http connection implementation using Http Client of Java 11
-  * @param serverAddress
+  * @param destination
   * @param config
   */
-class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val config: HttpClientConfig)
+class JavaHttpClientChannel(val destination: ServerAddress, private[http] val config: HttpClientConfig)
     extends HttpChannel
     with LogSupport {
   private val javaHttpClient: HttpClient = initClient(config)
@@ -63,7 +63,7 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
 
   override def send(req: Request, channelConfig: HttpChannelConfig): Response = {
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
-    val httpRequest = buildRequest(serverAddress, req, channelConfig)
+    val httpRequest = buildRequest(req, channelConfig)
     val httpResponse: HttpResponse[InputStream] =
       javaHttpClient.send(httpRequest, BodyHandlers.ofInputStream())
 
@@ -73,7 +73,7 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
   override def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response] = {
     val v = Rx.variable[Option[Response]](None)
     try {
-      val httpRequest = buildRequest(serverAddress, req, channelConfig)
+      val httpRequest = buildRequest(req, channelConfig)
       javaHttpClient
         .sendAsync(httpRequest, BodyHandlers.ofInputStream())
         .thenAccept(new Consumer[HttpResponse[InputStream]] {
@@ -96,11 +96,10 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
   }
 
   private def buildRequest(
-      serverAddress: ServerAddress,
       request: Request,
       channelConfig: HttpChannelConfig
   ): HttpRequest = {
-    val uri = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
+    val uri = s"${request.dest.getOrElse(destination).uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
     val requestBuilder = HttpRequest

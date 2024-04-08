@@ -24,9 +24,10 @@ import java.util.zip.{GZIPInputStream, InflaterInputStream}
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters.*
 
-class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
+class URLConnectionChannel(val destination: ServerAddress, config: HttpClientConfig) extends HttpChannel {
+
   override def send(request: Request, channelConfig: HttpChannelConfig): Response = {
-    val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
+    val url = s"${request.dest.getOrElse(destination).uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
     val conn0: HttpURLConnection =

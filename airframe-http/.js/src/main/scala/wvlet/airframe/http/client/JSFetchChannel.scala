@@ -30,21 +30,27 @@ import scala.util.{Failure, Success, Try}
   * @param serverAddress
   * @param config
   */
-class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
+class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
   private[client] implicit val executionContext: ExecutionContext = Compat.defaultExecutionContext
 
   override def close(): Unit = {
     // nothing to do
   }
 
-  override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
+  override def send(
+      req: HttpMessage.Request,
+      channelConfig: HttpChannelConfig
+  ): HttpMessage.Response = {
     // Blocking call cannot be supported in JS
     ???
   }
 
-  override def sendAsync(request: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[HttpMessage.Response] = {
+  override def sendAsync(
+      request: HttpMessage.Request,
+      channelConfig: HttpChannelConfig
+  ): Rx[HttpMessage.Response] = {
     val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
-    val uri  = s"${serverAddress.uri}${path}"
+    val uri  = s"${request.dest.getOrElse(destination).uri}${path}"
 
     val req = new org.scalajs.dom.RequestInit {
       method = request.method match {

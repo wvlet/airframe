@@ -14,6 +14,7 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.ServerAddress
 import wvlet.airframe.rx.Rx
 
 import scala.concurrent.duration.Duration
@@ -33,11 +34,25 @@ trait HttpChannelConfig {
 trait HttpChannel extends AutoCloseable {
 
   /**
-    * Send the request without modification.
+    * The default destination address to send requests
+    * @return
+    */
+  def destination: ServerAddress
+
+  /**
+    * Send the request as is to the destination
     * @param req
     * @param channelConfig
     * @return
     */
   def send(req: Request, channelConfig: HttpChannelConfig): Response
+
+  /**
+    * Send an async request as is to the destination. Until the returned Rx is evaluated (e.g., by calling Rx.run), the
+    * request is not sent.
+    * @param req
+    * @param channelConfig
+    * @return
+    */
   def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response]
 }
