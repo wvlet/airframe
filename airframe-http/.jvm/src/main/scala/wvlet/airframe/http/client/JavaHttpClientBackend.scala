@@ -15,7 +15,13 @@ package wvlet.airframe.http.client
 import wvlet.airframe.http.{ServerAddress}
 
 object JavaHttpClientBackend extends HttpClientBackend {
+  private val isJava8: Boolean = sys.props.get("java.version").exists(_.startsWith("1.8"))
+
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
-    new JavaHttpClientChannel(serverAddress, config)
+    // For JDK8, use URLConnectionChannel
+    if (isJava8)
+      new URLConnectionChannel(serverAddress, config)
+    else
+      new JavaHttpClientChannel(serverAddress, config)
   }
 }
