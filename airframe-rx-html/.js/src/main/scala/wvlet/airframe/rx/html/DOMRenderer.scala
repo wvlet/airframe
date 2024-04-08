@@ -13,10 +13,11 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.{Cancelable, OnNext, OnError, Rx, RxOps, RxRunner}
+import wvlet.airframe.rx.{Cancelable, OnError, OnNext, Rx, RxOps, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js
+import scala.util.{Failure, Success, Try}
 
 /**
   * Convert HtmlNodes into DOM elements for Scala.js.
@@ -73,19 +74,30 @@ object DOMRenderer extends LogSupport {
     *   A pair of the rendered DOM node and a Cancelable object to clean up the rendered elements
     */
   def createNode(e: RxElement): (dom.Node, Cancelable) = {
+
+    def render(rx: RxElement): (dom.Node, Cancelable) = {
+      Try(rx.render) match {
+        case Success(r) =>
+          traverse(r)
+        case Failure(e) =>
+          warn(s"Failed to render ${rx}", e)
+          // Embed an empty node
+          (dom.document.createElement("span"), Cancelable.empty)
+      }
+    }
+
     def traverse(v: Any): (dom.Node, Cancelable) = {
       v match {
         case h: HtmlElement =>
           val node: dom.Node = createNode(h)
           val cancelable     = h.traverseModifiers(m => renderTo(node, m))
           (node, cancelable)
-        case l: LazyRxElement[_] =>
-          traverse(l.render)
+        case l: LazyRxElement[_] => render(l)
         case Embedded(v) =>
           traverse(v)
         case r: RxElement =>
           r.beforeRender
-          val (n, c) = traverse(r.render)
+          val (n, c) = render(r)
           r.onMount
           (n, Cancelable.merge(Cancelable(() => r.beforeUnmount), c))
         case d: dom.Node =>
@@ -170,12 +182,18 @@ object DOMRenderer extends LogSupport {
           traverse(e.v, anchor, localContext)
         case rx: RxElement =>
           rx.beforeRender
-          val c1   = renderToInternal(localContext, node, rx.render)
-          val elem = node.lastChild
-          val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
-          node.mountHere(elem, anchor)
-          localContext.addOnRenderHook(() => rx.onMount)
-          Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
+          Try(rx.render) match {
+            case Success(r) =>
+              val c1   = renderToInternal(localContext, node, r)
+              val elem = node.lastChild
+              val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
+              node.mountHere(elem, anchor)
+              localContext.addOnRenderHook(() => rx.onMount)
+              Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
+            case Failure(e) =>
+              warn(s"Failed to render ${rx}", e)
+              Cancelable.empty
+          }
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)

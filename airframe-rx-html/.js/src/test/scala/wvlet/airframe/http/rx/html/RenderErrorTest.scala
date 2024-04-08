@@ -65,4 +65,28 @@ object RenderErrorTest extends AirSpec {
     }
   }
 
+  class RxElem1(fail: Boolean) extends RxElem {
+    override def render: RxElement = {
+      if (fail) {
+        throw new RuntimeException("failed")
+      } else {
+        div("hello")
+      }
+    }
+  }
+
+  test("enclose error within a RxElement") {
+    val node = div(
+      new RxElem1(fail = false),
+      new RxElem1(fail = true), // This will fail
+      div("world!")
+    )
+    val n = node.renderTo("test3")
+    n.node shouldMatch { case h: HTMLElement =>
+      debug(h.innerHTML)
+      // Preserve the partial rendering result
+      h.innerHTML shouldBe "<div><div>hello</div><div>world!</div></div>"
+    }
+  }
+
 }
