@@ -169,8 +169,15 @@ case class HttpClientConfig(
     this.copy(httpLoggerProvider = loggerProvider)
   }
 
-  def newHttpLogger: HttpLogger = {
-    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("client_name" -> name)))
+  def newHttpLogger(dest: ServerAddress): HttpLogger = {
+    httpLoggerProvider(
+      httpLoggerConfig.addExtraTags(
+        ListMap(
+          "client_name" -> name,
+          "dest"        -> dest.hostAndPort
+        )
+      )
+    )
   }
 
   def newLoggingFilter(logger: HttpLogger): HttpClientFilter = {

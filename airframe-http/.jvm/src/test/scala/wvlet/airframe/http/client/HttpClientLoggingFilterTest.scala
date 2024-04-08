@@ -62,6 +62,10 @@ class HttpClientLoggingFilterTest extends AirSpec {
       val m = RPCMethod("/rpc_method", "demo.RPCClass", "hello", Surface.of[Map[String, Any]], Surface.of[String])
       client.rpc[Map[String, Any], String](m, Map("message" -> "world"))
     }
+
+    test("switch dest") {
+      client.send(Http.GET("/").withDest(ServerAddress("localhost:8081")))
+    }
   }
 
 }
