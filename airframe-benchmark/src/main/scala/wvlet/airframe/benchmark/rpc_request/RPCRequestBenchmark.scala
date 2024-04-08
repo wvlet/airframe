@@ -37,6 +37,8 @@ class RPCRequestBenchmark extends LogSupport {
     new HttpChannel {
       private val responseCodec = MessageCodec.of[GreeterResponse]
 
+      override val destination: ServerAddress = ServerAddress("localhost:8080")
+
       override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
         val ret = emptyServer.hello(req.message.toContentString)
         Http.response(HttpStatus.Ok_200).withJson(responseCodec.toJson(ret))

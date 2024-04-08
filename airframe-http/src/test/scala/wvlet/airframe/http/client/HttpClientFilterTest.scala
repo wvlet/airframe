@@ -30,6 +30,7 @@ object HttpClientFilterTest extends AirSpec {
   private class DummyHttpChannel(reply: PartialFunction[Request, Response]) extends HttpChannel {
     private val requestCount = new AtomicInteger(0)
 
+    override def destination: ServerAddress = ServerAddress("localhost:8080")
     override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Response = {
       if (reply.isDefinedAt(req)) {
         reply(req)
@@ -37,7 +38,10 @@ object HttpClientFilterTest extends AirSpec {
         throw RPCStatus.NOT_FOUND_U5.newException(s"RPC method not found: ${req.path}")
       }
     }
-    override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[Response] = {
+    override def sendAsync(
+        req: HttpMessage.Request,
+        channelConfig: HttpChannelConfig
+    ): Rx[Response] = {
       Rx.single(send(req, channelConfig))
     }
     override def close(): Unit = {}

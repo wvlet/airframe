@@ -210,6 +210,9 @@ object HttpMessage {
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
       message: Message = EmptyMessage,
+      // [optional] Destination address for sending the request. HttpChannel implementation should use this address
+      dest: Option[ServerAddress] = None,
+      // Remote address of the HTTP server, which is used for server-side logging purpose
       remoteAddress: Option[ServerAddress] = None
   ) extends HttpMessage[Request] {
     override def toString: String = s"Request(${method},${uri},${header})"
@@ -230,9 +233,16 @@ object HttpMessage {
       */
     def query: HttpMultiMap = extractQueryFromUri(uri)
 
-    def withFilter(f: Request => Request): Request               = f(this)
-    def withMethod(method: String): Request                      = this.copy(method = method)
-    def withUri(uri: String): Request                            = this.copy(uri = uri)
+    def withFilter(f: Request => Request): Request = f(this)
+    def withMethod(method: String): Request        = this.copy(method = method)
+    def withUri(uri: String): Request              = this.copy(uri = uri)
+
+    /**
+      * Overwrite the default destination address of the request
+      * @param dest
+      * @return
+      */
+    def withDest(dest: ServerAddress): Request                   = this.copy(dest = Some(dest))
     def withRemoteAddress(remoteAddress: ServerAddress): Request = this.copy(remoteAddress = Some(remoteAddress))
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)

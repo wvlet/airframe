@@ -110,6 +110,9 @@ object HttpLogs extends LogSupport {
     if (queryString.nonEmpty) {
       m += "query_string" -> queryString
     }
+    request.dest.foreach { d =>
+      m += "dest" -> d.hostAndPort
+    }
     request.remoteAddress.foreach { remoteAddr =>
       m += "remote_address" -> remoteAddr.hostAndPort
     }

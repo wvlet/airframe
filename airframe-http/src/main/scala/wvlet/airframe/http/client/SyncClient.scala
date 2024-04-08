@@ -27,7 +27,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
   protected def channel: HttpChannel
   def config: HttpClientConfig
 
-  private val clientLogger: HttpLogger        = config.newHttpLogger
+  private val clientLogger: HttpLogger        = config.newHttpLogger(channel.destination)
   private val loggingFilter: HttpClientFilter = config.newLoggingFilter(clientLogger)
   private val circuitBreaker: CircuitBreaker  = config.circuitBreaker
 

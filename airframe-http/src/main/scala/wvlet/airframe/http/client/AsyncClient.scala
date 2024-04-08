@@ -29,7 +29,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
   protected def channel: HttpChannel
   def config: HttpClientConfig
 
-  private val httpLogger: HttpLogger          = config.newHttpLogger
+  private val httpLogger: HttpLogger          = config.newHttpLogger(channel.destination)
   private val loggingFilter: HttpClientFilter = config.newLoggingFilter(httpLogger)
   private val circuitBreaker: CircuitBreaker  = config.circuitBreaker
 

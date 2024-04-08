@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Promise, TimeoutException}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.Try
 
-class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
+class JSHttpClientChannel(val destination: ServerAddress, private[client] val config: HttpClientConfig)
     extends HttpChannel
     with LogSupport {
 
@@ -35,7 +35,10 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
     // nothing to do
   }
 
-  override def send(request: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = ???
+  override def send(
+      request: HttpMessage.Request,
+      channelConfig: HttpChannelConfig
+  ): HttpMessage.Response = ???
 
   override def sendAsync(
       request: HttpMessage.Request,
@@ -45,7 +48,7 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
     val xhr = new dom.XMLHttpRequest()
 
     val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
-    val uri  = s"${serverAddress.uri}${path}"
+    val uri  = s"${request.dest.getOrElse(destination).uri}${path}"
 
     trace(s"Sending request: ${request}: ${uri}")
     xhr.open(request.method, uri)
