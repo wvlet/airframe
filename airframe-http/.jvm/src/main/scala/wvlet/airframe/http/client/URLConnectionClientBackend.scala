@@ -16,6 +16,7 @@ import wvlet.airframe.http.{ServerAddress}
 
 /**
   */
+@deprecated("This backend will be used automatically for Java8. No need to explicitly set this backend", "24.4.0")
 object URLConnectionClientBackend extends HttpClientBackend {
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
     new URLConnectionChannel(serverAddress, config)

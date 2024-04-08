@@ -24,8 +24,12 @@ import java.util.zip.{GZIPInputStream, InflaterInputStream}
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters.*
 
+/**
+  * Java8-compatible HTTP channel implementation based on {{URL.openConnection}}
+  * @param serverAddress
+  * @param config
+  */
 class URLConnectionChannel(val destination: ServerAddress, config: HttpClientConfig) extends HttpChannel {
-
   override def send(request: Request, channelConfig: HttpChannelConfig): Response = {
     val url = s"${request.dest.getOrElse(destination).uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
