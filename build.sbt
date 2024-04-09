@@ -935,7 +935,7 @@ lazy val sql =
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules"   %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "com.github.vertical-blank" % "sql-formatter"            % "2.0.4"
+        "com.github.vertical-blank" % "sql-formatter"            % "2.0.5"
       ) ++ sqlRefLib(scalaVersion.value)
     )
     .dependsOn(msgpack.jvm, surface.jvm, config, launcher)
