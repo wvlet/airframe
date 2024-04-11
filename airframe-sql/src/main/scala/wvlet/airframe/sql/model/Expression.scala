@@ -527,8 +527,8 @@ object Expression {
     override lazy val resolved: Boolean             = true
   }
   case class DigitId(value: String, nodeLocation: Option[NodeLocation]) extends Identifier {
-    override def sqlExpr: String  = value
-    override def toString: String = s"Id(${value})"
+    override def sqlExpr: String  = s""""${value}""""
+    override def toString: String = s"""Id("${value}")"""
   }
   case class UnquotedIdentifier(value: String, nodeLocation: Option[NodeLocation]) extends Identifier {
     override def sqlExpr: String  = value

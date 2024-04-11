@@ -31,7 +31,7 @@ class SQLExprTest extends AirSpec {
 
     val d = newIdentifier("1")
     d.value shouldBe "1"
-    d.sqlExpr shouldBe "1"
+    d.sqlExpr shouldBe "\"1\""
 
     val qd = newIdentifier("\"database\"")
     qd.value shouldBe "database"
