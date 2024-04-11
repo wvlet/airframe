@@ -30,16 +30,16 @@ import scala.util.{Success, Failure}
 
 /**
   */
-private[airspec] object Compat extends CompatApi with LogSupport {
+private[airspec] object Compat extends CompatApi with LogSupport:
   override def isScalaJs = false
 
   override private[airspec] val executionContext: ExecutionContext = ExecutionContext.global
 
-  private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] =
     None
-  }
 
-  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] = {
+  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] =
+    println(s"Checking class fingerprint for ${fullyQualifiedName}")
     Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
       .flatMap {
         case Some(spec: AirSpecSpi) =>
@@ -50,65 +50,49 @@ private[airspec] object Compat extends CompatApi with LogSupport {
       .orElse {
         Try(classLoader.loadClass(fullyQualifiedName)).toOption
           .flatMap { x =>
-            if (classOf[AirSpec].isAssignableFrom(x))
-              Some(AirSpecClassFingerPrint)
-            else {
-              None
-            }
+            if classOf[AirSpec].isAssignableFrom(x) then Some(AirSpecClassFingerPrint)
+            else None
           }
       }
-  }
 
-  private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
-    Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match {
+  private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] =
+    Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match
       case Success(x) => Some(x)
       case Failure(e: InvocationTargetException) if e.getCause != null =>
-        if (classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass)) {
+        if classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass) then
           // For assertion failrues, throw it as is
           throw e
-        } else {
+        else
           // For other failures when instantiating the object, throw the cause
           throw e.getCause
-        }
       case _ =>
         // Ignore other types of failures, which should not happen in general
         None
-    }
-  }
 
-  private[airspec] def withLogScanner[U](block: => U): U = {
-    try {
+  private[airspec] def withLogScanner[U](block: => U): U =
+    try
       startLogScanner
       block
-    } finally {
-      stopLogScanner
-    }
-  }
+    finally stopLogScanner
 
   private[airspec] def startLogScanner: Unit = {}
-  private[airspec] def stopLogScanner: Unit = {}
+  private[airspec] def stopLogScanner: Unit  = {}
 
-  private[airspec] def findCause(e: Throwable): Throwable = {
-    e match {
+  private[airspec] def findCause(e: Throwable): Throwable =
+    e match
       case i: InvocationTargetException => findCause(i.getTargetException)
       case _                            => e
-    }
-  }
 
-  override private[airspec] def getSpecName(cl: Class[_]): String = {
+  override private[airspec] def getSpecName(cl: Class[?]): String =
     var name = cl.getName
 
     // In Scala.js we cannot use cl.getInterfaces to find the actual type
     val pos = name.indexOf("$")
-    if (pos > 0) {
+    if pos > 0 then
       // Remove trailing $xxx
       name = name.substring(0, pos)
-    }
     name
-  }
 
-  private[airspec] def getContextClassLoader: ClassLoader = {
+  private[airspec] def getContextClassLoader: ClassLoader =
     // Scala.js doesn't need to use ClassLoader for loading tests
     null
-  }
-}
