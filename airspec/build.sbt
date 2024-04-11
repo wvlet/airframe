@@ -192,6 +192,7 @@ val airspecJSBuildSettings = Seq[Setting[?]](
 )
 
 val airspecNativeBuildSettings = Seq[Setting[?]](
+  crossScalaVersions := Seq(SCALA_3),
   Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value

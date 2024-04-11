@@ -1,6 +1,5 @@
 package wvlet.log
 
-
 /**
   * Use scalajs.js.Date to foramte timestamp
   */
