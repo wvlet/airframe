@@ -191,8 +191,20 @@ val airspecJSBuildSettings = Seq[Setting[?]](
   }
 )
 
+val airspecNativeBuildSettings = Seq[Setting[?]](
+  Compile / unmanagedSourceDirectories ++= {
+    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
+    val sv      = scalaBinaryVersion.value
+    val sourceDirs =
+      for (m <- airspecDependsOn.value; folder <- Seq(".native")) yield {
+        crossBuildSources(sv, s"${baseDir}/../${m}/${folder}")
+      }
+    sourceDirs.flatten
+  }
+)
+
 lazy val airspecLog =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airspec-log"))
     .settings(buildSettings)
@@ -224,9 +236,12 @@ lazy val airspecLog =
         ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
+    .nativeSettings(
+      airspecNativeBuildSettings
+    )
 
 lazy val airspecCore =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airspec-core"))
     .settings(buildSettings)
@@ -259,10 +274,15 @@ lazy val airspecCore =
         .filter(x => x._2 != "JS_DEPENDENCIES"),
       Compile / packageSrc / mappings ++= (airspecLog.js / Compile / packageSrc / mappings).value
     )
+    .nativeSettings(
+      airspecNativeBuildSettings,
+      Compile / packageBin / mappings ++= (airspecLog.native / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecLog.native / Compile / packageSrc / mappings).value
+    )
     .dependsOn(airspecLog)
 
 lazy val airspecDeps =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airspec-deps"))
     .settings(buildSettings)
@@ -291,10 +311,15 @@ lazy val airspecDeps =
         "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
       )
     )
+    .nativeSettings(
+      airspecNativeBuildSettings,
+      Compile / packageBin / mappings ++= (airspecCore.native / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecCore.native / Compile / packageSrc / mappings).value
+    )
     .dependsOn(airspecCore)
 
 lazy val airspec =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("."))
     .settings(buildSettings)
@@ -336,6 +361,14 @@ lazy val airspec =
         ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13),
         // Needed to be explicitly included here for running Scala.js tests successfully
         "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
+      )
+    )
+    .nativeSettings(
+      // Embed dependent project codes to make airspec a single jar
+      Compile / packageBin / mappings ++= (airspecDeps.native / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecDeps.native / Compile / packageSrc / mappings).value,
+      libraryDependencies ++= Seq(
+        "org.scala-sbt" % "test-interface" % "1.0"
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
