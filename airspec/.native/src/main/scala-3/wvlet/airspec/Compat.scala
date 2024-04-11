@@ -13,6 +13,7 @@
  */
 package wvlet.airspec
 
+import org.portablescala.reflect.Reflect
 import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
@@ -36,7 +37,10 @@ private[airspec] object Compat extends CompatApi with LogSupport:
   override private[airspec] val executionContext: ExecutionContext = ExecutionContext.global
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] =
-    None
+    val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
+    clsOpt.map {
+      _.loadModule()
+    }
 
   private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] =
     println(s"Checking class fingerprint for ${fullyQualifiedName}")
@@ -56,18 +60,9 @@ private[airspec] object Compat extends CompatApi with LogSupport:
       }
 
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] =
-    Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match
-      case Success(x) => Some(x)
-      case Failure(e: InvocationTargetException) if e.getCause != null =>
-        if classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass) then
-          // For assertion failrues, throw it as is
-          throw e
-        else
-          // For other failures when instantiating the object, throw the cause
-          throw e.getCause
-      case _ =>
-        // Ignore other types of failures, which should not happen in general
-        None
+    val clsOpt = Reflect.lookupInstantiatableClass(fullyQualifiedName)
+    clsOpt.map(_.newInstance())
+
 
   private[airspec] def withLogScanner[U](block: => U): U =
     try
