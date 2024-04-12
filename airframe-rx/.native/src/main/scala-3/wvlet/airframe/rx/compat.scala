@@ -14,39 +14,17 @@
 package wvlet.airframe.rx
 
 import scala.util.Try
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{Executors, TimeUnit}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 
 /**
   */
 object compat {
-  def defaultExecutionContext: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+  def defaultExecutionContext: scala.concurrent.ExecutionContext = ???
 
   def newTimer: Timer = ???
 
-  def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = {
-    val thread = Executors.newScheduledThreadPool(1)
-    val schedule = thread.schedule(
-      new Runnable {
-        override def run(): Unit = {
-          body
-        }
-      },
-      delayMills,
-      TimeUnit.MILLISECONDS
-    )
-    // Immediately start the thread pool shutdown to avoid thread leak
-    thread.shutdown()
-    Cancelable { () =>
-      try {
-        schedule.cancel(false)
-      } finally {
-        thread.shutdown()
-      }
-    }
-  }
+  def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = ???
 
   def toSeq[A](rx: Rx[A]): Seq[A] = {
     throw new UnsupportedOperationException("Rx.toSeq is unsupported in Scala.native")
