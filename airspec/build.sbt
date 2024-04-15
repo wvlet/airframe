@@ -92,7 +92,7 @@ val buildSettings = Seq[Setting[?]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.11.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.12.0")
   }
 )
 
@@ -130,8 +130,7 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/**
-  * AirSpec build definitions.
+/** AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
