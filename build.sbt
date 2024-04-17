@@ -11,7 +11,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.3.0")
-val SCALACHECK_VERSION              = "1.17.0"
+val SCALACHECK_VERSION              = "1.17.1"
 val MSGPACK_VERSION                 = "0.9.8"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
 val SQLITE_JDBC_VERSION             = "3.45.2.0"
