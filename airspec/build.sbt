@@ -18,7 +18,7 @@ val SCALA_2_13          = "2.13.13"
 val SCALA_3             = "3.3.3"
 val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: SCALA_2_12 :: Nil
 
-val SCALACHECK_VERSION           = "1.17.0"
+val SCALACHECK_VERSION           = "1.17.1"
 val JS_JAVA_LOGGING_VERSION      = "1.0.0"
 val JAVAX_ANNOTATION_API_VERSION = "1.3.2"
 
@@ -130,8 +130,7 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/**
-  * AirSpec build definitions.
+/** AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
