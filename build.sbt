@@ -11,11 +11,11 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.3.0")
-val SCALACHECK_VERSION              = "1.17.0"
+val SCALACHECK_VERSION              = "1.17.1"
 val MSGPACK_VERSION                 = "0.9.8"
-val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
+val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 val SQLITE_JDBC_VERSION             = "3.45.2.0"
-val SLF4J_VERSION                   = "2.0.12"
+val SLF4J_VERSION                   = "2.0.13"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.8.0"
@@ -132,7 +132,7 @@ val buildSettings = Seq[Setting[?]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.11.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.12.0")
   }
 )
 
@@ -646,7 +646,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.duckdb"     % "duckdb_jdbc" % "0.10.1",
+        "org.duckdb"     % "duckdb_jdbc" % "0.10.2",
         "org.postgresql" % "postgresql"  % "42.7.3",
         "com.zaxxer"     % "HikariCP"    % "5.1.0",
         // For routing slf4j log to airframe-log
@@ -740,7 +740,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.1.108.Final"
+        "io.netty" % "netty-all" % "4.1.109.Final"
       )
     )
     .dependsOn(http.jvm, rx.jvm)
@@ -892,7 +892,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.5.1" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "444" % Test
+      "io.trino" % "trino-main" % "445" % Test
     )
   } else {
     Seq.empty
