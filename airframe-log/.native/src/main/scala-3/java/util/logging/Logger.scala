@@ -4,6 +4,8 @@ package java.util.logging
 abstract class Handler
 
 class Logger(name: String) {
+  def getName(): String = name
+
   def log(level: Level, msg: String): Unit = {
     println(s"[$level] $name: $msg")
   }
