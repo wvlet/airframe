@@ -3,6 +3,8 @@ package java.util.logging
 
 case class Level(name: String, value: Int) extends Ordered[Level] {
   override def compare(other: Level): Int = value.compare(other.value)
+  def intValue(): Int = value
+  override def toString: String = name
 }
 
 object Level:
