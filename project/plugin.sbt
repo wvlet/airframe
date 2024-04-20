@@ -32,7 +32,7 @@ libraryDependencies += "io.github.gmkumar2005" %% "scala-js-env-playwright" % "0
 
 // For Scala native
 addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
-addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.4.16")
+addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.4.17")
 
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.0.1")
