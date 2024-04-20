@@ -18,7 +18,7 @@ val SCALA_2_13          = "2.13.13"
 val SCALA_3             = "3.3.3"
 val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: SCALA_2_12 :: Nil
 
-val SCALACHECK_VERSION           = "1.17.1"
+val SCALACHECK_VERSION           = "1.18.0"
 val JS_JAVA_LOGGING_VERSION      = "1.0.0"
 val JAVAX_ANNOTATION_API_VERSION = "1.3.2"
 
@@ -192,7 +192,6 @@ val airspecJSBuildSettings = Seq[Setting[?]](
 
 val airspecNativeBuildSettings = Seq[Setting[?]](
   crossScalaVersions := Seq(SCALA_3),
-  nativeLinkStubs    := true,
   Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
@@ -370,7 +369,7 @@ lazy val airspec =
       Compile / packageSrc / mappings ++= (airspecDeps.native / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         "org.scala-sbt"         % "test-interface"         % "1.0",
-        ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13)
+        //("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13)
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.

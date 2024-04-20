@@ -1,6 +1,6 @@
 package wvlet.airspec
 
-import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
+import scala.scalanative.reflect.annotation.EnableReflectiveInstantiation
 
 /**
   * Scala.native platform-specific implementation

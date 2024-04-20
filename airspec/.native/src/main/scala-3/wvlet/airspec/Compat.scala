@@ -13,7 +13,6 @@
  */
 package wvlet.airspec
 
-import org.portablescala.reflect.Reflect
 import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
@@ -37,7 +36,7 @@ private[airspec] object Compat extends CompatApi with LogSupport:
   override private[airspec] val executionContext: ExecutionContext = ExecutionContext.global
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] =
-    val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
+    val clsOpt = scala.scalanative.reflect.Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$")
     clsOpt.map {
       _.loadModule()
     }
@@ -59,10 +58,10 @@ private[airspec] object Compat extends CompatApi with LogSupport:
           }
       }
 
-  private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] =
-    val clsOpt = Reflect.lookupInstantiatableClass(fullyQualifiedName)
+  private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+    val clsOpt = scala.scalanative.reflect.Reflect.lookupInstantiatableClass(fullyQualifiedName)
     clsOpt.map(_.newInstance())
-
+  }
 
   private[airspec] def withLogScanner[U](block: => U): U =
     try
