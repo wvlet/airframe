@@ -463,9 +463,6 @@ object Expression {
       QuotedIdentifier(x.stripPrefix("\"").stripSuffix("\""), None)
     } else if (x.matches("[0-9]+")) {
       DigitId(x, None)
-    } else if (!x.matches("[0-9a-zA-Z_]*")) {
-      // Quotations are needed with special characters to generate valid SQL
-      QuotedIdentifier(x, None)
     } else {
       UnquotedIdentifier(x, None)
     }
@@ -479,7 +476,18 @@ object Expression {
   case class QName(parts: List[String], nodeLocation: Option[NodeLocation]) extends LeafExpression {
     def fullName: String          = parts.mkString(".")
     override def toString: String = fullName
-    override def sqlExpr: String  = parts.map(Expression.newIdentifier).map(_.sqlExpr).mkString(".")
+    override def sqlExpr: String = parts
+      .map { part =>
+        if (part.matches("[0-9]+")) {
+          // Quotations are needed for digits to generate valid SQL
+          Expression.newIdentifier(s""""$part"""")
+        } else if (!part.matches("[0-9a-zA-Z_]*")) {
+          // Quotations are needed with special characters to generate valid SQL
+          Expression.newIdentifier(s""""$part"""")
+        } else {
+          Expression.newIdentifier(part)
+        }
+      }.map(_.sqlExpr).mkString(".")
   }
   object QName {
     def apply(s: String, nodeLocation: Option[NodeLocation]): QName = {

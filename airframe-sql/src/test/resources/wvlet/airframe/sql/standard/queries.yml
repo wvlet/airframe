@@ -230,3 +230,5 @@
       select user_agent || 'x', count(*) from impression group by 1
 - sql: |
       select * FROM "café"
+- sql: |
+    select * FROM "café"."123"
