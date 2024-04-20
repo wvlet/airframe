@@ -27,11 +27,13 @@ import scala.concurrent.{Await, Promise}
 private[airspec] class AirSpecTask(
     config: AirSpecConfig,
     taskLogger: AirSpecLogger,
-    override val taskDef: TaskDef,
+    _taskDef: TaskDef,
     classLoader: ClassLoader
 ) extends sbt.testing.Task
     with LogSupport {
   override def tags(): Array[String] = Array.empty
+
+  override def taskDef(): TaskDef = _taskDef
 
   /**
     * This method will be used only for Scala (JVM). This will delegate the task execution process to execute(handler,
@@ -60,7 +62,7 @@ private[airspec] class AirSpecTask(
   ): Unit = {
     implicit val ec = wvlet.airspec.Compat.executionContext
     try {
-      new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
+      new AirSpecTaskRunner(taskDef(), config, taskLogger, eventHandler, classLoader).runTask
         .foreach(_ => continuation(Array.empty))
     } catch {
       case e: Throwable =>
