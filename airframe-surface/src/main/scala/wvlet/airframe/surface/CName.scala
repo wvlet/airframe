@@ -15,7 +15,7 @@
 package wvlet.airframe.surface
 
 import java.util.regex.Pattern
-
+import wvlet.airframe.surface
 import scala.collection.mutable.WeakHashMap
 
 //--------------------------------------
@@ -37,15 +37,15 @@ import scala.collection.mutable.WeakHashMap
   *   leo
   */
 object CName {
-  private val cnameTable = newCacheMap[String, CName]
+  private val cnameTable = surface.newCacheMap[String, CName]
 
   def apply(name: String): CName = {
     cnameTable.getOrElseUpdate(name, new CName(toCanonicalName(name), toNaturalName(name)))
   }
 
   private val paramNameReplacePattern = Pattern.compile("[\\s-_]");
-  private val canonicalNameTable      = newCacheMap[String, String]
-  private val naturalNameTable        = newCacheMap[String, String]
+  private val canonicalNameTable      = surface.newCacheMap[String, String]
+  private val naturalNameTable        = surface.newCacheMap[String, String]
 
   private def isSplitChar(c: Char)    = c.isUpper || c == '_' || c == '-' || c == ' '
   private def isUpcasePrefix(c: Char) = c.isUpper || c.isDigit
