@@ -11,7 +11,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.4.1")
-val SCALACHECK_VERSION              = "1.17.1"
+val SCALACHECK_VERSION              = "1.18.0"
 val MSGPACK_VERSION                 = "0.9.8"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 val SQLITE_JDBC_VERSION             = "3.45.3.0"
@@ -162,6 +162,12 @@ val jsBuildSettings = Seq[Setting[?]](
   coverageEnabled := false
 )
 
+val nativeBuildSettings = Seq[Setting[?]](
+  scalaVersion       := SCALA_3,
+  crossScalaVersions := List(SCALA_3),
+  coverageEnabled    := false
+)
+
 val noPublish = Seq(
   publishArtifact := false,
   publish         := {},
@@ -250,6 +256,10 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   rx.js,
   rxHtml.js,
   widgetJS
+)
+
+lazy val nativeProjects: Seq[ProjectReference] = Seq(
+  log.native
 )
 
 // Integration test projects
@@ -559,7 +569,7 @@ val logJVMDependencies = Seq(
 
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-log"))
     .settings(buildSettings)
@@ -581,6 +591,9 @@ lazy val log: sbtcrossproject.CrossProject =
       libraryDependencies ++= Seq(
         ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
+    )
+    .nativeSettings(
+      nativeBuildSettings
     )
 
 lazy val metrics =

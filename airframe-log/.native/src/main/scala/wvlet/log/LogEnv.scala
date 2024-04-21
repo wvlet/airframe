@@ -22,18 +22,22 @@ private[log] object LogEnv extends LogEnvBase {
     // do nothing by default
   }
 
-  override def isScalaJS: Boolean                        = false
-  override def defaultLogLevel: LogLevel                 = LogLevel.INFO
+  override def isScalaJS: Boolean = false
+
+  override def defaultLogLevel: LogLevel = LogLevel.INFO
+
   override def defaultHandler: java.util.logging.Handler = new ConsoleLogHandler(SourceCodeLogFormatter)
-  override def defaultConsoleOutput: PrintStream         = System.err
+
+  override def defaultConsoleOutput: PrintStream = System.err
 
   /**
     * @param cl
     * @return
     */
-  override def getLoggerName(cl: Class[_]): String = cl.getName
+  override def getLoggerName(cl: Class[?]): String = cl.getName
 
-  override def scheduleLogLevelScan: Unit      = {}
+  override def scheduleLogLevelScan: Unit = {}
+
   override def stopScheduledLogLevelScan: Unit = {}
 
   /**
@@ -53,5 +57,4 @@ private[log] object LogEnv extends LogEnvBase {
   /**
     */
   override def unregisterJMX: Unit = {}
-
 }
