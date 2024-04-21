@@ -31,7 +31,9 @@ import scala.concurrent.ExecutionContext
 /**
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
+  override def isScalaJVM = true
   override def isScalaJs = false
+  override def isScalaNative = false
 
   override private[airspec] val executionContext: ExecutionContext =
     ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(newDaemonThreadFactory("airspec-executor")))
@@ -46,7 +48,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     private val group: ThreadGroup = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
     private val threadNumber       = new AtomicInteger(1)
 
-    override def newThread(r: Runnable): Thread = {
+    override def newThread(r: Runnable): Thread = {Rx
       val threadName = s"${name}-${threadNumber.getAndIncrement()}"
       val thread     = new Thread(group, r, threadName)
       thread.setName(threadName)

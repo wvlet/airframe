@@ -22,7 +22,9 @@ import scala.concurrent.ExecutionContext
   * An interface for compatibility between Scala JVM and Scala.js
   */
 trait CompatApi {
+  def isScalaJVM: Boolean
   def isScalaJs: Boolean
+  def isScalaNative: Boolean
 
   private[airspec] def executionContext: ExecutionContext
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]

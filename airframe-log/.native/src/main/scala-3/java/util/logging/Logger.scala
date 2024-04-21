@@ -20,7 +20,7 @@ class Logger(name: String) {
   def log(record: LogRecord): Unit = {
     if(isLoggable(record.level)) {
       record.setLoggerName(name)
-      if(useParentHandlers) then
+      if(parent.nonEmpty && useParentHandlers) then
         getParent().log(record)
       else
         handlers.foreach { h => h.publish(record) }
@@ -70,8 +70,9 @@ object Logger:
 
 object LogManager:
   private var loggers = Map.empty[String, Logger]
-  def getLogger(name: String): Logger = {
 
+  def getLogger(name: String): Logger = {
+    name.split("\\.")
 
     loggers.getOrElse(name, {
       val logger = Logger(name)

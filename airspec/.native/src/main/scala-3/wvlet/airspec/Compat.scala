@@ -31,7 +31,9 @@ import scala.util.{Success, Failure}
 /**
   */
 private[airspec] object Compat extends CompatApi with LogSupport:
+  override def isScalaJVM = false
   override def isScalaJs = false
+  override def isScalaNative = true
 
   override private[airspec] val executionContext: ExecutionContext = ExecutionContext.global
 
@@ -42,7 +44,6 @@ private[airspec] object Compat extends CompatApi with LogSupport:
     }
 
   private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] =
-    println(s"Checking class fingerprint for ${fullyQualifiedName}")
     Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
       .flatMap {
         case Some(spec: AirSpecSpi) =>
@@ -51,9 +52,9 @@ private[airspec] object Compat extends CompatApi with LogSupport:
           None
       }
       .orElse {
-        Try(classLoader.loadClass(fullyQualifiedName)).toOption
+        scala.scalanative.reflect.Reflect.lookupInstantiatableClass(fullyQualifiedName)
           .flatMap { x =>
-            if classOf[AirSpec].isAssignableFrom(x) then Some(AirSpecClassFingerPrint)
+            if classOf[AirSpec].isAssignableFrom(x.runtimeClass) then Some(AirSpecClassFingerPrint)
             else None
           }
       }
