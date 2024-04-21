@@ -3,7 +3,7 @@ package wvlet.log
 import scala.scalajs.js
 
 /**
-  * Use scalajs.js.Date to foramte timestamp
+  * Use scalajs.js.Date to foramt timestamps
   */
 object LogTimestampFormatter {
   def formatTimestamp(timeMillis: Long): String = {

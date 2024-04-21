@@ -5,9 +5,13 @@ abstract class Handler extends AutoCloseable:
   def publish(record: LogRecord): Unit
   def flush(): Unit
 
-class Logger(name: String) {
+/**
+ * Implements java.util.logging.Logger interface, which is not avaialble
+ * in Scala Native
+ * @param name
+ */
+class Logger(parent: Option[Logger], name: String) {
   private var handlers = List.empty[Handler]
-  private var parent: Option[Logger] = None
   private var useParentHandlers = true
   private var level: Option[Level] = None
 
@@ -19,7 +23,9 @@ class Logger(name: String) {
 
   def log(record: LogRecord): Unit = {
     if(isLoggable(record.level)) {
-      record.setLoggerName(name)
+      if(record.getLoggerName() == null) {
+        record.setLoggerName(name)
+      }
       if(parent.nonEmpty && useParentHandlers) then
         getParent().log(record)
       else
@@ -64,27 +70,28 @@ class Logger(name: String) {
 }
 
 object Logger:
-  def getLogger(name: String): Logger = Logger(name)
-
-
-
-object LogManager:
-  private var loggers = Map.empty[String, Logger]
+  import scala.jdk.CollectionConverters.*
+  private val loggerTable = new java.util.concurrent.ConcurrentHashMap[String, Logger]().asScala
+  private val rootLogger = Logger(None, "")
 
   def getLogger(name: String): Logger = {
-    name.split("\\.")
 
-    loggers.getOrElse(name, {
-      val logger = Logger(name)
-      loggers += (name -> logger)
-      logger
-    })
+    loggerTable.getOrElseUpdate(name, newLogger(name))
+  }
+
+  private def newLogger(name: String): Logger = {
+    name match {
+      case null | "" => rootLogger
+      case other =>
+        val parentName = name.substring(0, name.lastIndexOf('.').max(0))
+        val parentLogger = getLogger(parentName)
+        Logger(Some(parentLogger), name)
+    }
   }
 
 
 abstract class Formatter:
   def format(record: LogRecord): String
-
 
 
 case class LogRecord(level: Level, msg: String) extends Serializable:
