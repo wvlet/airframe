@@ -31,8 +31,8 @@ import scala.concurrent.ExecutionContext
 /**
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
-  override def isScalaJVM = true
-  override def isScalaJs = false
+  override def isScalaJVM    = true
+  override def isScalaJs     = false
   override def isScalaNative = false
 
   override private[airspec] val executionContext: ExecutionContext =
