@@ -28,7 +28,9 @@ class RxTest extends AirSpec {
   }
 
   test("return Rx") {
-    skip("Skip Rx timer test for Scala Native")
+    if (isScalaNative) {
+      skip("Skip Rx timer test for Scala Native")
+    }
     Rx.intervalMillis(10).map(_ => v.set(true))
   }
 
