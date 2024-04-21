@@ -335,6 +335,7 @@ lazy val airspec =
       pomPostProcess := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
     )
     .jvmSettings(
+      airspecJVMBuildSettings,
       // Embed dependent project codes to make airspec a single jar
       Compile / packageBin / mappings ++= (airspecDeps.jvm / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDeps.jvm / Compile / packageSrc / mappings).value,
@@ -353,6 +354,7 @@ lazy val airspec =
       }
     )
     .jsSettings(
+      airspecJSBuildSettings,
       Compile / packageBin / mappings ++= (airspecDeps.js / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
       Compile / packageSrc / mappings ++= (airspecDeps.js / Compile / packageSrc / mappings).value,
@@ -364,6 +366,7 @@ lazy val airspec =
       )
     )
     .nativeSettings(
+      airspecNativeBuildSettings,
       // Embed dependent project codes to make airspec a single jar
       Compile / packageBin / mappings ++= (airspecDeps.native / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDeps.native / Compile / packageSrc / mappings).value,
