@@ -4,28 +4,28 @@ layout: docs
 title: AirSpec: Testing Framework
 ---
 
-[AirSpec](https://github.com/wvlet/airframe/tree/main/airspec) is a new functional testing framework for Scala and Scala.js.
+[AirSpec](https://github.com/wvlet/airframe/tree/main/airspec) is a functional testing framework for Scala, Scala.js, and Scala Native.
 
 - [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/main/airspec)
 - [Background and Motivation](#background--motivation)
 
-AirSpec uses just `test("...") { ... }` syntax for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
+AirSpec uses `test("...") { ... }` syntax for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
 
 ## Features
 
 - Simple to use: Just `import wvlet.airspec._` and extend `AirSpec` trait.
 - Tests can be defined with `test(...)` functions.
-  - No annotation is required like ones in [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) is necessary.
+  - No annotation is required as in [JUnit5](https://junit.org/junit5/docs/current/user-guide/).
 - Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
-- Nesting and reusing test cases with `test(...)`
-- Async testing support for `scala.concurrent.Future[ ]`
+- Nesting and reusing test cases with `test(...)`.
+- Async testing support for `scala.concurrent.Future[ ]` and `Rx`.
 - Lifecycle management with [Airframe DI](airframe-di.md):
   - DI will inject the arguments of test methods based on your custom Design.
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
 - Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
-- Scala 2.12, 2.13, 3.0, and Scala.js support
+- Scala 2.12, 2.13, 3, Scala.js, Scala Native support
 
 To start using AirSpec, read [Quick Start](#quick-start).
 
@@ -45,11 +45,13 @@ testFrameworks += new TestFramework("wvlet.airspec.Framework")
 
 If you have multiple sub projects, add the above `testFramework` setting to each sub project.
 
-For Scala.js, use `%%%`:
+For Scala.js and Scala Native, use `%%%`:
 ```scala
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)" % "test"
 testFrameworks += new TestFramework("wvlet.airspec.Framework")
 ```
+
+For Scala Native, only Scala Native + Scala 3 is supported.
 
 ## Writing Unit Tests
 
