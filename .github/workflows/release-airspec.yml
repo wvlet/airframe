@@ -29,6 +29,7 @@ jobs:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         run: |
           ../sbt "+airspecJVM/publishSigned; +airspecJS/publishSigned"
+          ../sbt "++ 3; airspecNative/publishSigned"
         working-directory: ./airspec
       - name: Release to Sonatype
         env:
