@@ -26,10 +26,13 @@ private[airspec] case class AirSpecEvent(
     taskDef: TaskDef,
     // If None, it's a spec
     testName: Option[String],
-    override val status: Status,
-    override val throwable: OptionalThrowable,
+    _status: Status,
+    _throwable: OptionalThrowable,
     durationNanos: Long
 ) extends Event {
+  override def status(): Status               = _status
+  override def throwable(): OptionalThrowable = _throwable
+
   override def fullyQualifiedName(): String = {
     testName.getOrElse(taskDef.fullyQualifiedName())
   }
@@ -94,7 +97,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   }
 
   def logEvent(e: AirSpecEvent, indentLevel: Int = 0, showTestName: Boolean = true): Unit = {
-    val (baseColor, showStackTraces) = e.status match {
+    val (baseColor, showStackTraces) = e.status() match {
       case Status.Success                  => (GREEN, false)
       case Status.Failure                  => (RED, false) // Do not show the stack trace for assertion failures
       case Status.Error                    => (RED, true)
@@ -122,10 +125,10 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
         s"${withColor(GRAY, " <")} ${elapsedTime}"
       }
     }
-    val tail = e.status match {
+    val tail = e.status() match {
       case Status.Success => ""
-      case _ if e.throwable.isDefined() =>
-        val ex = e.throwable.get()
+      case _ if e.throwable().isDefined() =>
+        val ex = e.throwable().get()
         ex match {
           case se: AirSpecFailureBase =>
             s" ${statusLabel(se.statusLabel)}: ${withColor(baseColor, se.message)} ${errorLocation(se)}"
@@ -138,7 +141,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     info(s"${indent(indentLevel)}${prefix}${tail}")
 
     if (showStackTraces) {
-      val ex         = wvlet.airspec.compat.findCause(e.throwable.get())
+      val ex         = wvlet.airspec.compat.findCause(e.throwable().get())
       val stackTrace = LogFormatter.formatStacktrace(ex)
       error(stackTrace)
     }

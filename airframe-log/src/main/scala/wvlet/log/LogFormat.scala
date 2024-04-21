@@ -105,11 +105,11 @@ object LogFormatter extends AnsiColorPalette {
   object TSVLogFormatter extends LogFormatter {
     override def formatLog(record: LogRecord): String = {
       val s = Seq.newBuilder[String]
-      s += formatTimestampWithNoSpaace(record.getMillis)
+      s += formatTimestampWithNoSpaace(record.getMillis())
       s += record.level.toString
       s += currentThreadName
       s += record.leafLoggerName
-      s += record.getMessage
+      s += record.getMessage()
 
       val log = s.result().mkString("\t")
       record.cause match {
@@ -128,7 +128,7 @@ object LogFormatter extends AnsiColorPalette {
   object SimpleLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val log =
-        s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+        s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage())}"
       appendStackTrace(log, r)
     }
   }
@@ -140,7 +140,7 @@ object LogFormatter extends AnsiColorPalette {
     override def formatLog(r: LogRecord): String = {
       val logTag = highlightLog(r.level, r.level.name)
       val log =
-        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis()))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage())}"
       appendStackTrace(log, r)
     }
   }
@@ -157,10 +157,10 @@ object LogFormatter extends AnsiColorPalette {
 
       val logTag = highlightLog(r.level, r.level.name)
       val log =
-        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(
+        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis()))} ${logTag}%14s [${withColor(
             Console.WHITE,
             r.leafLoggerName
-          )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+          )}] ${highlightLog(r.level, r.getMessage())} ${loc}"
       appendStackTrace(log, r)
     }
   }
@@ -174,10 +174,10 @@ object LogFormatter extends AnsiColorPalette {
 
       val logTag = highlightLog(r.level, r.level.name)
       val log =
-        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${withColor(BRIGHT_BLUE, currentThreadName)}] ${logTag}%14s [${withColor(
+        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis()))} [${withColor(BRIGHT_BLUE, currentThreadName)}] ${logTag}%14s [${withColor(
             Console.WHITE,
             r.leafLoggerName
-          )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+          )}] ${highlightLog(r.level, r.getMessage())} ${loc}"
       appendStackTrace(log, r)
     }
   }
@@ -193,7 +193,7 @@ object LogFormatter extends AnsiColorPalette {
           .getOrElse("")
 
       val log =
-        f"${formatTimestamp(r.getMillis)} ${r.level.name}%5s [${r.leafLoggerName}] ${r.getMessage} ${loc}"
+        f"${formatTimestamp(r.getMillis())} ${r.level.name}%5s [${r.leafLoggerName}] ${r.getMessage()} ${loc}"
       appendStackTrace(log, r, coloring = false)
     }
   }
@@ -205,11 +205,11 @@ object LogFormatter extends AnsiColorPalette {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-          .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
+          .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName()}(${source.fileLoc})")}")
           .getOrElse("")
 
       val log =
-        s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
+        s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage())}$loc"
       appendStackTrace(log, r)
     }
   }
@@ -219,7 +219,7 @@ object LogFormatter extends AnsiColorPalette {
     */
   object BareFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      val m = r.getMessage
+      val m = r.getMessage()
       r.cause match {
         case Some(ex) =>
           s"${m}\n${formatStacktrace(ex)}"

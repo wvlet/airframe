@@ -20,13 +20,15 @@ import wvlet.log.{LogSupport, Logger, LogLevel}
 import scala.util.matching.Regex
 
 /**
-  * AirSpecRunner receives a list of TaskDefs from sbt, then create AirSpecTasks to execute.
+  * d AirSpecRunner receives a list of TaskDefs from sbt, then create AirSpecTasks to execute.
   */
-private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
+private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, _remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {
+
   private lazy val taskLogger = new AirSpecLogger()
 
-  override def args: Array[String] = config.args
+  override def args: Array[String]         = config.args
+  override def remoteArgs(): Array[String] = _remoteArgs
 
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs

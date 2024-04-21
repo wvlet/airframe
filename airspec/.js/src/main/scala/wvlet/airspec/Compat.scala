@@ -27,7 +27,9 @@ import scala.util.Try
 /**
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
-  override def isScalaJs = true
+  override def isScalaJVM    = false
+  override def isScalaJs     = true
+  override def isScalaNative = false
 
   override private[airspec] val executionContext: ExecutionContext =
     org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global

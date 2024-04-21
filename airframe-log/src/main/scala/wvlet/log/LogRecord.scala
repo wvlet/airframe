@@ -17,8 +17,8 @@ import java.util.{logging => jl}
 
 object LogRecord {
   def apply(record: jl.LogRecord): LogRecord = {
-    val l = LogRecord(LogLevel(record.getLevel), None, record.getMessage, Option(record.getThrown))
-    l.setLoggerName(record.getLoggerName)
+    val l = LogRecord(LogLevel(record.getLevel()), None, record.getMessage(), Option(record.getThrown()))
+    l.setLoggerName(record.getLoggerName())
     l
   }
 
@@ -40,7 +40,7 @@ case class LogRecord(level: LogLevel, source: Option[LogSource], message: String
   cause.foreach(setThrown(_))
 
   def leafLoggerName: String = {
-    val name = getLoggerName
+    val name = getLoggerName()
     leafLoggerNameCache.getOrElseUpdate(
       name, {
         name match {

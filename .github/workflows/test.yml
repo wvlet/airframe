@@ -224,6 +224,9 @@ jobs:
       - name: Scala JVM and Scala.js Test
         run: ../sbt "++airspecJVM/test; ++airspecJS/test"
         working-directory: ./airspec
+      - name: Scala Native Test
+        run: ../sbt "++ 3; airspecNative/test"
+        working-directory: ./airspec
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
