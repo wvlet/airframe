@@ -119,8 +119,8 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
   protected def inCircleCI: Boolean     = airspec.inCircleCI
   protected def inGitHubAction: Boolean = airspec.inGitHubAction
 
-  protected def isScalaJVM: Boolean = compat.isScalaJVM
-  protected def isScalaJS: Boolean = compat.isScalaJs
+  protected def isScalaJVM: Boolean    = compat.isScalaJVM
+  protected def isScalaJS: Boolean     = compat.isScalaJs
   protected def isScalaNative: Boolean = compat.isScalaNative
 
   protected def isScala2: Boolean = scalaMajorVersion == 2

@@ -22,7 +22,7 @@ class RxTest extends AirSpec {
   private val v = new AtomicBoolean(false)
 
   override def afterAll: Unit = {
-    if(!isScalaNative) {
+    if (!isScalaNative) {
       v.get() shouldBe true
     }
   }

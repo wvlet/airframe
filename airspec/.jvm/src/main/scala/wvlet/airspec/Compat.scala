@@ -48,7 +48,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     private val group: ThreadGroup = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
     private val threadNumber       = new AtomicInteger(1)
 
-    override def newThread(r: Runnable): Thread = {Rx
+    override def newThread(r: Runnable): Thread = {
       val threadName = s"${name}-${threadNumber.getAndIncrement()}"
       val thread     = new Thread(group, r, threadName)
       thread.setName(threadName)

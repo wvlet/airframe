@@ -30,7 +30,7 @@ private[airspec] case class AirSpecEvent(
     _throwable: OptionalThrowable,
     durationNanos: Long
 ) extends Event {
-  override def status(): Status = _status
+  override def status(): Status               = _status
   override def throwable(): OptionalThrowable = _throwable
 
   override def fullyQualifiedName(): String = {
