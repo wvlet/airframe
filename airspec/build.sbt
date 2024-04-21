@@ -368,9 +368,7 @@ lazy val airspec =
       Compile / packageBin / mappings ++= (airspecDeps.native / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDeps.native / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        // "org.scala-sbt"         % "test-interface"         % "1.0",
         "org.scala-native" %%% "test-interface" % "0.5.1"
-        //("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13)
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
