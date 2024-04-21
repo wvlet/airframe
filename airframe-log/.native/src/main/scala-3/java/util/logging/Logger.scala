@@ -22,7 +22,7 @@ class Logger(parent: Option[Logger], name: String) {
   }
 
   def log(record: LogRecord): Unit = {
-    if(isLoggable(record.level)) {
+    if(isLoggable(record.getLevel())) {
       if(record.getLoggerName() == null) {
         record.setLoggerName(name)
       }
@@ -101,7 +101,7 @@ abstract class Formatter:
   def format(record: LogRecord): String
 
 
-case class LogRecord(level: Level, msg: String) extends Serializable:
+class LogRecord(_level: Level, msg: String) extends Serializable:
   private val millis = System.currentTimeMillis()
   private var loggerName = ""
   private var thrown: Throwable = null
@@ -109,7 +109,7 @@ case class LogRecord(level: Level, msg: String) extends Serializable:
   def getMessage(): String = msg
   def getMillis(): Long = millis
   def getLoggerName(): String = loggerName
-  def getLevel(): Level = level
+  def getLevel(): Level = _level
   def getThrown(): Throwable = thrown
 
   def setLoggerName(name: String): Unit = {

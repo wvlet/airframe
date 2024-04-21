@@ -51,11 +51,11 @@ class Logger(
       if (l == null) {
         LogLevel.INFO
       } else {
-        val jlLevel = l.getLevel
+        val jlLevel = l.getLevel()
         if (jlLevel != null) {
           LogLevel(jlLevel)
         } else {
-          getLogLevelOf(l.getParent)
+          getLogLevelOf(l.getParent())
         }
       }
     }
@@ -77,7 +77,7 @@ class Logger(
   }
 
   def getParent: Option[Logger] = {
-    Option(wrapped.getParent).map(x => Logger(x.getName))
+    Option(wrapped.getParent()).map(x => Logger(x.getName()))
   }
 
   def addHandler(h: jl.Handler): Unit = {
