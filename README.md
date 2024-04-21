@@ -26,7 +26,7 @@ Airframe https://wvlet.org/airframe is essential building blocks for developing 
 
 ### Framework
 
-- [Airframe DI: A Dependency Injection Library Tailored to Scala](https://wvlet.org/airframe/docs/airframe.html)
+- [Airframe DI: A Dependency Injection Library Tailored to Scala](https://wvlet.org/airframe/docs/airframe-di.html)
 - [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
 
 - [Airframe RPC: A Framework for Using Scala Both for Frontend and Backend Programming](https://wvlet.org/airframe/docs/airframe-rpc.html)

@@ -374,7 +374,7 @@ AirSpec manages global/local sessions in this order:
        - Call `before`
        - Call `initLocalDesign(localDesign)` to prepare a new local design
        - Start a new local session
-          - Call the test method _m_ by building method arguments using the local session (and the global session). See also [Airframe DI: Child Sessions](https://wvlet.org/airframe/docs/airframe.html#child-sessions) to learn more about the dependency resolution order.
+          - Call the test method _m_ by building method arguments using the local session (and the global session). See also [Airframe DI: Child Sessions](https://wvlet.org/airframe/docs/airframe-di.html#child-sessions) to learn more about the dependency resolution order.
        - Shutdown the local session. All data in the local session will be discarded
        - Call `after`
      - Repeat the loop
@@ -535,7 +535,7 @@ class AppTest extends AirSpec {
 }
 ```
 
-If you are already familiar to dependency injection using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html) or [Google Guice](https://github.com/google/guice), it would not be so difficult to split your application into some units of testable modules.
+If you are already familiar to dependency injection using [Airframe DI](https://wvlet.org/airframe/docs/airframe-di.html) or [Google Guice](https://github.com/google/guice), it would not be so difficult to split your application into some units of testable modules.
  This is generally a good practice to minimize the scope of tests only for specific components.
 
 
@@ -591,7 +591,7 @@ Why can't we __use plain Scala functions to define tests__? ScalaTest already ha
 
 Now listing functions in Scala.js is totally possible by using [airframe-surface](https://wvlet.org/airframe/docs/airframe-surface.html), which is a library to inspect parameters and methods in a class by using reflection (in Scala JVM) or Scala macros (in Scala.js). So it was a good timing for us to develop a new testing framework, which has more Scala-friendly syntax.
 
-And also, if we define tests by using functions, it becomes possible to __pass test dependencies through function arguments__. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it is not always ideal as we need to properly initialize and clean-up these variables for each test method by using setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html), which has a strong support of life-cycle management, we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.
+And also, if we define tests by using functions, it becomes possible to __pass test dependencies through function arguments__. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it is not always ideal as we need to properly initialize and clean-up these variables for each test method by using setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using [Airframe DI](https://wvlet.org/airframe/docs/airframe-di.html), which has a strong support of life-cycle management, we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.
 
 AirSpec was born with these ideas in mind by leveraging Airframe modules like Airframe Surface and DI. After implementing basic features of AirSpec, we've successfully __migrated all of the test cases in 20+ Airframe modules into AirSpec__, which were originally written in ScalaTest. Rewriting test cases was almost straightforward as AirSpec has handy `shouldBe` syntax and property testing support with ScalaCheck.
 

@@ -28,7 +28,7 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe-surface" % "(version)"
 Applications of Surface include:
 - Writing object serializer / deserializer without any boilerplates. 
   - For example, [airframe-codec](https://wvlet.org/airframe/docs/airframe-codec.html) Automatically generates code serialiation and deserizliation using Surface.
-- Dependency injection based on object shapes (e.g., [Airframe DI](https://wvlet.org/airframe/docs/airframe.html))
+- Dependency injection based on object shapes (e.g., [Airframe DI](https://wvlet.org/airframe/docs/airframe-di.html))
   - airframe-di detects dependent types using Surface
 - Surface can be an indentifer of object types and type aliases.
 
