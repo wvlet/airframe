@@ -17,7 +17,7 @@ object LogTimestampFormatter {
       !ttPtr = (timeMillis / 1000).toSize
       val tmPtr = alloc[tm]()
       localtime_r(ttPtr, tmPtr)
-      val bufSize = 26.toUSize
+      val bufSize = 28.toUSize
       val buf: Ptr[Byte] = alloc[Byte](bufSize)
       strftime(buf, bufSize, pattern, tmPtr)
       val ms = timeMillis % 1000
