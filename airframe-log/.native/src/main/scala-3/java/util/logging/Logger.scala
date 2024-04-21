@@ -75,8 +75,15 @@ object Logger:
   private val rootLogger = Logger(None, "")
 
   def getLogger(name: String): Logger = {
-
-    loggerTable.getOrElseUpdate(name, newLogger(name))
+    loggerTable.get(name) match {
+      case Some(logger) => logger
+      case None =>
+        val logger = newLogger(name)
+        synchronized {
+          loggerTable.put(name, logger)
+        }
+        logger
+    }
   }
 
   private def newLogger(name: String): Logger = {
