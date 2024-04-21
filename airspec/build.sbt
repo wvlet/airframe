@@ -1,13 +1,13 @@
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"+airspecJVM/publish; +airspecJS/publish; ++ 3; airspecNative/publish"
+  s"+airspecJVM/publish; +airspecJS/publish; +airspecNative/publish"
 )
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
   "publishAllLocal",
-  s"+airspecJVM/publishLocal; +airspecJS/publishLocal; ++ 3; airspecNative/publishLocal"
+  s"+airspecJVM/publishLocal; +airspecJS/publishLocal; +airspecNative/publishLocal"
 )
 
 // Reload build.sbt on changes
