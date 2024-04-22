@@ -32,13 +32,13 @@ val AIRFRAME_BINARY_COMPAT_VERSION = "23.6.0"
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"+ projectJVM/publish; + projectJS/publish"
+  s"+ projectJVM/publish; + projectJS/publish; + projectNative/publish"
 )
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
   "publishAllLocal",
-  s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
+  s"+ projectJVM/publishLocal; + projectJS/publishLocal; + projectNative/publishLocal"
 )
 
 // [Development purpose] publish all sbt-airframe related artifacts to local repo
@@ -300,6 +300,15 @@ lazy val projectJS =
       ideSkipProject := true
     )
     .aggregate(jsProjects: _*)
+
+lazy val projectNative =
+  project
+    .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
+    .aggregate(nativeProjects: _*)
 
 lazy val projectIt =
   project
