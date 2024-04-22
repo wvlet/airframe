@@ -186,19 +186,19 @@ class LoggerTest extends Spec {
   }
 
   test("use succinct name when used with anonymous trait") {
-    if (LogEnv.isScalaJS) {
-      pending("Scala.js cannot get a logger name")
+    if (isScalaJS || isScalaNative) {
+      pending("Scala.js/Native cannot get a logger name from anonymous trait")
     } else {
       val l = new Sample with LogSupport {
         self =>
-        assert(self.logger.getName == ("wvlet.log.Sample"))
+        self.logger.getName shouldBe "wvlet.log.Sample"
       }
     }
   }
 
   test("Remove $ from object name") {
     val o = Sample
-    assert(o.loggerName == "wvlet.log.Sample")
+    o.loggerName shouldBe "wvlet.log.Sample"
   }
 
   test("clear parent handlers") {
