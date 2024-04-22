@@ -61,11 +61,11 @@ class RuntimeSurfaceTest extends SurfaceSpec {
 
   test("resolve trait type") {
     val s = RuntimeSurface.of[TraitOnly]
-    assertEquals(s.isAlias, false)
+    s.isAlias shouldBe false
     assert(s.rawType == classOf[TraitOnly])
 
     val m = Surface.methodsOf[TraitOnly].head
-    assertEquals(m.owner.isAlias, false)
+    m.owner.isAlias shouldBe false
     assert(m.owner.rawType == classOf[TraitOnly])
 
     assert(m.findAnnotationOf[secret].isDefined)

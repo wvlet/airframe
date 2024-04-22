@@ -15,10 +15,11 @@ package wvlet.airframe.surface.reflect
 
 import scala.language.higherKinds
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
 /**
   */
-class NamedParameterTest extends munit.FunSuite {
+class NamedParameterTest extends AirSpec {
 
   trait MyService[F[_]] {
     def hello: F[String]
@@ -28,13 +29,13 @@ class NamedParameterTest extends munit.FunSuite {
 
   test("read F[_]") {
     val s = Surface.of[MyService[A]]
-    assertEquals(s.toString, "MyService[A]")
+    s.toString shouldBe "MyService[A]"
 
     val m = Surface.methodsOf[MyService[A]]
     assert(m.headOption.isDefined)
 
     val m1 = m.head
     // info(m1.returnType.getClass())
-    assertEquals(m1.returnType.toString, "F[String]")
+    m1.returnType.toString shouldBe "F[String]"
   }
 }
