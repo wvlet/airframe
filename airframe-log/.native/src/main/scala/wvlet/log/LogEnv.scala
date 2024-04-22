@@ -22,23 +22,18 @@ private[log] object LogEnv extends LogEnvBase {
     // do nothing by default
   }
 
-  override def isScalaJS: Boolean = false
-
-  override def defaultLogLevel: LogLevel = LogLevel.INFO
-
+  override def isScalaJS: Boolean                        = false
+  override def defaultLogLevel: LogLevel                 = LogLevel.INFO
   override def defaultHandler: java.util.logging.Handler = new ConsoleLogHandler(SourceCodeLogFormatter)
-
-  override def defaultConsoleOutput: PrintStream = System.err
+  override def defaultConsoleOutput: PrintStream         = System.err
 
   /**
     * @param cl
     * @return
     */
   override def getLoggerName(cl: Class[?]): String = cl.getName
-
-  override def scheduleLogLevelScan: Unit = {}
-
-  override def stopScheduledLogLevelScan: Unit = {}
+  override def scheduleLogLevelScan: Unit          = {}
+  override def stopScheduledLogLevelScan: Unit     = {}
 
   /**
     * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
