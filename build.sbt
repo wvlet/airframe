@@ -265,7 +265,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 )
 
 lazy val nativeProjects: Seq[ProjectReference] = Seq(
-  log.native
+  log.native,
+  surface.native
 )
 
 // Integration test projects
