@@ -46,7 +46,7 @@ class Logger(parent: Option[Logger], name: String) {
 
   def isLoggable(level: Level): Boolean = {
     val l = getLevel()
-    if (level.intValue() < l.intValue()) false else true
+    level.intValue() >= l.intValue()
   }
 
   def getParent(): Logger =
@@ -56,7 +56,7 @@ class Logger(parent: Option[Logger], name: String) {
     level.orElse(parent.map(_.getLevel())).getOrElse(Level.INFO)
 
   def setLevel(newLevel: Level): Unit =
-    level = Some(newLevel)
+    level = Option(newLevel)
 
   def resetLogLevel(): Unit =
     level = None
