@@ -30,7 +30,7 @@ object LogTimestampFormatter {
       !ttPtr = (timeMillis / 1000).toSize
       val tmPtr = alloc[tm]()
       localtime_r(ttPtr, tmPtr)
-      val bufSize        = 26.toUSize
+      val bufSize        = 29.toUSize // max size for time strings
       val buf: Ptr[Byte] = alloc[Byte](bufSize)
       strftime(buf, bufSize, pattern, tmPtr)
       val ms = timeMillis % 1000
@@ -41,7 +41,7 @@ object LogTimestampFormatter {
 
       val tzBuf: Ptr[Byte] = alloc[Byte](5)
       strftime(tzBuf, 5.toUSize, c"%z", tmPtr)
-      if (strlen(tzBuf) == 0) {
+      if (strlen(tzBuf) <= 1) {
         // For UTC-00:00
         strcat(buf, c"Z")
       } else {
