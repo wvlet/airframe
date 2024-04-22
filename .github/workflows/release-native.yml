@@ -1,4 +1,4 @@
-name: Release Scala.js
+name: Release Scala Native
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish_js:
-    name: Publish Scala.js
+    name: Publish Scala Native
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,12 +24,12 @@ jobs:
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
-      - name: Build for Scala.js
+      - name: Build for Scala Native
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: ./sbt publishJSSigned
+        run: ./sbt publishNativeSigned
       - name: Release to Sonatype
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: SCALA_JS=true ./sbt sonatypeBundleRelease
+        run: SCALA_NATIVE=true ./sbt sonatypeBundleRelease

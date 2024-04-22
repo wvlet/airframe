@@ -55,6 +55,10 @@ addCommandAlias(
   "publishJSLocal",
   s"+ projectJS/publishLocal"
 )
+addCommandAlias(
+  "publishNativeSigned",
+  s"+ projectNative/publishSigned"
+)
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 // Global / cancelable := true
@@ -193,9 +197,11 @@ lazy val root =
     .settings(
       sonatypeProfileName := "org.wvlet",
       sonatypeSessionName := {
-        if (sys.env.isDefinedAt("SCALAJS")) {
-          // Use a different session for Scala.js projects
+        // Use different session names for parallel publishing to Sonatype
+        if (sys.env.isDefinedAt("SCALA_JS")) {
           s"${sonatypeSessionName.value} for Scala.js"
+        } else if (sys.env.isDefinedAt("SCALA_NATIVE")) {
+          s"${sonatypeSessionName.value} for Scala Native"
         } else {
           sonatypeSessionName.value
         }
