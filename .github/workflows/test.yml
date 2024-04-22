@@ -212,6 +212,25 @@ jobs:
           check_name: Test Report Scala.js / Scala 3
           annotate_only: true
           detailed_summary: true
+  test_native_3:
+    name: Scala Native / Scala 3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+      - name: Scala Native test
+        run: JVM_OPTS=-Xmx4g ./sbt "++ 3; projectNative/test"
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/target/test-reports/TEST-*.xml'
+          check_name: Test Report Scala Native / Scala 3
+          annotate_only: true
+          detailed_summary: true
   test_airspec:
     name: AirSpec
     runs-on: ubuntu-latest
