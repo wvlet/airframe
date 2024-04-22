@@ -24,6 +24,6 @@ class QuoteParamTest extends SurfaceSpec {
     val s   = Surface.of[QP]
     val obj = QP("A")
     val p   = s.params.head
-    assertEquals(p.get(obj), obj.`system-+=type`)
+    p.get(obj) shouldBe obj.`system-+=type`
   }
 }

@@ -14,10 +14,11 @@
 package wvlet.airframe.surface
 
 import wvlet.log.LogSupport
+import wvlet.airspec.AirSpec
 
 /**
   */
-class AliasSurfaceTest extends munit.FunSuite with LogSupport {
+class AliasSurfaceTest extends AirSpec {
 
   case class Holder[A](v: A)
   type MyInt = Holder[Int]

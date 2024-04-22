@@ -12,8 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
+import wvlet.airspec.AirSpec
 
-class RecordSurfaceTest extends munit.FunSuite {
+class RecordSurfaceTest extends AirSpec {
   test("build custom surface") {
     val p1 = RecordParameter(0, "p1", Primitive.Int)
     val p2 = RecordParameter(1, "p2", Primitive.String)
@@ -24,10 +25,10 @@ class RecordSurfaceTest extends munit.FunSuite {
       .addParam(p2)
       .addParam(p3)
 
-    assertEquals(s.typeArgs, Seq.empty)
-    assertEquals(s.params.length, 3)
-    assertEquals(s.params(0), p1)
-    assertEquals(s.params(1), p2)
-    assertEquals(s.params(2), p3)
+    s.typeArgs shouldBe Seq.empty
+    s.params.length shouldBe 3
+    s.params(0) shouldBe p1
+    s.params(1) shouldBe p2
+    s.params(2) shouldBe p3
   }
 }

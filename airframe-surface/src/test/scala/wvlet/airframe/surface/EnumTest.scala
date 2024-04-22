@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.surface
 
+import wvlet.airspec.AirSpec
+
 /**
   */
 object EnumTest {
@@ -29,16 +31,16 @@ object EnumTest {
   }
 }
 
-class EnumTest extends munit.FunSuite {
+class EnumTest extends AirSpec {
   import EnumTest.*
 
   test("Find Surface.stringExtractor") {
     Surface.of[Color] match {
       case s: EnumSurface =>
         val f = s.stringExtractor
-        assertEquals(f(classOf[Color], "Blue"), Some(Blue))
-        assertEquals(f(classOf[Color], "Red"), Some(Red))
-        assertEquals(f(classOf[Color], "White"), None)
+        f(classOf[Color], "Blue") shouldBe Some(Blue)
+        f(classOf[Color], "Red") shouldBe Some(Red)
+        f(classOf[Color], "White") shouldBe None
       case other =>
         fail(s"EnumSurface should be used: ${other.getClass}")
     }

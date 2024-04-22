@@ -13,7 +13,9 @@
  */
 package wvlet.airframe.surface
 
-class CNameTest extends munit.FunSuite {
+import wvlet.airspec.AirSpec
+
+class CNameTest extends AirSpec {
   test("convert to snakeCase") {
     assert(CName("AirframeSurface").snakeCase == "airframe_surface")
     assert(CName("airframe_surface").snakeCase == "airframe_surface")
@@ -48,16 +50,16 @@ class CNameTest extends munit.FunSuite {
 
   test("null values") {
     val nullName = CName(null)
-    assertEquals(nullName.canonicalName, "")
-    assertEquals(nullName.naturalName, "")
+    nullName.canonicalName shouldBe ""
+    nullName.naturalName shouldBe ""
   }
 
   test("comparison") {
     val a = CName("Apple")
     val b = CName("Banana")
-    assertEquals(a.compareTo(b) < 0, true)
-    assertEquals(a, a)
-    assertNotEquals(a, b)
-    assertNotEquals(a.hashCode, b.hashCode)
+    a.compareTo(b) < 0 shouldBe true
+    a shouldBe a
+    a shouldNotBe b
+    a.hashCode shouldNotBe b.hashCode
   }
 }

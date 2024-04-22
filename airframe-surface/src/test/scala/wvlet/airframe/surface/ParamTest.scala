@@ -41,7 +41,7 @@ class ParamTest extends SurfaceSpec {
     val s  = Surface.of[ParamTest.B]
     val p1 = s.params(0)
     val v  = ParamTest.B(1, 2, 3)
-    assertEquals(p1.get(v), 1)
+    p1.get(v) shouldBe 1
   }
 
   test("access params through alias") {
@@ -49,8 +49,8 @@ class ParamTest extends SurfaceSpec {
     val p1              = s.params(0)
     val p2              = s.params(1)
     val v: ParamTest.A1 = ParamTest.A(10, 20)
-    assertEquals(p1.get(v), 10)
-    assertEquals(p2.get(v), 20)
+    p1.get(v) shouldBe 10
+    p2.get(v) shouldBe 20
   }
 
   test("private field access") {
@@ -62,8 +62,8 @@ class ParamTest extends SurfaceSpec {
     val p2 = s.params(1)
     val p3 = s.params(2)
     val v  = ParamTest.B(1, 2, 3)
-    assertEquals(p1.get(v), 1)
-    assertEquals(p2.get(v), 2)
-    assertEquals(p3.get(v), 3)
+    p1.get(v) shouldBe 1
+    p2.get(v) shouldBe 2
+    p3.get(v) shouldBe 3
   }
 }
