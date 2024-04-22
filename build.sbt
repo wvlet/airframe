@@ -11,7 +11,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.4.1")
-val SCALACHECK_VERSION              = "1.17.1"
+val SCALACHECK_VERSION              = "1.18.0"
 val MSGPACK_VERSION                 = "0.9.8"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 val SQLITE_JDBC_VERSION             = "3.45.3.0"
@@ -32,13 +32,13 @@ val AIRFRAME_BINARY_COMPAT_VERSION = "23.6.0"
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"+ projectJVM/publish; + projectJS/publish"
+  s"+ projectJVM/publish; + projectJS/publish; + projectNative/publish"
 )
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
   "publishAllLocal",
-  s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
+  s"+ projectJVM/publishLocal; + projectJS/publishLocal; + projectNative/publishLocal"
 )
 
 // [Development purpose] publish all sbt-airframe related artifacts to local repo
@@ -54,6 +54,10 @@ addCommandAlias(
 addCommandAlias(
   "publishJSLocal",
   s"+ projectJS/publishLocal"
+)
+addCommandAlias(
+  "publishNativeSigned",
+  s"+ projectNative/publishSigned"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -162,6 +166,12 @@ val jsBuildSettings = Seq[Setting[?]](
   coverageEnabled := false
 )
 
+val nativeBuildSettings = Seq[Setting[?]](
+  scalaVersion       := SCALA_3,
+  crossScalaVersions := List(SCALA_3),
+  coverageEnabled    := false
+)
+
 val noPublish = Seq(
   publishArtifact := false,
   publish         := {},
@@ -187,9 +197,11 @@ lazy val root =
     .settings(
       sonatypeProfileName := "org.wvlet",
       sonatypeSessionName := {
-        if (sys.env.isDefinedAt("SCALAJS")) {
-          // Use a different session for Scala.js projects
+        // Use different session names for parallel publishing to Sonatype
+        if (sys.env.isDefinedAt("SCALA_JS")) {
           s"${sonatypeSessionName.value} for Scala.js"
+        } else if (sys.env.isDefinedAt("SCALA_NATIVE")) {
+          s"${sonatypeSessionName.value} for Scala Native"
         } else {
           sonatypeSessionName.value
         }
@@ -252,6 +264,10 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   widgetJS
 )
 
+lazy val nativeProjects: Seq[ProjectReference] = Seq(
+  log.native
+)
+
 // Integration test projects
 lazy val itProjects: Seq[ProjectReference] = Seq(
   integrationTestApi.jvm,
@@ -290,6 +306,15 @@ lazy val projectJS =
       ideSkipProject := true
     )
     .aggregate(jsProjects: _*)
+
+lazy val projectNative =
+  project
+    .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
+    .aggregate(nativeProjects: _*)
 
 lazy val projectIt =
   project
@@ -559,7 +584,7 @@ val logJVMDependencies = Seq(
 
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-log"))
     .settings(buildSettings)
@@ -581,6 +606,9 @@ lazy val log: sbtcrossproject.CrossProject =
       libraryDependencies ++= Seq(
         ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
+    )
+    .nativeSettings(
+      nativeBuildSettings
     )
 
 lazy val metrics =

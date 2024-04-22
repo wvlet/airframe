@@ -31,8 +31,16 @@ private[log] object LogEnv extends LogEnvBase {
     * @param cl
     * @return
     */
-  override def getLoggerName(cl: Class[_]): String = cl.getName
+  override def getLoggerName(cl: Class[?]): String = {
+    var name = cl.getName
 
+    val pos = name.indexOf("$")
+    if (pos > 0) {
+      // Remove trailing $xxx
+      name = name.substring(0, pos)
+    }
+    name
+  }
   override def scheduleLogLevelScan: Unit      = {}
   override def stopScheduledLogLevelScan: Unit = {}
 
@@ -53,5 +61,4 @@ private[log] object LogEnv extends LogEnvBase {
   /**
     */
   override def unregisterJMX: Unit = {}
-
 }

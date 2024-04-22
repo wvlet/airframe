@@ -1,3 +1,16 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package wvlet.log
 
 import scalanative.posix.time.*
@@ -17,7 +30,7 @@ object LogTimestampFormatter {
       !ttPtr = (timeMillis / 1000).toSize
       val tmPtr = alloc[tm]()
       localtime_r(ttPtr, tmPtr)
-      val bufSize = 26.toUSize
+      val bufSize        = 26.toUSize
       val buf: Ptr[Byte] = alloc[Byte](bufSize)
       strftime(buf, bufSize, pattern, tmPtr)
       val ms = timeMillis % 1000
@@ -33,11 +46,9 @@ object LogTimestampFormatter {
     }
   }
 
-  def formatTimestamp(timeMillis: Long): String = {
+  def formatTimestamp(timeMillis: Long): String =
     format(c"%Y-%m-%d %H:%M:%S.", timeMillis)
-  }
 
-  def formatTimestampWithNoSpaace(timeMillis: Long): String = {
+  def formatTimestampWithNoSpaace(timeMillis: Long): String =
     format(c"%Y-%m-%dT%H:%M:%S.", timeMillis)
-  }
 }
