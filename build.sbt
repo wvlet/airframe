@@ -170,6 +170,11 @@ val nativeBuildSettings = Seq[Setting[?]](
   scalaVersion       := SCALA_3,
   crossScalaVersions := List(SCALA_3),
   coverageEnabled    := false
+//  nativeConfig ~= {
+//    _.withSourceLevelDebuggingConfig(_.enableAll) // enable generation of debug informations
+//      .withOptimize(false)                        // disable Scala Native optimizer
+//      .withMode(scalanative.build.Mode.debug)     // compile using LLVM without optimizations
+//  }
 )
 
 val noPublish = Seq(
@@ -272,7 +277,9 @@ lazy val nativeProjects: Seq[ProjectReference] = Seq(
   json.native,
   msgpack.native,
   ulid.native,
-  rx.native
+  rx.native,
+  control.native,
+  codec.native
 )
 
 // Integration test projects
@@ -662,7 +669,7 @@ lazy val msgpack =
     .dependsOn(log, json)
 
 lazy val codec =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-codec"))
     .settings(buildSettings)
@@ -682,6 +689,7 @@ lazy val codec =
     .jsSettings(
       jsBuildSettings
     )
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log, surface, msgpack, metrics, json, control, ulid)
 
 lazy val jdbc =

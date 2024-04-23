@@ -23,7 +23,8 @@ object MapConversionTest extends AirSpec {
   case class A(id: Int, name: String, key: UUID)
 
   test("convert Map[String, Any] to object") {
-    val uuid  = UUID.randomUUID()
+    // UUID.randomUUID() is not available in Scala Native
+    val uuid  = UUID.fromString("7692a9a1-2f73-4e7f-b70a-88e74682654d")
     val m     = Map("id" -> 10, "name" -> "leo", "key" -> uuid)
     val codec = MessageCodec.of[A]
     val a     = codec.fromMap(m)

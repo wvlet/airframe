@@ -14,9 +14,7 @@
 package wvlet.airframe.control
 
 /**
- */
-object Compat {
-  def sleep(millis: Long): Unit = {
+  */
+object Compat:
+  def sleep(millis: Long): Unit =
     Thread.sleep(millis)
-  }
-}
