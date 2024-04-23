@@ -75,6 +75,7 @@ libraryDependencies ++= Seq(
 )
 
 // For Scala Native 0.5.x, the following libraries can be used (Since Airframe 24.4.2):
+// Note: Only Scala 3 is supported for Scala Native
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
   "org.wvlet.airframe" %%% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
