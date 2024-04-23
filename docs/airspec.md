@@ -19,7 +19,7 @@ AirSpec uses `test("...") { ... }` syntax for writing test cases. This style req
 - Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
 - Nesting and reusing test cases with `test(...)`.
-- Async testing support for `scala.concurrent.Future[ ]` and `Rx`.
+- Async testing support for `scala.concurrent.Future[ ]` and [Rx](airframe-rx.md).
 - Lifecycle management with [Airframe DI](airframe-di.md):
   - DI will inject the arguments of test methods based on your custom Design.
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
@@ -62,7 +62,7 @@ import wvlet.airspec._
 
 class MyTest extends AirSpec {
   test("empty Seq size should be 0") {
-    assert(Seq.empty.size == 0)
+    Seq.empty.size shouldBe 0
   }
 
   test("Seq.empty.head should fail") {
@@ -211,7 +211,7 @@ For quickly writing tests, you can use [scala-cli](https://scala-cli.virtuslab.o
 **MyApp.test.scala**
 
 ```scala
-//> using test.dep org.wvlet.airframe::airspec:(version)
+//> using test.dep org.wvlet.airframe::airspec::(version)
 //> using testFramework "wvlet.airspec.Framework"
 import wvlet.airspec.AirSpec
 
@@ -292,7 +292,9 @@ For detecting the running environment of tests, the following methods are availa
 - inTravisCI: Boolean
 - inCircleCI: Boolean
 - inGitHubAction: Boolean
+- isScalaJVM: Boolean
 - isScalaJS: Boolean
+- isScalaNative: Boolean
 - isScala2: Boolean
 - isScala3: Boolean
 - scalaMajorVersion: Int
@@ -308,7 +310,7 @@ test("scala-3 specific tests") {
 
 ## Async Testing
 
-Since the version 22.5.0, AirSpec supports tests returning `Future[_]` values. Such async tests are useful, especially if your application needs to wait the completion of network requests, such as Ajax responses in Scala.js, RPC responses from a server, etc. If test specs returns `Future` values, AirSpec awaits the completion of async tests, so you don't need to write synchronization steps in your test code.
+Since the version 22.5.0, AirSpec supports tests returning `Future[_]` values and `Rx`. Such async tests are useful, especially if your application needs to wait the completion of network requests, such as Ajax responses in Scala.js, RPC responses from a server, etc. If test specs returns `Future` or `Rx` values, AirSpec awaits the completion of async tests, so you don't need to write synchronization steps in your test code.
 
 
 ```scala
@@ -454,7 +456,6 @@ class OverrideTest extends AirSpec {
     _.bind[String].toInstance("hello")
   }
 
-  // Pass Session to override the design
   test("before overriding the design") { (s:String) =>
     s shouldBe "hello"
 
@@ -546,14 +547,16 @@ AirSpecContext also contains the name of test classes and method names, which wo
 
 ## Property Based Testing with ScalaCheck
 
-Optionally AirSpec can integrate with [ScalaCheck](https://github.com/typelevel/scalacheck/blob/main/doc/UserGuide.md).
-Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` methods.
+AirSpec supports property-based testing using [ScalaCheck](https://github.com/typelevel/scalacheck/blob/main/doc/UserGuide.md), a framework for 
+writing tests for a wide range of input values.
+First, add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` methods:
 
 ```scala
 import wvlet.airspec._
 
 class PropertyBasedTest extends AirSpec with PropertyCheck {
   test("testAllInt") {
+    // Run tests for a wide range of Int values
     forAll{ (i:Int) => i.isValidInt shouldBe true }
   }
 
