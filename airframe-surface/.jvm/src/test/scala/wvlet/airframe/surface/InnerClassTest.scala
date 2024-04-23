@@ -13,22 +13,24 @@
  */
 package wvlet.airframe.surface
 
+import wvlet.airspec.AirSpec
+
 /**
   */
-class InnerClassTest extends munit.FunSuite {
+class InnerClassTest extends AirSpec {
   case class A(id: Int, name: String)
 
   test("pass inner class context to Surface") {
     val s = Surface.of[A]
     val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
-    assertEquals(a, Some(A(1, "leo")))
+    a shouldBe Some(A(1, "leo"))
   }
 
   test("find an inner class inside a code block") {
     new {
       val s = Surface.of[A]
       val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
-      assertEquals(a, Some(A(1, "leo")))
+      a shouldBe Some(A(1, "leo"))
     }
   }
 }

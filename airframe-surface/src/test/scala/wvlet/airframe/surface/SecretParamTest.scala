@@ -13,9 +13,11 @@
  */
 package wvlet.airframe.surface
 
+import wvlet.airspec.AirSpec
+
 /**
   */
-class SecretParamTest extends munit.FunSuite {
+class SecretParamTest extends AirSpec {
 
   case class WithSecretParam(
       user: String,
@@ -27,7 +29,7 @@ class SecretParamTest extends munit.FunSuite {
     val p_user     = s.params(0)
     val p_password = s.params(1)
 
-    assertEquals(p_user.isSecret, false)
-    assertEquals(p_password.isSecret, true)
+    p_user.isSecret shouldBe false
+    p_password.isSecret shouldBe true
   }
 }

@@ -265,7 +265,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 )
 
 lazy val nativeProjects: Seq[ProjectReference] = Seq(
-  log.native
+  log.native,
+  surface.native
 )
 
 // Integration test projects
@@ -477,7 +478,7 @@ val surfaceDependencies = { scalaVersion: String =>
 }
 
 lazy val surface =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
     .settings(buildSettings)
@@ -485,7 +486,6 @@ lazy val surface =
       name        := "airframe-surface",
       description := "A library for extracting object structure surface",
       // TODO: This is a temporary solution. Use AirSpec after Scala 3 support of Surface is completed
-      libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
@@ -493,6 +493,7 @@ lazy val surface =
       libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log)
 
 lazy val canvas =

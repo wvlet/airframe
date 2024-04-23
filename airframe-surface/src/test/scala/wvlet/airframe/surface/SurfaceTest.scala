@@ -78,7 +78,7 @@ class SurfaceTest extends SurfaceSpec {
   }
 
   test("find primitive Surfaces") {
-    assertEquals(Primitive(classOf[Int]), Primitive.Int)
+    Primitive(classOf[Int]) shouldBe Primitive.Int
   }
 
   test("resolve surface from class") {
@@ -188,9 +188,9 @@ class SurfaceTest extends SurfaceSpec {
   }
 
   test("resolve generic abstract type") {
-    assertEquals(Surface.of[D[_]].typeArgs, Seq(ExistentialType))
+    Surface.of[D[_]].typeArgs shouldBe Seq(ExistentialType)
     val d = check(Surface.of[D[_]], "D[_]")
-    assertEquals(d.typeArgs.length, 1)
+    d.typeArgs.length shouldBe 1
     check(Surface.of[Map[_, _]], "Map[_,_]")
   }
 
@@ -237,7 +237,7 @@ class SurfaceTest extends SurfaceSpec {
     val s = Surface.of[F]
     assert(s.objectFactory.isDefined)
     val f = s.objectFactory.map(_.newInstance(Seq(100)))
-    assertEquals(f, Some(F(100)))
+    f shouldBe Some(F(100))
   }
 
   test("bigint") {
@@ -247,7 +247,7 @@ class SurfaceTest extends SurfaceSpec {
 
   test("resolve types args of Map[String, Any]") {
     val s = Surface.of[Map[String, Any]]
-    assertEquals(s.typeArgs(0).fullName, "java.lang.String")
-    assertEquals(s.typeArgs(1).fullName, "scala.Any")
+    s.typeArgs(0).fullName shouldBe "java.lang.String"
+    s.typeArgs(1).fullName shouldBe "scala.Any"
   }
 }

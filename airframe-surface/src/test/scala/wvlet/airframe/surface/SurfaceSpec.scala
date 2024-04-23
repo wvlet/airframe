@@ -17,12 +17,13 @@ package wvlet.airframe.surface
 import wvlet.log.LogSupport
 
 import scala.language.implicitConversions
+import wvlet.airspec.AirSpec
 
-trait SurfaceSpec extends munit.FunSuite with LogSupport with AirSpecBridge {
+trait SurfaceSpec extends AirSpec {
   protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    assertEquals(surface.toString, expectedName)
+    surface.toString shouldBe expectedName
     surface
   }
 

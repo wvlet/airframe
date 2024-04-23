@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
+import wvlet.airspec.AirSpec
 
 object RecursiveMethodParamTest {
   case class Node(parent: Option[Node])
@@ -21,7 +22,7 @@ object RecursiveMethodParamTest {
   }
 }
 
-class RecursiveMethodParamTest extends munit.FunSuite {
+class RecursiveMethodParamTest extends AirSpec {
   import RecursiveMethodParamTest.*
 
   // ....

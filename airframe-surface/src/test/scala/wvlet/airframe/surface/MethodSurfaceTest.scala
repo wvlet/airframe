@@ -114,11 +114,11 @@ class MethodSurfaceTest extends SurfaceSpec {
     val v = h.getMethodArgDefaultValue(d)
     if (!isScalaJS) {
       // Scala.js doesn't support reading default method arguments
-      assertEquals(v, Some("hello"))
+      v shouldBe Some("hello")
     }
 
     val msg = m.call(d, "world")
-    assertEquals(msg, "world")
+    msg shouldBe "world"
   }
 
   test("find method default parameter in trait") {
@@ -127,15 +127,15 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(m.args.headOption.isDefined)
     val h = m.args.head
     // FIXME: Fix StaticMethodParameter in CompileTimeSurfaceFactory for Scala 3
-    if (!isScalaJS && !isScala3JVM) {
-      assertEquals(h.getDefaultValue, Some("default"))
+    if (!isScalaJS && !isScalaNative && !(isScala3 && isScalaJVM)) {
+      h.getDefaultValue shouldBe Some("default")
 
       val d = new E {
         override def hello(v: String = "yay"): String = v
       }
       val v = h.getMethodArgDefaultValue(d)
       // Scala.js doesn't support reading default method arguments
-      assertEquals(v, Some("yay"))
+      v shouldBe Some("yay")
     }
   }
 
@@ -145,7 +145,7 @@ class MethodSurfaceTest extends SurfaceSpec {
       case Some(m) if m.args.size == 1 =>
         val arg = m.args(0)
         val p1  = arg.surface.typeArgs(1)
-        assertEquals(p1.fullName, "scala.Any")
+        p1.fullName shouldBe "scala.Any"
       case _ =>
         fail("F.mapInput method not found")
     }
