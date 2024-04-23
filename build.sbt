@@ -271,7 +271,8 @@ lazy val nativeProjects: Seq[ProjectReference] = Seq(
   metrics.native,
   json.native,
   msgpack.native,
-  ulid.native
+  ulid.native,
+  rx.native
 )
 
 // Integration test projects
@@ -701,7 +702,7 @@ lazy val jdbc =
     .dependsOn(di.jvm, control.jvm, config)
 
 lazy val rx =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-rx"))
     .settings(buildSettings)
@@ -719,6 +720,7 @@ lazy val rx =
       // For addressing the fairness issue of the global ExecutorContext https://github.com/scala-js/scala-js/issues/4129
       libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
     )
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log)
 
 lazy val http =
