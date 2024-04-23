@@ -269,6 +269,8 @@ lazy val nativeProjects: Seq[ProjectReference] = Seq(
   surface.native,
   di.native,
   metrics.native,
+  json.native,
+  msgpack.native,
   ulid.native
 )
 
@@ -634,7 +636,7 @@ lazy val metrics =
     .dependsOn(log, surface)
 
 lazy val msgpack =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-msgpack"))
     .settings(buildSettings)
@@ -649,6 +651,11 @@ lazy val msgpack =
       jsBuildSettings,
       libraryDependencies +=
         ("org.scala-js" %%% "scalajs-java-time" % JS_JAVA_TIME_VERSION).cross(CrossVersion.for3Use2_13)
+    )
+    .nativeSettings(
+      nativeBuildSettings,
+      // For using java.time libraries
+      libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.3.0"
     )
     .dependsOn(log, json)
 
@@ -850,7 +857,7 @@ lazy val httpRecorder =
     .dependsOn(codec.jvm, metrics.jvm, control.jvm, netty, jdbc)
 
 lazy val json =
-  crossProject(JSPlatform, JVMPlatform)
+  crossProject(JSPlatform, JVMPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-json"))
     .settings(buildSettings)
@@ -859,6 +866,7 @@ lazy val json =
       description := "JSON parser"
     )
     .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log)
 
 lazy val benchmark =
