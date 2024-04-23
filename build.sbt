@@ -268,7 +268,8 @@ lazy val nativeProjects: Seq[ProjectReference] = Seq(
   log.native,
   surface.native,
   di.native,
-  metrics.native
+  metrics.native,
+  ulid.native
 )
 
 // Integration test projects
@@ -538,7 +539,7 @@ lazy val control =
     .dependsOn(log, rx)
 
 lazy val ulid =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-ulid"))
     .settings(buildSettings)
@@ -551,6 +552,7 @@ lazy val ulid =
       // For using SecureRandom (requires `crypto` package)
       libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
     )
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log % Test)
 
 lazy val jmx =
