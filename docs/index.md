@@ -6,7 +6,7 @@ title: Overview
 
 <img style = "float: right; padding: 10px;" width="150px" src="../img/logos/airframe_icon_small.png"/>
 
-Airframe is a collection of essential building blocks for writing full-fledged applications in Scala and Scala.js.
+Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Ntive.
 
 - [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
@@ -73,12 +73,26 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
   "org.wvlet.airframe" %%% "airframe-ulid"    % AIRFRAME_VERSION, // ULID generator
 )
+
+// For Scala Native 0.5.x, the following libraries can be used (Since Airframe 24.4.2):
+libraryDependencies ++= Seq(
+  "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %%% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
+  "org.wvlet.airframe" %%% "airframe-control" % AIRFRAME_VERSION, // Library for retryable execution
+  "org.wvlet.airframe" %%% "airframe-json"    % AIRFRAME_VERSION, // Pure Scala JSON parser
+  "org.wvlet.airframe" %%% "airframe-log"     % AIRFRAME_VERSION, // Logging
+  "org.wvlet.airframe" %%% "airframe-msgpack" % AIRFRAME_VERSION, // Pure-Scala MessagePack
+  "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
+  "org.wvlet.airframe" %%% "airframe-rx"      % AIRFRAME_VERSION, // ReactiveX interface
+  "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
+  "org.wvlet.airframe" %%% "airframe-ulid"    % AIRFRAME_VERSION, // ULID generator
+)
 ```
 
-If you need an early access to the latest features, [snapshot versions](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/) are also available for each main branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:
+For an early access to the latest features, [snapshot versions](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/) are also available for each main branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:
 
 ```scala
-resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers += Resolver.sonatypeOssRepos("snapshots")
 ```
 
 ## Usage Guides
@@ -206,9 +220,13 @@ Other than `@Endpoint` annotations, this is the same with regular Scala class de
 A client code to access this API is also simple like this:
 
 ```scala
+import wvlet.airframe.http.Http
+
 // Accessing the server using an http client
-client.get[ServerInfo]("/v1/info")      // ServerInfo("1.0")
-client.post("/v1/user", User(1, "Ann")) // User(1, "Ann")
+val client = Http.client.newSyncClient("http://localhost:8080")
+
+client.readAs[ServerInfo](Http.GET("/v1/info"))      // ServerInfo("1.0")
+client.call[User, User](Http.POST("/v1/user"), User(1, "Ann")) // User(1, "Ann")
 ```
 
 Mapping from HTTP responses to case classes is handled by [airframe-codec](airframe-codec.md).

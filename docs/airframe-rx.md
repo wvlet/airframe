@@ -82,7 +82,7 @@ __build.sbt__
 libraryDependencies += "org.wvlet.airframe" %% "airframe-rx" % "(version)"
 ```
 
-For Scala.js, use `%%%`:
+For Scala.js and Scala Native, use `%%%`:
 ```scala
 libraryDependencies += "org.wvlet.airframe" %%% "airframe-rx" % "(version)"
 ```
