@@ -78,7 +78,7 @@
 <li>Managing differently configured singletons of the same type.</li>
 <li>..., etc.</li>
 </ul>
-<p>Airframe DI is available for Scala 2.12, 2.13, Scala 3, and <a href="https://www.scala-js.org/">Scala.js</a>.</p>
+<p>Airframe DI is available for Scala 2.12, 2.13, Scala 3, <a href="https://www.scala-js.org/">Scala.js</a>, and Scala Native.</p>
 <p>In Scala, we have various approaches for dependency injection, such as <a href="http://jonasboner.com/real-world-scala-dependency-injection-di/">cake pattern</a>, <a href="https://github.com/google/guice">Google Guice</a>, <a href="https://github.com/adamw/macwire">Macwire</a>, <a href="https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/">reader monad</a>, etc. For more detailed comparison, see also <a href="https://wvlet.org/airframe/docs/comparison.html">DI Framework Comparison</a>, which describes pros and cons of various DI frameworks, including Airframe, Google Guice, Macwire, Dagger2, etc.</p>
 <h2><a class="anchor" aria-hidden="true" id="quick-start"></a><a href="#quick-start" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Quick Start</h2>
 <p><a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central"></a></p>
@@ -133,7 +133,7 @@ When <code>design.build[A]</code> is called, Airframe will find the primary cons
 
 <span class="hljs-comment">// Create MyApp. AppConfig instance defined in the design will be used.</span>
 <span class="hljs-comment">// d.build[MyApp] will call new MyApp(AppConfig("Hello Airframe!")) to build a MyApp instance</span>
-d.build[<span class="hljs-type">MyApp</span>]{ app: <span class="hljs-type">MyApp</span> =&gt;
+d.build[<span class="hljs-type">MyApp</span>]{ (app: <span class="hljs-type">MyApp</span>) =&gt;
   <span class="hljs-comment">// Do something with app</span>
   ...
 }
@@ -158,10 +158,10 @@ d.build[<span class="hljs-type">MyApp</span>]{ app: <span class="hljs-type">MyAp
   .bind[<span class="hljs-type">D1</span>].toInstance(<span class="hljs-type">D1</span>(<span class="hljs-number">1</span>))    <span class="hljs-comment">// Bind D1 to a concrete instance D1(1)</span>
   .bind[<span class="hljs-type">D2</span>].toInstance(<span class="hljs-type">D2</span>(<span class="hljs-number">2</span>))    <span class="hljs-comment">// Bind D2 to a concrete instance D2(2)</span>
   .bind[<span class="hljs-type">D3</span>].toInstance(<span class="hljs-type">D3</span>(<span class="hljs-number">3</span>))    <span class="hljs-comment">// Bind D3 to a concrete instance D3(3)</span>
-  .bind[<span class="hljs-type">P</span>].toProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create a singleton P by resolving D1 from the design</span>
+  .bind[<span class="hljs-type">P</span>].toProvider{ (d1:<span class="hljs-type">D1</span>) =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create a singleton P by resolving D1 from the design</span>
   .bind[<span class="hljs-type">P</span>].toProvider{ (d1:<span class="hljs-type">D1</span>, d2:<span class="hljs-type">D2</span>) =&gt; <span class="hljs-type">P</span>(d1, d2) }  <span class="hljs-comment">// Resolve D1 and D2</span>
   .bind[<span class="hljs-type">P</span>].toProvider{ provider _ }                   <span class="hljs-comment">// Use the given function as a provider</span>
-  .bind[<span class="hljs-type">P</span>].toEagerSingletonProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create an eager singleton using the provider function</span>
+  .bind[<span class="hljs-type">P</span>].toEagerSingletonProvider{ (d1:<span class="hljs-type">D1</span>) =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create an eager singleton using the provider function</span>
 </code></pre>
 <p>If you define multiple bindings to the same type (e.g., P), the last binding will have the highest precedence.</p>
 <h3><a class="anchor" aria-hidden="true" id="design-is-immutable"></a><a href="#design-is-immutable" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Design is Immutable</h3>
@@ -208,14 +208,14 @@ d1.add(d2)
 <span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MyServerService</span> </span>{
   <span class="hljs-keyword">val</span> design = newDesign
     .bind[<span class="hljs-type">Server</span>]
-    .onInit{ x:<span class="hljs-type">Server</span> =&gt; ... }        <span class="hljs-comment">// Called when the object is initialized</span>
-    .onInject{ x:<span class="hljs-type">Server</span> =&gt; ... }      <span class="hljs-comment">// Called when the object is injected</span>
-    .onStart{ x:<span class="hljs-type">Server</span> =&gt; ... }       <span class="hljs-comment">// Called when session.start is called</span>
-    .afterStart{ x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called after onStart lifecycle is finished.</span>
-                                      <span class="hljs-comment">// Use this only when you need to add an extra startup process for testing.</span>
-    .beforeShutdown{ x:<span class="hljs-type">Server</span> =&gt; ...} <span class="hljs-comment">// Called right before all shutdown hook is called</span>
-                                      <span class="hljs-comment">// Useful for adding pre-shutdown step</span>
-    .onShutdown{ x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called when session.shutdown is called</span>
+    .onInit{ (x:<span class="hljs-type">Server</span>) =&gt; ... }        <span class="hljs-comment">// Called when the object is initialized</span>
+    .onInject{ (x:<span class="hljs-type">Server</span>) =&gt; ... }      <span class="hljs-comment">// Called when the object is injected</span>
+    .onStart{ (x:<span class="hljs-type">Server</span>) =&gt; ... }       <span class="hljs-comment">// Called when session.start is called</span>
+    .afterStart{ (x:<span class="hljs-type">Server</span>) =&gt; ... }    <span class="hljs-comment">// Called after onStart lifecycle is finished.</span>
+                                        <span class="hljs-comment">// Use this only when you need to add an extra startup process for testing.</span>
+    .beforeShutdown{ (x:<span class="hljs-type">Server</span>) =&gt; ...} <span class="hljs-comment">// Called right before all shutdown hook is called</span>
+                                        <span class="hljs-comment">// Useful for adding pre-shutdown step</span>
+    .onShutdown{ (x:<span class="hljs-type">Server</span>) =&gt; ... }    <span class="hljs-comment">// Called when session.shutdown is called</span>
   )
 }
 </code></pre>
@@ -254,16 +254,16 @@ design
   }
 }
 </code></pre>
-<p>These annotations are not supported in Scala.js, because Scala.js has no run-time reflection to read annotations in a class. For maximum compatibility, we recommend using onStart/onShutdown hooks or implementing AutoCloseable interface.</p>
+<p>These annotations are not supported in Scala.js and Scala Native, because other than JVM, there is no run-time reflection capability to read annotations in a class. For maximum compatibility, we recommend using onStart/onShutdown hooks or implementing AutoCloseable interface.</p>
 <h2><a class="anchor" aria-hidden="true" id="session"></a><a href="#session" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Session</h2>
 <p><code>Session</code> is a placeholder of your singleton instances created from your Design:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> session = design.newSession
-<span class="hljs-keyword">val</span> a = session.build[<span class="hljs-type">A</span>] { obj: <span class="hljs-type">A</span> =&gt;
+<span class="hljs-keyword">val</span> a = session.build[<span class="hljs-type">A</span>] { (obj: <span class="hljs-type">A</span>) =&gt;
   <span class="hljs-comment">// Do something with obj</span>
 }
 </code></pre>
 <p>If you need a typed-return value, you can use <code>design.run[A, B](f: A=&gt;B)</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> ret: <span class="hljs-type">Int</span> = design.run { a: <span class="hljs-type">A</span> =&gt;
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> ret: <span class="hljs-type">Int</span> = design.run { (a: <span class="hljs-type">A</span>) =&gt;
   <span class="hljs-comment">// Do something with a and return a value</span>
   <span class="hljs-number">1</span>
 }
@@ -282,7 +282,7 @@ design
 }
 </code></pre>
 <p>To simplify this session management, you can use <code>Design.build[A]</code> to start and shutdown a session automatically:</p>
-<pre><code class="hljs css language-scala">design.build[<span class="hljs-type">P</span>]{ p:<span class="hljs-type">P</span> =&gt; <span class="hljs-comment">// session.start will be called, and a new instance of P will be created</span>
+<pre><code class="hljs css language-scala">design.build[<span class="hljs-type">P</span>]{ (p:<span class="hljs-type">P</span>) =&gt; <span class="hljs-comment">// session.start will be called, and a new instance of P will be created</span>
   <span class="hljs-comment">// do something with P</span>
 }
 <span class="hljs-comment">// session.shutdown will be called here</span>
@@ -365,22 +365,23 @@ bind[<span class="hljs-type">Map</span>[<span class="hljs-type">Int</span>,<span
 bind[<span class="hljs-type">Map</span>[_,_]]
 </code></pre>
 <p>Behind the scene, Airframe uses <a href="https://github.com/wvlet/airframe/surface/">Surface</a> as identifier of types so that we can extract these types identifiers at compile time.</p>
-<h3><a class="anchor" aria-hidden="true" id="type-alias-binding"></a><a href="#type-alias-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Type Alias Binding</h3>
-<p>If you need to bind different objects to the same data type, use type aliases of Scala. For example,</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Fruit</span>(<span class="hljs-params">name: <span class="hljs-type">String</span></span>)</span>
+<h3><a class="anchor" aria-hidden="true" id="tagged-type-binding"></a><a href="#tagged-type-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Tagged Type Binding</h3>
+<p>If you need to bind different objects to the same data type, use tagged type:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.surface.tag.*
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Fruit</span>(<span class="hljs-params">name: <span class="hljs-type">String</span></span>)</span>
 
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Apple</span> </span>= <span class="hljs-type">Fruit</span>
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Banana</span> </span>= <span class="hljs-type">Fruit</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Apple</span></span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Banana</span></span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TaggedBinding</span>(<span class="hljs-params">apple:<span class="hljs-type">Apple</span>, banana:<span class="hljs-type">Banana</span></span>)</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TaggedBinding</span>(<span class="hljs-params">apple:<span class="hljs-type">Fruit</span> @@ <span class="hljs-type">Apple</span>, banana: <span class="hljs-type">Fruit</span> @@ <span class="hljs-type">Banana</span></span>)</span>
 
 </code></pre>
-<p>Alias binding is useful to inject primitive type values:</p>
+<p>Tagged-type binding is useful to inject primitive type values:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Env</span> </span>= <span class="hljs-type">String</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Env</span></span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyService</span>(<span class="hljs-params">env:<span class="hljs-type">Env</span>, session: <span class="hljs-type">Session</span></span>) </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyService</span>(<span class="hljs-params">env:<span class="hljs-type">String</span> @@ <span class="hljs-type">Env</span>, session: <span class="hljs-type">Session</span></span>) </span>{
   <span class="hljs-comment">// Conditional binding</span>
   <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> threadManager = env <span class="hljs-keyword">match</span> {
      <span class="hljs-keyword">case</span> <span class="hljs-string">"test"</span> =&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">TestingThreadManager</span>(...) <span class="hljs-comment">// prepare a testing thread manager</span>
@@ -393,11 +394,11 @@ bind[<span class="hljs-type">Map</span>[_,_]]
 
 <span class="hljs-keyword">val</span> testingDesign =
   coreDesign.
-    bind[<span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"test"</span>)
+    bind[<span class="hljs-type">String</span> @@ <span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"test"</span>)
 
 <span class="hljs-keyword">val</span> productionDesign =
   coreDesign
-    .bind[<span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"production"</span>)
+    .bind[<span class="hljs-type">String</span> @@ <span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"production"</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="multi-binding"></a><a href="#multi-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Multi-Binding</h3>
 <p>If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe DI. To illustrate this, consider building an web application that receives a request and returns a string message.
@@ -451,6 +452,26 @@ instead of using <code>scala.concurrent.ExecutionContext.Implicits.global</code>
 </code></pre>
 <p>Another workaround is setting <code>fork in run := true</code> or <code>fork in test := test</code> to your <code>build.sbt</code>, or using <code>Flat</code> classloader layering strategy:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-type">Test</span> / classLoaderLayeringStrategy := <span class="hljs-type">ClassLoaderLayeringStrategy</span>.<span class="hljs-type">Flat</span>
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="type-alias-cannot-be-used-in-provider-binding"></a><a href="#type-alias-cannot-be-used-in-provider-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Type alias cannot be used in provider binding</h2>
+<p>Since Scala 3, type aliases can be eagerly resolved at compile time <a href="https://github.com/wvlet/airframe/issues/2200">#2200</a>. So type alias might not work for binding instances, especitally type aliases are used for provider bindings:</p>
+<pre><code class="hljs css language-scala">
+<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">MyString</span> </span>= <span class="hljs-type">String</span>
+
+<span class="hljs-type">Design</span>.newDesign
+  .bind[<span class="hljs-type">MyString</span>].toInstance(<span class="hljs-string">"hello"</span>)
+  .bind[<span class="hljs-type">X</span>].toProvider{ (s: <span class="hljs-type">MyString</span>) =&gt; println(s) }
+
+<span class="hljs-comment">// MISSING_DEPENDENCY: String error will be thrown when building X</span>
+<span class="hljs-comment">// because { (s: MyString) =&gt; ... } is eagerly resolved to { (s: String) =&gt; ... } at compile-time</span>
+</code></pre>
+<p>A workaround is using tagged types:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.surface.tag.*
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Env</span></span>
+
+<span class="hljs-type">Design</span>.newDesign
+  .bind[<span class="hljs-type">String</span> @@ <span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"hello"</span>)
+  .bind[<span class="hljs-type">X</span>].toProvider{ (s: <span class="hljs-type">String</span> @@ <span class="hljs-type">Env</span>) =&gt; println(s) }
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="debugging-di"></a><a href="#debugging-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Debugging DI</h2>
 <p>To check the runtime behavior of Airframe's dependency injection, set the log level of <code>wvlet.airframe.di</code> to <code>debug</code> or <code>trace</code>:</p>
@@ -662,7 +683,7 @@ Surface uses Scala macros to embed compile-time type information into the runtim
 <span class="hljs-comment">// B and C will be necessary to build A</span>
 <span class="hljs-type">Surface</span>.of[<span class="hljs-type">A</span>] =&gt; <span class="hljs-type">Surface</span>(<span class="hljs-string">"A"</span>, params:<span class="hljs-type">Seq</span>(<span class="hljs-string">"b"</span> -&gt; <span class="hljs-type">Surface</span>.of[<span class="hljs-type">B</span>], <span class="hljs-string">"c"</span> -&gt; <span class="hljs-type">Surface</span>.of[<span class="hljs-type">C</span>]))
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/logos"><span class="arrow-prev">← </span><span>Logos</span></a><a class="docs-next button" href="/airframe/docs/airframe-rpc"><span>Airframe RPC</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#quick-start">Quick Start</a><ul class="toc-headings"><li><a href="#scalafmtconf">.scalafmt.conf</a></li><li><a href="#basic-usage">Basic Usage</a></li></ul></li><li><a href="#constructor-injection">Constructor Injection</a><ul class="toc-headings"><li><a href="#why-only-supports-constructor-injection">Why only supports constructor injection?</a></li></ul></li><li><a href="#design">Design</a><ul class="toc-headings"><li><a href="#design-is-immutable">Design is Immutable</a></li><li><a href="#injected-instances-are-always-singletons">Injected Instances Are Always Singletons</a></li></ul></li><li><a href="#life-cycle">Life Cycle</a><ul class="toc-headings"><li><a href="#eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</a></li><li><a href="#suppress-life-cycle-logging">Suppress Life Cycle Logging</a></li><li><a href="#annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</a></li></ul></li><li><a href="#session">Session</a><ul class="toc-headings"><li><a href="#child-sessions">Child Sessions</a></li><li><a href="#finding-the-current-session">Finding The Current Session</a></li></ul></li><li><a href="#designing-applications-with-airframe-di">Designing Applications with Airframe DI</a></li><li><a href="#advanced-binding-types">Advanced Binding Types</a><ul class="toc-headings"><li><a href="#generic-type-binding">Generic Type Binding</a></li><li><a href="#type-alias-binding">Type Alias Binding</a></li><li><a href="#multi-binding">Multi-Binding</a></li></ul></li><li><a href="#known-issues">Known Issues</a><ul class="toc-headings"><li><a href="#running-designbuildx-inside-future-causes-classnotfoundexception-in-sbt-13x">Running <code>design.build[X]</code> inside Future causes ClassNotFoundException in sbt 1.3.x</a></li></ul></li><li><a href="#debugging-di">Debugging DI</a><ul class="toc-headings"><li><a href="#tracing-di-with-google-chrome-browser">Tracing DI with Google Chrome Browser</a></li></ul></li><li><a href="#use-cases">Use Cases</a><ul class="toc-headings"><li><a href="#configuring-applications">Configuring Applications</a></li><li><a href="#managing-resources">Managing Resources</a></li></ul></li><li><a href="#airframe-internals">Airframe Internals</a><ul class="toc-headings"><li><a href="#session-1">Session</a></li><li><a href="#comparison-with-a-naive-approach">Comparison with a naive approach</a></li><li><a href="#instantiation-methods">Instantiation Methods</a></li><li><a href="#surface">Surface</a></li><li><a href="#surface-parameters">Surface Parameters</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2024 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/logos"><span class="arrow-prev">← </span><span>Logos</span></a><a class="docs-next button" href="/airframe/docs/airframe-rpc"><span>Airframe RPC</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#quick-start">Quick Start</a><ul class="toc-headings"><li><a href="#scalafmtconf">.scalafmt.conf</a></li><li><a href="#basic-usage">Basic Usage</a></li></ul></li><li><a href="#constructor-injection">Constructor Injection</a><ul class="toc-headings"><li><a href="#why-only-supports-constructor-injection">Why only supports constructor injection?</a></li></ul></li><li><a href="#design">Design</a><ul class="toc-headings"><li><a href="#design-is-immutable">Design is Immutable</a></li><li><a href="#injected-instances-are-always-singletons">Injected Instances Are Always Singletons</a></li></ul></li><li><a href="#life-cycle">Life Cycle</a><ul class="toc-headings"><li><a href="#eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</a></li><li><a href="#suppress-life-cycle-logging">Suppress Life Cycle Logging</a></li><li><a href="#annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</a></li></ul></li><li><a href="#session">Session</a><ul class="toc-headings"><li><a href="#child-sessions">Child Sessions</a></li><li><a href="#finding-the-current-session">Finding The Current Session</a></li></ul></li><li><a href="#designing-applications-with-airframe-di">Designing Applications with Airframe DI</a></li><li><a href="#advanced-binding-types">Advanced Binding Types</a><ul class="toc-headings"><li><a href="#generic-type-binding">Generic Type Binding</a></li><li><a href="#tagged-type-binding">Tagged Type Binding</a></li><li><a href="#multi-binding">Multi-Binding</a></li></ul></li><li><a href="#known-issues">Known Issues</a><ul class="toc-headings"><li><a href="#running-designbuildx-inside-future-causes-classnotfoundexception-in-sbt-13x">Running <code>design.build[X]</code> inside Future causes ClassNotFoundException in sbt 1.3.x</a></li></ul></li><li><a href="#type-alias-cannot-be-used-in-provider-binding">Type alias cannot be used in provider binding</a></li><li><a href="#debugging-di">Debugging DI</a><ul class="toc-headings"><li><a href="#tracing-di-with-google-chrome-browser">Tracing DI with Google Chrome Browser</a></li></ul></li><li><a href="#use-cases">Use Cases</a><ul class="toc-headings"><li><a href="#configuring-applications">Configuring Applications</a></li><li><a href="#managing-resources">Managing Resources</a></li></ul></li><li><a href="#airframe-internals">Airframe Internals</a><ul class="toc-headings"><li><a href="#session-1">Session</a></li><li><a href="#comparison-with-a-naive-approach">Comparison with a naive approach</a></li><li><a href="#instantiation-methods">Instantiation Methods</a></li><li><a href="#surface">Surface</a></li><li><a href="#surface-parameters">Surface Parameters</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2024 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {

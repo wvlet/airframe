@@ -63,7 +63,7 @@
               }
             });
         </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Overview</h1></header><article><div><span><p><img style = "float: right; padding: 10px;" width="150px" src="../img/logos/airframe_icon_small.png"/></p>
-<p>Airframe is a collection of essential building blocks for writing full-fledged applications in Scala and Scala.js.</p>
+<p>Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Ntive.</p>
 <ul>
 <li><a href="/airframe/docs/release-notes">Release Notes</a></li>
 <li><a href="https://github.com/wvlet/airframe">Source Code (GitHub)</a></li>
@@ -123,9 +123,24 @@ libraryDependencies ++= <span class="hljs-type">Seq</span>(
   <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-surface"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Object surface inspector</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-ulid"</span>    % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// ULID generator</span>
 )
+
+<span class="hljs-comment">// For Scala Native 0.5.x, the following libraries can be used (Since Airframe 24.4.2):</span>
+<span class="hljs-comment">// Note: Only Scala 3 is supported for Scala Native</span>
+libraryDependencies ++= <span class="hljs-type">Seq</span>(
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe"</span>         % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Dependency injection</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-codec"</span>   % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// MessagePack-based schema-on-read codec</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-control"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Library for retryable execution</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-json"</span>    % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure Scala JSON parser</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-log"</span>     % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Logging</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-msgpack"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure-Scala MessagePack</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-metrics"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Metrics units</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-rx"</span>      % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// ReactiveX interface</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-surface"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Object surface inspector</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-ulid"</span>    % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// ULID generator</span>
+)
 </code></pre>
-<p>If you need an early access to the latest features, <a href="https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/">snapshot versions</a> are also available for each main branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:</p>
-<pre><code class="hljs css language-scala">resolvers += <span class="hljs-type">Resolver</span>.sonatypeRepo(<span class="hljs-string">"snapshots"</span>)
+<p>For an early access to the latest features, <a href="https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/">snapshot versions</a> are also available for each main branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:</p>
+<pre><code class="hljs css language-scala">resolvers += <span class="hljs-type">Resolver</span>.sonatypeOssRepos(<span class="hljs-string">"snapshots"</span>)
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="usage-guides"></a><a href="#usage-guides" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage Guides</h2>
 <p>Scala is a quite powerful programming language. One of the benefits of Scala is it can utilize libraries in Java ecosystem. Existing libraries for Java, however, are not always the best choices if you are primarily writing code in Scala. For example, some libraries have performance overhead for converting Java collections into Scala collections, and their interfaces might not be well-suited to using them from Scala, etc.</p>
@@ -211,9 +226,13 @@ a pattern you want to extract:</p>
 </code></pre>
 <p>Other than <code>@Endpoint</code> annotations, this is the same with regular Scala class definition.</p>
 <p>A client code to access this API is also simple like this:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-comment">// Accessing the server using an http client</span>
-client.get[<span class="hljs-type">ServerInfo</span>](<span class="hljs-string">"/v1/info"</span>)      <span class="hljs-comment">// ServerInfo("1.0")</span>
-client.post(<span class="hljs-string">"/v1/user"</span>, <span class="hljs-type">User</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)) <span class="hljs-comment">// User(1, "Ann")</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">Http</span>
+
+<span class="hljs-comment">// Accessing the server using an http client</span>
+<span class="hljs-keyword">val</span> client = <span class="hljs-type">Http</span>.client.newSyncClient(<span class="hljs-string">"http://localhost:8080"</span>)
+
+client.readAs[<span class="hljs-type">ServerInfo</span>](<span class="hljs-type">Http</span>.<span class="hljs-type">GET</span>(<span class="hljs-string">"/v1/info"</span>))      <span class="hljs-comment">// ServerInfo("1.0")</span>
+client.call[<span class="hljs-type">User</span>, <span class="hljs-type">User</span>](<span class="hljs-type">Http</span>.<span class="hljs-type">POST</span>(<span class="hljs-string">"/v1/user"</span>), <span class="hljs-type">User</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)) <span class="hljs-comment">// User(1, "Ann")</span>
 </code></pre>
 <p>Mapping from HTTP responses to case classes is handled by <a href="/airframe/docs/airframe-codec">airframe-codec</a>.</p>
 <h3><a class="anchor" aria-hidden="true" id="rpc"></a><a href="#rpc" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RPC</h3>
