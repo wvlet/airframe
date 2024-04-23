@@ -21,11 +21,14 @@ import wvlet.airspec.AirSpec
 /**
   */
 class IntervalTest extends AirSpec {
-  private def pendingScalaJS = if (isScalaJS) {
+  private def pendingInScalaJSAndScalaNative = if (isScalaJS) {
     pending("Async test is required")
+  } else if (isScalaNative) {
+    pending("Timer is not yet supported in Scala Native")
   }
+
   test("timeIntervalMillis") {
-    pendingScalaJS
+    pendingInScalaJSAndScalaNative
 
     val counter = new AtomicInteger(0)
     val rx = Rx
@@ -53,7 +56,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("timer/delay") {
-    pendingScalaJS
+    pendingInScalaJSAndScalaNative
     val counter = new AtomicInteger(0)
     val rx = Rx
       .delay(1, TimeUnit.MILLISECONDS)
@@ -78,7 +81,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("throttleFirst") {
-    pendingScalaJS
+    pendingInScalaJSAndScalaNative
     val rx = Rx
       .sequence(1, 2, 3, 4, 5, 6)
       .throttleFirst(10000, TimeUnit.MILLISECONDS)
@@ -96,7 +99,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("throttleLast") {
-    pendingScalaJS
+    pendingInScalaJSAndScalaNative
 
     flaky {
       val rx =
@@ -115,7 +118,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("throttleLast of empty seq") {
-    pendingScalaJS
+    pendingInScalaJSAndScalaNative
     val rx = Rx.fromSeq(Seq.empty[Int]).throttleLast(1, TimeUnit.MILLISECONDS)
     val c  = rx.run { x => }
     compat.scheduleOnce(100) {

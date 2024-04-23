@@ -20,6 +20,12 @@ import scala.concurrent.{Await, Promise}
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
 import java.util.concurrent.atomic.{AtomicInteger, AtomicBoolean}
 
+import scala.scalanative.posix.timer.timer_create
+import scala.scalanative.posix.time.*
+import scala.scalanative.posix.signal.*
+import scala.scalanative.posix.sys.types.timer_t
+import scala.scalanative.unsafe.*
+
 /**
   */
 object compat:
@@ -41,6 +47,17 @@ object compat:
   def defaultExecutionContext: scala.concurrent.ExecutionContext = defaultExecutor
 
   def newTimer: Timer = ???
+//    Zone {
+//      val timerId: Ptr[timer_t] = alloc[timer_t]()
+//      val se: sigevent          = stackalloc[sigevent]()
+//      se._1 = SIGEV_THREAD
+////        sigev_notify = SIGEV_THREAD,
+////        sigev_signo = SIGALRM,
+////        sigev_value = sigval(0),
+////        sigev_notify_thread_id = pthread_self()
+////      )
+//// timer_create is not yet implemented in Scala Native
+//      // timer_create(CLOCK_REALTIME, se, timerId)
 
   def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable =
     val thread = Executors.newScheduledThreadPool(1)
