@@ -271,7 +271,8 @@ lazy val nativeProjects: Seq[ProjectReference] = Seq(
   metrics.native,
   json.native,
   msgpack.native,
-  ulid.native
+  ulid.native,
+  rx.native
 )
 
 // Integration test projects
