@@ -267,7 +267,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 lazy val nativeProjects: Seq[ProjectReference] = Seq(
   log.native,
   surface.native,
-  di.native
+  di.native,
+  metrics.native
 )
 
 // Integration test projects
@@ -618,7 +619,7 @@ lazy val log: sbtcrossproject.CrossProject =
     )
 
 lazy val metrics =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-metrics"))
     .settings(buildSettings)
@@ -627,6 +628,7 @@ lazy val metrics =
       description := "Basit metric representations, including duration, size, time window, etc."
     )
     .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log, surface)
 
 lazy val msgpack =
