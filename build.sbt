@@ -266,7 +266,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 
 lazy val nativeProjects: Seq[ProjectReference] = Seq(
   log.native,
-  surface.native
+  surface.native,
+  di.native
 )
 
 // Integration test projects
@@ -417,7 +418,7 @@ def airframeDIDependencies = Seq(
 )
 
 lazy val di =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-di"))
     .settings(buildSettings)
@@ -435,6 +436,9 @@ lazy val di =
     .jsSettings(
       jsBuildSettings
     )
+    .nativeSettings(
+      nativeBuildSettings
+    )
     .dependsOn(
       surface,
       diMacros
@@ -451,7 +455,7 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
 // Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
 // This project sources and classes will be embedded to airframe.jar, so we don't publish airframe-di-macros
 lazy val diMacros =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
@@ -460,6 +464,7 @@ lazy val diMacros =
       description := "Macros for Airframe Di"
     )
     .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log, surface)
 
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
