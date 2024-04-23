@@ -14,23 +14,77 @@
 package wvlet.airframe.rx
 
 import scala.util.Try
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
+import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
+import java.util.concurrent.atomic.{AtomicInteger, AtomicBoolean}
 
 /**
   */
-object compat {
-  def defaultExecutionContext: scala.concurrent.ExecutionContext = ???
+object compat:
+
+  private def newDaemonThreadFactory(name: String): ThreadFactory = new ThreadFactory:
+    private val group: ThreadGroup = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
+    private val threadNumber       = new AtomicInteger(1)
+
+    override def newThread(r: Runnable): Thread =
+      val threadName = s"${name}-${threadNumber.getAndIncrement()}"
+      val thread     = new Thread(group, r, threadName)
+      thread.setName(threadName)
+      thread.setDaemon(true)
+      thread
+
+  private lazy val defaultExecutor =
+    ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(newDaemonThreadFactory("airframe-rx")))
+
+  def defaultExecutionContext: scala.concurrent.ExecutionContext = defaultExecutor
 
   def newTimer: Timer = ???
 
-  def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = ???
+  def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable =
+    val thread = Executors.newScheduledThreadPool(1)
+    val schedule = thread.schedule(
+      new Runnable:
+        override def run(): Unit =
+          body
+      ,
+      delayMills,
+      TimeUnit.MILLISECONDS
+    )
+    // Immediately start the thread pool shutdown to avoid thread leak
+    thread.shutdown()
+    Cancelable { () =>
+      try
+        schedule.cancel(false)
+      finally
+        thread.shutdown()
+    }
 
-  def toSeq[A](rx: Rx[A]): Seq[A] = {
-    throw new UnsupportedOperationException("Rx.toSeq is unsupported in Scala.native")
-  }
+  def toSeq[A](rx: Rx[A]): Seq[A] =
+    val ready = new AtomicBoolean(true)
+    val s     = Seq.newBuilder[A]
+    var c     = Cancelable.empty
+    c = RxRunner.run(rx) {
+      case OnNext(v) => s += v.asInstanceOf[A]
+      case OnError(e) =>
+        c.cancel
+        throw e
+      case OnCompletion =>
+        c.cancel
+        ready.set(true)
+    }
+    while !ready.get() do {}
+    s.result()
 
-  private[rx] def await[A](rx: RxOps[A]): A = {
-    throw new UnsupportedOperationException("Rx.await is unsupported in Scala.native")
-  }
-}
+  private[rx] def await[A](rx: RxOps[A]): A =
+    val p = Promise[A]()
+    val c = RxRunner.runOnce(rx) {
+      case OnNext(v)    => p.success(v.asInstanceOf[A])
+      case OnError(e)   => p.failure(e)
+      case OnCompletion => p.failure(new IllegalStateException(s"OnCompletion should not be issued in: ${rx}"))
+    }
+    try
+      Await.result(p.future, Duration.Inf)
+    finally
+      c.cancel
