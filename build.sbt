@@ -530,7 +530,7 @@ lazy val config =
     .dependsOn(di.jvm, codec.jvm)
 
 lazy val control =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-control"))
     .settings(buildSettings)
@@ -539,6 +539,7 @@ lazy val control =
       description := "A library for controlling program flows and retrying"
     )
     .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
     .dependsOn(log, rx)
 
 lazy val ulid =
