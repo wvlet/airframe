@@ -11,23 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
-import java.util.UUID
-
-import wvlet.airspec.AirSpec
+package wvlet.airframe.control
 
 /**
   */
-object MapConversionTest extends AirSpec {
-
-  case class A(id: Int, name: String, key: UUID)
-
-  test("convert Map[String, Any] to object") {
-    // UUID.randomUUID() is not available in Scala Native
-    val uuid  = UUID.fromString("7692a9a1-2f73-4e7f-b70a-88e74682654d")
-    val m     = Map("id" -> 10, "name" -> "leo", "key" -> uuid)
-    val codec = MessageCodec.of[A]
-    val a     = codec.fromMap(m)
-    a shouldBe A(10, "leo", uuid)
-  }
-}
+object Compat:
+  def sleep(millis: Long): Unit =
+    Thread.sleep(millis)

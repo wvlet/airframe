@@ -473,21 +473,25 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       Map(1 -> "a", "2" -> "b")
     )
 
-    val msgpack = codec.toMsgPack(input)
+    test("unpack test") {
+      if (isScalaNative)
+        pending("Scala Native crashes with this test")
 
-    val result = codec.unpackMsgPack(msgpack)
-    result.get shouldBe Seq(
-      Seq("a", "b"),
-      Seq(1L, 2L),
-      Seq(true, false),
-      Seq(1L, 2L),
-      Seq(1.0, 2.0),
-      Seq(1.0, 2.0),
-      Seq(1L, 2L),
-      Seq('a'.toLong, 'b'.toLong),
-      Seq(1L, "a", true),
-      Map(1 -> "a", "2" -> "b")
-    )
+      val msgpack = codec.toMsgPack(input)
+      val result  = codec.unpackMsgPack(msgpack)
+      result.get shouldBe Seq(
+        Seq("a", "b"),
+        Seq(1L, 2L),
+        Seq(true, false),
+        Seq(1L, 2L),
+        Seq(1.0, 2.0),
+        Seq(1.0, 2.0),
+        Seq(1L, 2L),
+        Seq('a'.toLong, 'b'.toLong),
+        Seq(1L, "a", true),
+        Map(1 -> "a", "2" -> "b")
+      )
+    }
   }
 
   test("pack throwable object passed as Any") {
