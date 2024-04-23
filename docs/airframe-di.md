@@ -20,7 +20,7 @@ With Airframe DI, you can solve typical programming patterns, such as:
 - Managing differently configured singletons of the same type.
 - ..., etc.
 
-Airframe DI is available for Scala 2.12, 2.13, Scala 3, and [Scala.js](https://www.scala-js.org/). 
+Airframe DI is available for Scala 2.12, 2.13, Scala 3, [Scala.js](https://www.scala-js.org/), and Scala Native.
 
 In Scala, we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see also [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html), which describes pros and cons of various DI frameworks, including Airframe, Google Guice, Macwire, Dagger2, etc.
 
@@ -105,7 +105,7 @@ val d = newDesign
 
 // Create MyApp. AppConfig instance defined in the design will be used.
 // d.build[MyApp] will call new MyApp(AppConfig("Hello Airframe!")) to build a MyApp instance
-d.build[MyApp]{ app: MyApp =>
+d.build[MyApp]{ (app: MyApp) =>
   // Do something with app
   ...
 }
@@ -136,10 +136,10 @@ val design: Design =
   .bind[D1].toInstance(D1(1))    // Bind D1 to a concrete instance D1(1)
   .bind[D2].toInstance(D2(2))    // Bind D2 to a concrete instance D2(2)
   .bind[D3].toInstance(D3(3))    // Bind D3 to a concrete instance D3(3)
-  .bind[P].toProvider{ d1:D1 => P(d1) } // Create a singleton P by resolving D1 from the design
+  .bind[P].toProvider{ (d1:D1) => P(d1) } // Create a singleton P by resolving D1 from the design
   .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) }  // Resolve D1 and D2
   .bind[P].toProvider{ provider _ }                   // Use the given function as a provider
-  .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
+  .bind[P].toEagerSingletonProvider{ (d1:D1) => P(d1) } // Create an eager singleton using the provider function
 ```
 
 If you define multiple bindings to the same type (e.g., P), the last binding will have the highest precedence.
@@ -206,14 +206,14 @@ import wvlet.airframe._
 object MyServerService {
   val design = newDesign
     .bind[Server]
-    .onInit{ x:Server => ... }        // Called when the object is initialized
-    .onInject{ x:Server => ... }      // Called when the object is injected
-    .onStart{ x:Server => ... }       // Called when session.start is called
-    .afterStart{ x:Server => ... }    // Called after onStart lifecycle is finished.
-                                      // Use this only when you need to add an extra startup process for testing.
-    .beforeShutdown{ x:Server => ...} // Called right before all shutdown hook is called
-                                      // Useful for adding pre-shutdown step
-    .onShutdown{ x:Server => ... }    // Called when session.shutdown is called
+    .onInit{ (x:Server) => ... }        // Called when the object is initialized
+    .onInject{ (x:Server) => ... }      // Called when the object is injected
+    .onStart{ (x:Server) => ... }       // Called when session.start is called
+    .afterStart{ (x:Server) => ... }    // Called after onStart lifecycle is finished.
+                                        // Use this only when you need to add an extra startup process for testing.
+    .beforeShutdown{ (x:Server) => ...} // Called right before all shutdown hook is called
+                                        // Useful for adding pre-shutdown step
+    .onShutdown{ (x:Server) => ... }    // Called when session.shutdown is called
   )
 }
 ```
@@ -268,7 +268,7 @@ trait MyService {
 }
 ```
 
-These annotations are not supported in Scala.js, because Scala.js has no run-time reflection to read annotations in a class. For maximum compatibility, we recommend using onStart/onShutdown hooks or implementing AutoCloseable interface.
+These annotations are not supported in Scala.js and Scala Native, because other than JVM, there is no run-time reflection capability to read annotations in a class. For maximum compatibility, we recommend using onStart/onShutdown hooks or implementing AutoCloseable interface.
 
 
 ## Session
@@ -277,7 +277,7 @@ These annotations are not supported in Scala.js, because Scala.js has no run-tim
 
 ```scala
 val session = design.newSession
-val a = session.build[A] { obj: A =>
+val a = session.build[A] { (obj: A) =>
   // Do something with obj
 }
 ```
@@ -285,7 +285,7 @@ val a = session.build[A] { obj: A =>
 If you need a typed-return value, you can use `design.run[A, B](f: A=>B)`:
 
 ```scala
-val ret: Int = design.run { a: A =>
+val ret: Int = design.run { (a: A) =>
   // Do something with a and return a value
   1
 }
@@ -311,7 +311,7 @@ finally {
 To simplify this session management, you can use `Design.build[A]` to start and shutdown a session automatically:
 
 ```scala
-design.build[P]{ p:P => // session.start will be called, and a new instance of P will be created
+design.build[P]{ (p:P) => // session.start will be called, and a new instance of P will be created
   // do something with P
 }
 // session.shutdown will be called here
@@ -417,26 +417,28 @@ bind[Map[_,_]]
 
 Behind the scene, Airframe uses [Surface](https://github.com/wvlet/airframe/surface/) as identifier of types so that we can extract these types identifiers at compile time.
 
-### Type Alias Binding
+### Tagged Type Binding
 
-If you need to bind different objects to the same data type, use type aliases of Scala. For example,
+If you need to bind different objects to the same data type, use tagged type:
+
 ```scala
+import wvlet.airframe.surface.tag.*
 case class Fruit(name: String)
 
-type Apple = Fruit
-type Banana = Fruit
+trait Apple
+trait Banana
 
-class TaggedBinding(apple:Apple, banana:Banana)
+class TaggedBinding(apple:Fruit @@ Apple, banana: Fruit @@ Banana)
 
  ```
 
-Alias binding is useful to inject primitive type values:
+Tagged-type binding is useful to inject primitive type values:
 ```scala
 import wvlet.airframe._
 
-type Env = String
+trait Env
 
-class MyService(env:Env, session: Session) {
+class MyService(env:String @@ Env, session: Session) {
   // Conditional binding
   lazy val threadManager = env match {
      case "test" => new TestingThreadManager(...) // prepare a testing thread manager
@@ -449,11 +451,11 @@ val coreDesign = newDesign
 
 val testingDesign =
   coreDesign.
-    bind[Env].toInstance("test")
+    bind[String @@ Env].toInstance("test")
 
 val productionDesign =
   coreDesign
-    .bind[Env].toInstance("production")
+    .bind[String @@ Env].toInstance("production")
 ```
 
 ### Multi-Binding
@@ -523,6 +525,34 @@ Another workaround is setting `fork in run := true` or `fork in test := test` to
 ```scala
 Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
 ```
+
+## Type alias cannot be used in provider binding
+
+Since Scala 3, type aliases can be eagerly resolved at compile time [#2200](https://github.com/wvlet/airframe/issues/2200). So type alias might not work for binding instances, especitally type aliases are used for provider bindings:
+
+```scala
+
+type MyString = String
+
+Design.newDesign
+  .bind[MyString].toInstance("hello")
+  .bind[X].toProvider{ (s: MyString) => println(s) }
+
+// MISSING_DEPENDENCY: String error will be thrown when building X
+// because { (s: MyString) => ... } is eagerly resolved to { (s: String) => ... } at compile-time
+```
+
+A workaround is using tagged types:
+
+```scala
+import wvlet.airframe.surface.tag.*
+trait Env
+
+Design.newDesign
+  .bind[String @@ Env].toInstance("hello")
+  .bind[X].toProvider{ (s: String @@ Env) => println(s) }
+```
+
 
 ## Debugging DI
 

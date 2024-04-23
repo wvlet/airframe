@@ -39,7 +39,7 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % "(version)"
   - Easy to customize your own log format and log levels *inside* the code. No external XML configuration is required.
 - **Production ready**
   - airframe-log has built-in handlers for log file rotations, asynchronous logging.
-  - Scala 2.12, 2.13, Scala.js support
+  - Scala 2.12, 2.13, 3.x, Scala.js, Scala Native support
 
 
 ### Using LogSupport trait

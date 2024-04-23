@@ -25,7 +25,7 @@ AirSpec uses `test("...") { ... }` syntax for writing test cases. This style req
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
 - Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
-- Scala 2.12, 2.13, 3, Scala.js, Scala Native support
+- Scala 2.12, 2.13, Scala 3, Scala.js, Scala Native support
 
 To start using AirSpec, read [Quick Start](#quick-start).
 
