@@ -272,6 +272,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 lazy val nativeProjects: Seq[ProjectReference] = Seq(
   log.native,
   surface.native,
+  diMacros.native,
   di.native,
   metrics.native,
   json.native,
