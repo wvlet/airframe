@@ -70,3 +70,10 @@ object Scala3NewTypeTest extends AirSpec:
     m shouldBe defined
     m.get.args(0).surface.name shouldBe "MyEnv"
   }
+
+  object O:
+    opaque type InnerOpaque = Double
+
+  test("Opaque types from inner object") {
+    val s = Surface.of[O.InnerOpaque]
+  }
