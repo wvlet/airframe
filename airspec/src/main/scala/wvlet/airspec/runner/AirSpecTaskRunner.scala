@@ -17,7 +17,7 @@ import sbt.testing.*
 import wvlet.airframe.{Design, Session}
 import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
-import wvlet.log.{Logger, LogSupport}
+import wvlet.log.{Logger, LogSupport, LogLevel}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
@@ -88,11 +88,19 @@ private[airspec] class AirSpecTaskRunner(
     */
   def runTask: Future[Unit] = {
     val startTimeNanos = System.nanoTime()
-    var prevLogLevel   = Logger(testClassName).getLogLevel
+    val prevLogLevel   = Map.newBuilder[String, LogLevel]
+    prevLogLevel += testClassName -> Logger(testClassName).getLogLevel
     Future
       .apply {
         // Set the default log level for the class
         Logger(testClassName).setLogLevel(config.defaultLogLevel)
+
+        // Set log level for other classes
+        config.additionalLogLevels.foreach { case (pkg, level) =>
+          prevLogLevel += pkg -> Logger(pkg).getLogLevel
+          Logger(pkg).setLogLevel(level)
+        }
+
         // Start a background log level scanner thread. If a thread is already running, reuse it.
         compat.startLogScanner
       }
@@ -110,7 +118,11 @@ private[airspec] class AirSpecTaskRunner(
       }
       .transform { case ret =>
         compat.stopLogScanner
-        Logger(testClassName).setLogLevel(prevLogLevel)
+
+        // Reset log levels
+        prevLogLevel.result().foreach { case (pkg, level) =>
+          Logger(pkg).setLogLevel(level)
+        }
         ret
       }
       .recover { case e: Throwable =>
