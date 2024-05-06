@@ -31,12 +31,27 @@ object JDBCCodec extends LogSupport {
     private lazy val columnNames = (1 to columnCount).map(i => md.getColumnName(i))
 
     /**
-      * Encode the all ResultSet rows as MsgPack map values
+      * Encode the all ResultSet rows as MsgPack map values. Each row is encoded as a map of column name -> column value
       */
     def toMsgPack: Array[Byte] = {
-      val p = MessagePack.newBufferPacker
-      packAllRowsAsMap(p)
-      p.toByteArray
+      val p          = MessagePack.newBufferPacker
+      val writenRows = packAllRowsAsMap(p)
+
+      // Add an array header to the encode the number of rows
+      val p2 = MessagePack.newBufferPacker
+      p2.packArrayHeader(writenRows)
+      // NOTE: This is not an ideal as it copies the memory buffer, but it is the simplest way to add the array header to the
+      // a sequence of MessagePack data whose size is unknown in advance
+      p2.addPayload(p.toByteArray)
+      p2.toByteArray
+    }
+
+    /**
+      * Encode the all ResultSet rows as a JSON array of JSON objects. Each row is encoded as a JSON object of column
+      * name -> column value.
+      */
+    def toJson: String = {
+      s"[${toJsonSeq.mkString(",")}]"
     }
 
     /**
@@ -57,11 +72,16 @@ object JDBCCodec extends LogSupport {
 
     /**
       * pack the all ResultSet rows as MsgPack map values
+      * @return
+      *   the number of rows packed
       */
-    def packAllRowsAsMap(p: Packer): Unit = {
+    def packAllRowsAsMap(p: Packer): Int = {
+      var rowCount = 0;
       while (rs.next()) {
         packRowAsMap(p)
+        rowCount += 1
       }
+      rowCount
     }
 
     private class RStoMsgPackIterator[A](f: Array[Byte] => A, packer: Packer => Unit) extends Iterator[A] {
