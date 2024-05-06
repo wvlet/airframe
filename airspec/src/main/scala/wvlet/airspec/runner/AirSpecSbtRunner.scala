@@ -59,9 +59,10 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecSbtRunner = {
 
     // Set log level with -l (log level)
-    val remaining          = Array.newBuilder[String]
-    var i                  = 0
-    var logLevel: LogLevel = Logger.getDefaultLogLevel
+    val remaining           = Array.newBuilder[String]
+    var i                   = 0
+    var logLevel: LogLevel  = Logger.getDefaultLogLevel
+    val additionalLogLevels = Map.newBuilder[String, LogLevel]
     while (i < args.length) {
       args(i) match {
         case "-l" if i < args.length - 1 =>
@@ -71,8 +72,7 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
         case arg if arg.startsWith("-L") =>
           arg.stripPrefix("-L").split("=") match {
             case Array(pkg, level) =>
-              val logLevel = LogLevel(level)
-              Logger(pkg).setLogLevel(logLevel)
+              additionalLogLevels += pkg -> LogLevel(level)
             case _ =>
               warn(s"Ignoring invalid argument: ${arg}. Use -L(package)=(log level) to set log levels")
           }
@@ -82,10 +82,22 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
       i += 1
     }
 
-    new AirSpecSbtRunner(AirSpecConfig(remaining.result(), logLevel), remoteArgs, testClassLoader)
+    new AirSpecSbtRunner(
+      AirSpecConfig(
+        remaining.result(),
+        defaultLogLevel = logLevel,
+        additionalLogLevels = additionalLogLevels.result()
+      ),
+      remoteArgs,
+      testClassLoader
+    )
   }
 
-  case class AirSpecConfig(args: Array[String], defaultLogLevel: LogLevel = LogLevel.INFO) {
+  case class AirSpecConfig(
+      args: Array[String],
+      defaultLogLevel: LogLevel = LogLevel.INFO,
+      additionalLogLevels: Map[String, LogLevel] = Map.empty
+  ) {
     val specMatcher: AirSpecMatcher = {
       // For now, we only support regex-based test name matcher using the first argument
       args.find(x => !x.startsWith("-")) match {
