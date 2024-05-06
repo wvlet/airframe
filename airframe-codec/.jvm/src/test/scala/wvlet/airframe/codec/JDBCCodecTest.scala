@@ -194,6 +194,27 @@ class JDBCCodecTest extends AirSpec {
       jsonSeq(1) shouldBe """{"id":2,"name":"yui"}"""
     }
   }
+
+  test("ResultSet to JSON array") {
+    withQuery("""with a(id, name) as
+                |(select * from (values (1, 'leo'), (2, 'yui')))
+                |select * from a order by id asc
+                |""".stripMargin) { rs =>
+      val json = JDBCCodec(rs).toJson
+      json shouldBe """[{"id":1,"name":"leo"},{"id":2,"name":"yui"}]"""
+    }
+  }
+
+  test("ResultSet to MsgPack") {
+    withQuery("""with a(id, name) as
+        |(select * from (values (1, 'leo'), (2, 'yui')))
+        |select * from a order by id asc
+        |""".stripMargin) { rs =>
+      val msgpack = JDBCCodec(rs).toMsgPack
+      val json    = JSONCodec.toJson(msgpack)
+      json shouldBe """[{"id":1,"name":"leo"},{"id":2,"name":"yui"}]"""
+    }
+  }
 }
 
 case class MockArray(v: AnyRef) extends java.sql.Array {
