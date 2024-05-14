@@ -172,15 +172,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
   }
 
   private def extractSymbol(t: TypeRepr) =
-    val dealiased     = t.dealias
-    val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
-    symbolInOwner.map(_.tree) match
-      case Some(TypeDef(_, b: TypeTree)) if t == dealiased =>
-        // t.dealias does not dealias for path dependent types, so extracting the dealiased type from AST.
-        surfaceOf(b.tpe)
-      case _ =>
-        if t != dealiased then surfaceOf(dealiased)
-        else surfaceOf(t.simplified)
+    val dealiased = t.dealias
+    if t != dealiased then surfaceOf(dealiased)
+    else
+      // t.dealias does not dealias for path dependent types, so try to find a matching inner type
+      val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
+      symbolInOwner match
+        case Some(sym) =>
+          surfaceOf(sym.typeRef.dealias)
+        case _ =>
+          surfaceOf(t.simplified)
 
   private def aliasFactory: Factory = {
     case t if t.typeSymbol.typeRef.isOpaqueAlias =>
