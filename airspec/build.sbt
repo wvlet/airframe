@@ -130,7 +130,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -317,6 +318,9 @@ lazy val airspecDeps =
       Compile / packageSrc / mappings ++= (airspecCore.native / Compile / packageSrc / mappings).value
     )
     .dependsOn(airspecCore)
+
+// Disable strict dependency check for scalacheck
+ThisBuild / evictionErrorLevel := Level.Info
 
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform, NativePlatform)
