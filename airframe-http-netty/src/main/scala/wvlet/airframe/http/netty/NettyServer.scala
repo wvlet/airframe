@@ -83,6 +83,9 @@ case class NettyServerConfig(
   def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
     this.copy(httpLoggerProvider = loggerProvider)
   }
+  def withExtraLogEntries(f: () => Map[String, Any]): NettyServerConfig = {
+    withHttpLoggerConfig(_.withExtraEntries(f))
+  }
   def noLogging: NettyServerConfig = {
     this.copy(
       httpLoggerProvider = HttpLogger.emptyLogger(_)
@@ -103,6 +106,11 @@ case class NettyServerConfig(
     s.start
     s
   }
+
+  /**
+    * Create a new DI design for instanciating the Netty server with this config
+    * @return
+    */
   def design: Design = {
     Design.newDesign
       .bind[NettyServer].toProvider { (s: Session) => newServer(s) }
@@ -130,7 +138,7 @@ case class NettyServerConfig(
   }
 
   def newHttpLogger: HttpLogger = {
-    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("server_name" -> name)))
+    httpLoggerProvider(httpLoggerConfig.withExtraEntries(() => ListMap("server_name" -> name)))
   }
 }
 

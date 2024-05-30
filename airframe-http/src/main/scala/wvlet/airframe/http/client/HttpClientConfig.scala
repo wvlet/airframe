@@ -145,6 +145,10 @@ case class HttpClientConfig(
     this.copy(httpLoggerConfig = f(httpLoggerConfig))
   }
 
+  def withExtraLogEntries(extraEntryGenerator: () => Map[String, Any]): HttpClientConfig = {
+    withLoggerConfig(_.withExtraEntries(extraEntryGenerator))
+  }
+
   /**
     * Disable http-client side logging
     * @return
@@ -171,7 +175,7 @@ case class HttpClientConfig(
 
   def newHttpLogger(dest: ServerAddress): HttpLogger = {
     httpLoggerProvider(
-      httpLoggerConfig.addExtraTags(
+      httpLoggerConfig.withExtraEntries(() =>
         ListMap(
           "client_name" -> name,
           "dest"        -> dest.hostAndPort

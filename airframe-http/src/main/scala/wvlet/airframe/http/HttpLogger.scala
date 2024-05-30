@@ -27,7 +27,8 @@ trait HttpLogger extends AutoCloseable {
   def config: HttpLoggerConfig
 
   final def write(log: Map[String, Any]): Unit = {
-    writeInternal(config.logFilter(config.extraTags ++ log))
+    val logEntries = config.logFilter(config.extraEntries() ++ log)
+    writeInternal(logEntries)
   }
   protected def writeInternal(log: Map[String, Any]): Unit
 }
@@ -43,8 +44,8 @@ case class HttpLoggerConfig(
       * ProxyAuthorization, Cookie headers will be removed by default
       */
     excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
-    // Extra tags to be added to the log entries
-    extraTags: Map[String, Any] = Map.empty,
+    // Extra log entries to be added
+    extraEntries: () => Map[String, Any] = { () => Map.empty },
     // A filter for customizing the log contents
     logFilter: Map[String, Any] => Map[String, Any] = identity,
     // A formatter for converting log entries Map[String, Any] into a string line. The default behavior is producing JSON lines
@@ -62,9 +63,10 @@ case class HttpLoggerConfig(
   }
 
   /**
-    * Add extra tags to the log entries
+    * Add extra tags generated from the given function to the log entries
     */
-  def addExtraTags(tags: Map[String, Any]): HttpLoggerConfig = this.copy(extraTags = extraTags ++ tags)
+  def withExtraEntries(extraEntryGenerator: () => Map[String, Any]): HttpLoggerConfig =
+    this.copy(extraEntries = { () => extraEntries() ++ extraEntryGenerator() })
 
   def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(logFileName = fileName)
 

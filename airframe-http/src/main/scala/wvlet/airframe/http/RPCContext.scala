@@ -49,7 +49,8 @@ trait RPCContext {
   def setThreadLocal[A](key: String, value: A): Unit
 
   /**
-    * Get a thread-local variable that is available only within the request scope.
+    * Get a thread-local variable that is available only within the request scope. The type must be specified
+    * explicitly.
     * @param key
     * @tparam A
     * @return
