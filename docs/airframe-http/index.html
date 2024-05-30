@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-http: Creating REST Service · Airframe</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-http: Creating REST Service · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-http: Creating REST Service · Airframe</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-http: Creating REST Service · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
               (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
               (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
               m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -62,31 +62,31 @@
                 };
               }
             });
-        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-http: Creating REST Service</h1></header><article><div><span><p>airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server.</p>
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-http: Creating REST Service</h1></header><article><div><span><p>airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server.</p>
 <ul>
 <li>Blog article: <a href="https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f">Airframe HTTP: Building Low-Friction Web Services Over Finagle</a></li>
 </ul>
 <p><strong>build.sbt</strong></p>
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg" alt="Maven Central"></a>
 <a href="http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12"><img src="http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12.svg?label=scaladoc" alt="Scaladoc"></a></p>
-<pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span> % (version)
+<pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-netty"</span> % (version)
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="defining-http-endpoints"></a><a href="#defining-http-endpoints" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Defining HTTP Endpoints</h2>
 <p><strong>MyApi.scala</strong></p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> com.twitter.finagle.http.{<span class="hljs-type">Request</span>,<span class="hljs-type">Response</span>}
-<span class="hljs-keyword">import</span> com.twitter.util.<span class="hljs-type">Future</span>
-<span class="hljs-keyword">import</span> wvlet.airframe.http.{<span class="hljs-type">Endpoint</span>, <span class="hljs-type">HttpMethod</span>, <span class="hljs-type">HttpRequest</span>}
+<pre><code class="hljs css language-scala">
+<span class="hljs-keyword">import</span> wvlet.airframe.http.*
+<span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">HttpMessage</span>.{<span class="hljs-type">Request</span>, <span class="hljs-type">Response</span>}
+<span class="hljs-keyword">import</span> scala.concurrent.<span class="hljs-type">Future</span>
 
 <span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MyApi</span> </span>{
   <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">User</span>(<span class="hljs-params">name: <span class="hljs-type">String</span></span>)</span>
-
   <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NewUserRequest</span>(<span class="hljs-params">name:<span class="hljs-type">String</span></span>)</span>
   <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServerInfo</span>(<span class="hljs-params">version:<span class="hljs-type">String</span>, ua:<span class="hljs-type">Option</span>[<span class="hljs-type">String</span>]</span>)</span>
 }
 
 <span class="hljs-comment">// [Optional] Specify a common prefix for all endpoints</span>
 <span class="hljs-meta">@Endpoint</span>(path=<span class="hljs-string">"/v1"</span>)
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApi</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApi</span> </span>{
   <span class="hljs-keyword">import</span> <span class="hljs-type">MyApi</span>._
 
   <span class="hljs-comment">// Binding http path parameters (e.g., :name) to method arguments</span>
@@ -97,35 +97,30 @@
   <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">POST</span>, path = <span class="hljs-string">"/user"</span>)
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">createNewUser</span></span>(request:<span class="hljs-type">NewUserRequest</span>): <span class="hljs-type">User</span> = <span class="hljs-type">User</span>(request.name)
 
-  <span class="hljs-comment">// To read http request headers, add a method argument of HttpMessage.Request type</span>
+  <span class="hljs-comment">// To read http request headers, get it from RPCContext</span>
   <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/info"</span>)
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(request: <span class="hljs-type">HttpMessage</span>.<span class="hljs-type">Request</span>): <span class="hljs-type">ServerInfo</span> = {
-    <span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.userAgent)
-  }
-
-  <span class="hljs-comment">// It is also possible to receive backend server specific Request type</span>
-  <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/info2"</span>)
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(request: com.twitter.finagle.http.<span class="hljs-type">Request</span>): <span class="hljs-type">ServerInfo</span> = {
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(): <span class="hljs-type">ServerInfo</span> = {
+    <span class="hljs-keyword">val</span> request = <span class="hljs-type">RPCContext</span>.current.httpRequest
     <span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.userAgent)
   }
 
   <span class="hljs-comment">// Returning Future[X] is also possible.</span>
   <span class="hljs-comment">// This style is convenient when you need to call another service that returns Future response.</span>
   <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/info_f"</span>)
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfoFuture</span></span>(request: <span class="hljs-type">HttpMessage</span>.<span class="hljs-type">Request</span>): <span class="hljs-type">Future</span>[<span class="hljs-type">ServerInfo</span>] = {
-    <span class="hljs-type">Future</span>.value(<span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.userAgent))
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfoFuture</span></span>(): <span class="hljs-type">Future</span>[<span class="hljs-type">ServerInfo</span>] = {
+    <span class="hljs-keyword">val</span> request = <span class="hljs-type">RPCContext</span>.current.httpRequest
+    <span class="hljs-type">Future</span>.apply(<span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.userAgent))
   }
 
   <span class="hljs-comment">// It is also possible to return custom HTTP responses</span>
   <span class="hljs-meta">@EndPoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/custom_response"</span>)
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">customResponse</span></span>: <span class="hljs-type">Response</span> = {
-    <span class="hljs-keyword">val</span> response = <span class="hljs-type">Reponse</span>()
-    response.contentString = <span class="hljs-string">"hello airframe-http"</span>
+    <span class="hljs-keyword">val</span> response = <span class="hljs-type">Http</span>.response().withContent(<span class="hljs-string">"hello airframe-http"</span>)
     response
   }
 
   <span class="hljs-keyword">import</span> com.twitter.io.{<span class="hljs-type">Buf</span>,<span class="hljs-type">Reader</span>}
-  <span class="hljs-comment">// If you return a Reader, the response will be streamed (i.e., it uses less memory)</span>
+  <span class="hljs-comment">// [finagle-backend only] If you return a Reader, the response will be streamed (i.e., it uses less memory)</span>
   <span class="hljs-meta">@EndPoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/stream_response"</span>)
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">streamingResponse</span></span>: <span class="hljs-type">Reader</span>[<span class="hljs-type">User</span>] = {
      <span class="hljs-type">Reader</span>.fromSeq(<span class="hljs-type">Seq</span>(<span class="hljs-type">User</span>(<span class="hljs-string">"leo"</span>), <span class="hljs-type">User</span>(<span class="hljs-string">"yui"</span>)))
@@ -153,36 +148,34 @@ POST /v1<span class="hljs-built_in">/user </span>         returns {<span class="
 </table>
 <p><code>*arg</code> can be used only at the end of the path.</p>
 <h3><a class="anchor" aria-hidden="true" id="messagepack-support"></a><a href="#messagepack-support" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>MessagePack Support</h3>
-<p>If an HTTP POST request has <code>Content-Type: application/x-msgpack</code> header, airframe-http
+<p>If an HTTP POST request has <code>Content-Type: application/msgpack</code> header, airframe-http
 will read the content body of the request as <a href="https://msgpack.org">MessagePack</a> data, and bind it to the method arguments using
 <a href="https://wvlet.org/airframe/docs/airframe-codec.html">airframe-codec</a>,
 which will manage data type conversions (e.g, from msgpack into Int or objects) automatically.</p>
-<p>If an HTTP request has <code>Accept: application/x-msgpack</code> header, the response body will be
+<p>If an HTTP request has <code>Accept: application/msgpack</code> header, the response body will be
 encoded with MessagePack format. This is useful for reducing the response size and
 sending data to the client as is. For example, JSON cannot represent precise double values and binary data
 without some transformations. With MessagePack, you can send the data to the client more naturally.</p>
-<h2><a class="anchor" aria-hidden="true" id="starting-a-finagle-http-server"></a><a href="#starting-a-finagle-http-server" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Starting A Finagle HTTP Server</h2>
+<h2><a class="anchor" aria-hidden="true" id="starting-a-netty-http-server"></a><a href="#starting-a-netty-http-server" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Starting A Netty HTTP Server</h2>
 <p>To start a server, create a finagle server configuration with Finagle.server, and</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
-<span class="hljs-keyword">import</span> wvlet.airframe.http.finagle._
-<span class="hljs-keyword">import</span> com.twitter.finagle.http.<span class="hljs-type">Request</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.*
+<span class="hljs-keyword">import</span> wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
 
 <span class="hljs-comment">// Define API routes. This will read all @Endpoint annotations in MyApi</span>
 <span class="hljs-comment">// You can add more routes by using `.add[X]` method.</span>
-<span class="hljs-keyword">val</span> router = <span class="hljs-type">Router</span>.add[<span class="hljs-type">MyApi</span>]
+<span class="hljs-keyword">val</span> router = <span class="hljs-type">RxRouter</span>.of[<span class="hljs-type">MyApi</span>]
 
-<span class="hljs-type">Finagle</span>.server
+<span class="hljs-type">Netty</span>.server
   .withPort(<span class="hljs-number">8080</span>)
   .withRouter(router)
   .start { server =&gt;
-    <span class="hljs-comment">// Finagle http server will start here</span>
-    <span class="hljs-comment">// To keep running the server, run `server.waitServerTermination`:</span>
-    server.waitServerTermination
+    <span class="hljs-comment">// Netty http server will start here</span>
+    <span class="hljs-comment">// Keep running the server </span>
+    server.awaitTermination
   }
-<span class="hljs-comment">// The server will terminate here</span>
 </code></pre>
-<h2><a class="anchor" aria-hidden="true" id="customizing-finagle"></a><a href="#customizing-finagle" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Customizing Finagle</h2>
-<p>To customize Finagle, use <code>Finagle.server.withXXX</code> methods.</p>
+<h2><a class="anchor" aria-hidden="true" id="customizing-netty"></a><a href="#customizing-netty" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Customizing Netty</h2>
+<p>To customize Netty, use <code>Netty.server.withXXX</code> methods.</p>
 <p>For example, you can:</p>
 <ul>
 <li>Customize HTTP filters</li>
@@ -190,21 +183,30 @@ without some transformations. With MessagePack, you can send the data to the cli
 <li>Add custom Tracer, StatsReceiver, etc.</li>
 <li>Add more advanced server configurations using <code>.withServerInitializer(...)</code></li>
 </ul>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.finagle._
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.*
+improt wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
 
-<span class="hljs-keyword">val</span> router = <span class="hljs-type">Router</span>.add[<span class="hljs-type">MyApi</span>]
+<span class="hljs-keyword">val</span> router = <span class="hljs-type">RxRouter</span>.add[<span class="hljs-type">MyApi</span>]
 
-<span class="hljs-keyword">val</span> server = <span class="hljs-type">Finagle</span>.server
+<span class="hljs-keyword">val</span> server = <span class="hljs-type">Netty</span>.server
   .withName(<span class="hljs-string">"my server"</span>)
   .withRouter(router)
   .withPort(<span class="hljs-number">8080</span>)
-  <span class="hljs-comment">// Enable tracer for Finagle</span>
-  .withTracer(<span class="hljs-type">ConsoleTracer</span>)
-  <span class="hljs-comment">// Add your own Finagle specific customization here</span>
-  .withServerInitializer{ x: <span class="hljs-type">Server</span> =&gt; x }
-  .withStatsReceiver(...)
+  <span class="hljs-comment">// [optional] Add custom log entries</span>
+  .withExtraLogEntries { () =&gt; 
+    <span class="hljs-keyword">val</span> m = <span class="hljs-type">ListMap</span>.newBuilder[<span class="hljs-type">String</span>, <span class="hljs-type">Any</span>]
+    <span class="hljs-comment">// Add a custom log entry</span>
+    m += <span class="hljs-string">"application_version"</span> -&gt; <span class="hljs-string">"1.0"</span>
+    <span class="hljs-comment">// Add a thread-local parameter to the log</span>
+    <span class="hljs-type">RPCContext</span>.current.getThreadLocal[<span class="hljs-type">String</span>](<span class="hljs-string">"user_id"</span>).map { uid =&gt;
+      m += <span class="hljs-string">"user_id"</span> -&gt; uid
+    }
+    m.result
+  }
+  <span class="hljs-comment">// [optional] Disable server-side logging (log/http_server.json)</span>
+  .noLogging
   <span class="hljs-comment">// Add a custom MessageCodec mapping</span>
-  .withCustomCodec(<span class="hljs-type">Map</span>(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">X</span>] -&gt; ...))
+  .withCustomCodec{ <span class="hljs-keyword">case</span> s: <span class="hljs-type">Surface</span>.of[<span class="hljs-type">MyClass</span>] =&gt; ... }
 
 server.start { server =&gt;
   <span class="hljs-comment">// The customized server will start here</span>
@@ -214,51 +216,75 @@ server.start { server =&gt;
 <p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/main/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
 <h2><a class="anchor" aria-hidden="true" id="integration-with-airframe-di"></a><a href="#integration-with-airframe-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Integration with Airframe DI</h2>
 <p>By calling <code>.design</code>, you can get a design for Airframe DI:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> design = <span class="hljs-type">Finagle</span>.server
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> design = <span class="hljs-type">Netty</span>.server
  .withName(<span class="hljs-string">"my-server"</span>)
  .withRouter(router)
  .withPort(<span class="hljs-number">8080</span>)
  .design
 
-design.build[<span class="hljs-type">FinagleServer</span>] { server =&gt;
+design.build[<span class="hljs-type">NettyServer</span>] { server =&gt;
    <span class="hljs-comment">// A server will start here</span>
 }
 <span class="hljs-comment">// The server will terminate after exiting the session</span>
 </code></pre>
-<h3><a class="anchor" aria-hidden="true" id="running-multiple-finagle-servers"></a><a href="#running-multiple-finagle-servers" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Running Multiple Finagle Servers</h3>
-<p>To run multiple HTTP servers, create a FinagleServerFactory and use <code>newFinagleServer(FinagleServerConfig)</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.finagle._
+<h3><a class="anchor" aria-hidden="true" id="running-multiple-netty-servers-with-airframe-di"></a><a href="#running-multiple-netty-servers-with-airframe-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Running Multiple Netty Servers with Airframe DI</h3>
+<p>To run multiple HTTP servers with Airframe DI, wrapping NettyServer within different classes is recommended:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.*
+<span class="hljs-keyword">import</span> wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
 
-<span class="hljs-comment">// Use a design for not starting the default server:</span>
-finagleBaseDesign.build[<span class="hljs-type">FinagleServerFactory</span>] { factory =&gt;
-  <span class="hljs-keyword">val</span> config1 = <span class="hljs-type">Finagle</span>.server.withName(<span class="hljs-string">"server1"</span>).withPort(<span class="hljs-number">8080</span>).withRouter(router1)
-  <span class="hljs-keyword">val</span> config2 = <span class="hljs-type">Finagle</span>.server.withName(<span class="hljs-string">"server2"</span>).withPort(<span class="hljs-number">8081</span>).withRouter(router2)
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyAppServer</span>(<span class="hljs-params">server: <span class="hljs-type">NettyServer</span></span>)</span>:
+  export server.waitServerTermination
 
- factory.newFinagleServer(config1)
- factory.newFinagleServer(config2)
- <span class="hljs-comment">// Two finagle servers will start at port 8081 and 8081</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AdminServer</span>(<span class="hljs-params">server: <span class="hljs-type">NettyServer</span></span>)</span>:
+  export server.waitServerTermination
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyService</span>(<span class="hljs-params">myAppServer: <span class="hljs-type">MyAppServer</span>, adminServer: <span class="hljs-type">AdminServer</span></span>)</span>:
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">waitServerTermination</span></span>: <span class="hljs-type">Unit</span> = {
+    myAppServer.waitServerTermination
+    adminServer.waitServerTermination
+  }
+
+  <span class="hljs-comment">// Explicitely stop the servers   </span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span></span>: <span class="hljs-type">Unit</span> = {
+    myAppServer.stop
+    adminServer.stop
+  }
+
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceConfig</span>(<span class="hljs-params">port:<span class="hljs-type">Int</span>, adminPort:<span class="hljs-type">Int</span></span>)</span>
+
+<span class="hljs-keyword">val</span> design = newDesign
+  .bind[<span class="hljs-type">ServiceConfig</span>].toInstance(<span class="hljs-type">ServiceConfig</span>(<span class="hljs-number">8080</span>, <span class="hljs-number">8081</span>))  
+  .bind[<span class="hljs-type">MyAppServer</span>].toProvider { (config: <span class="hljs-type">ServiceConfig</span>, session: <span class="hljs-type">Session</span>) =&gt;
+    <span class="hljs-type">Netty</span>.server
+     .withName(<span class="hljs-string">"myapp"</span>)
+     .withRouter(router1)
+     .withPort(config.port) <span class="hljs-comment">// port 8080</span>
+     .newServer(session)
+  }
+  .bind[<span class="hljs-type">AdminServer</span>].toProvider { (config: <span class="hljs-type">ServiceConfig</span>, session: <span class="hljs-type">Session</span>) =&gt;
+    <span class="hljs-type">Netty</span>.server
+     .withName(<span class="hljs-string">"admin"</span>)
+     .withRouter(router2)
+     .withPort(config.adminPort) <span class="hljs-comment">// port 8081</span>
+     .newServer(session)
+  }
+  
+
+design.build[<span class="hljs-type">MyService</span>] { service =&gt;
+  <span class="hljs-comment">// Two servers will start here</span>
+  
+  <span class="hljs-comment">// Await the MyApp server termination</span>
+  service.waitServerTermination
 }
-<span class="hljs-comment">// Two servers will be stopped after exiting the session</span>
-</code></pre>
-<h2><a class="anchor" aria-hidden="true" id="shutting-down-finagle-server"></a><a href="#shutting-down-finagle-server" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Shutting Down Finagle Server</h2>
-<p>Closing the current Airframe session will terminate the finagle server as well:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
-<span class="hljs-keyword">import</span> wvlet.airframe.http._
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">YourApi</span> </span>{
-   <span class="hljs-comment">// Bind the current session</span>
-   <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> session = bind[<span class="hljs-type">Session</span>]
+<span class="hljs-comment">// After existing the scope, the servers will be stopped automatically (via AutoCloseable.close() method).</span>
 
-   <span class="hljs-meta">@Endpoint</span>(path=<span class="hljs-string">"/v1/shutdown"</span>, method=<span class="hljs-type">HttpMethod</span>.<span class="hljs-type">POST</span>)
-   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">shutdown</span> </span>{
-     <span class="hljs-comment">// Closing the current session will terminate the FinagleServer too.</span>
-     session.shutdown
-   }
-}
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="static-content"></a><a href="#static-content" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Static Content</h2>
 <p>To return static contents (e.g., html, image files, etc.), use <code>StaticContent.fromResource(resourceBasePath, relativePath)</code>. This method finds a file from your class paths (e.g., files in dependency jar files or resource files).</p>
-<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">StaticContentServer</span> </span>{
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.*
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">StaticContentServer</span> </span>{
   <span class="hljs-meta">@Endpoint</span>(path=<span class="hljs-string">"/content/*path"</span>)
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">content</span></span>(path:<span class="hljs-type">String</span>) = <span class="hljs-type">StaticContent</span>.fromResource(basePath = <span class="hljs-string">"/your/resource/package/path"</span>, path)
 }
@@ -271,14 +297,17 @@ finagleBaseDesign.build[<span class="hljs-type">FinagleServerFactory</span>] { f
 
 sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 </code></pre>
-<h2><a class="anchor" aria-hidden="true" id="error-handling"></a><a href="#error-handling" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Error Handling</h2>
-<p>To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.</p>
+<h2><a class="anchor" aria-hidden="true" id="reporting-errors"></a><a href="#reporting-errors" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Reporting Errors</h2>
+<p>To report server-side errors, you can throw HttpServerException with a custom HttpStatus code.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">Http</span>
 
 <span class="hljs-comment">// This will return 403 http response to the client</span>
 <span class="hljs-keyword">throw</span> <span class="hljs-type">Http</span>.serverException(<span class="hljs-type">HttpStatus</span>.<span class="hljs-type">Forbidden_403</span>)
 </code></pre>
 <p>If the endpoint returns Future type, returning just <code>Future[Throwable]</code> (will produce 500 response code) or <code>Future[HttpServerException]</code> to customize the response code by yourself will also work.</p>
+<p>Throwing an RPCStatus as an exception will also work. An appropriate HTTP status code will be set automatically:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">throw</span> <span class="hljs-type">RPCStatus</span>.<span class="hljs-type">INVALID_REQUEST_U1</span>.newException(<span class="hljs-string">"Unexpected message"</span>)
+</code></pre>
 <h3><a class="anchor" aria-hidden="true" id="returning-custom-error-responses"></a><a href="#returning-custom-error-responses" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Returning Custom Error Responses</h3>
 <p>To return JSON or MsgPack responses, use <code>Http.serverException(request, status, object, (codec factory)?)</code>:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">Http</span>
@@ -299,10 +328,10 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 <span class="hljs-keyword">throw</span> e
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="filters"></a><a href="#filters" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Filters</h2>
-<p>Router supports nesting HTTP request filters (e.g., authentication, logging) before processing the final <code>@EndPoint</code> method:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
-<span class="hljs-keyword">import</span> wvlet.airframe.http._
-<span class="hljs-keyword">import</span> wvlet.airframe.http.finagle._
+<p>Router supports nesting HTTP request filters (RxHttpFilter) for authentication, logging, etc. before processing the final <code>@EndPoint</code> method:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.*
+<span class="hljs-keyword">import</span> wvlet.airframe.http.*
+<span class="hljs-keyword">import</span> wvlet.airframe.rx.<span class="hljs-type">Rx</span>
 
 <span class="hljs-comment">// Your endpoint definition</span>
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span> </span>{
@@ -312,26 +341,44 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 
 <span class="hljs-comment">// Implement FinagleFilter (or HttpFilter[Req, Resp, F])</span>
 <span class="hljs-comment">// to define a custom filter that will be applied before the endpoint processing.</span>
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">LoggingFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FinagleFilter</span> <span class="hljs-keyword">with</span> <span class="hljs-title">LogSupport</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, context: <span class="hljs-type">Context</span>): <span class="hljs-type">Future</span>[<span class="hljs-type">Response</span>] = {
-    info(<span class="hljs-string">s"<span class="hljs-subst">${request.path}</span> is accessed"</span>)
-    <span class="hljs-comment">// Call the child</span>
-    context(request)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">RxHttpFilter</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
+    <span class="hljs-keyword">if</span> (isValidAuth(request.authorization)) {
+      <span class="hljs-comment">// Call the next filter chain</span>
+      next(request)
+    }
+    <span class="hljs-keyword">else</span> {
+      <span class="hljs-comment">// Reject the request</span>
+      <span class="hljs-keyword">throw</span> <span class="hljs-type">RPCStatus</span>.<span class="hljs-type">UNAUTHENTICATED_U13</span>.newException(<span class="hljs-string">"Invalid user"</span>)
+    }
   }
 }
 
-<span class="hljs-comment">// Use .andThen[X] for nesting filters</span>
-<span class="hljs-type">Router</span>
- .add(<span class="hljs-type">LoggingFilter</span>)
+<span class="hljs-comment">// Add a filter and chain to the endpoint .andThen[X]:</span>
+<span class="hljs-keyword">val</span> router = <span class="hljs-type">RxRouter</span>
+ .filter[<span class="hljs-type">AuthFilter</span>]
  .andThen[<span class="hljs-type">MyApp</span>]
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="thread-local-storage"></a><a href="#thread-local-storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Thread-Local Storage</h3>
 <p>To pass data between filters and applications, you can use thread-local storage in the context:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthLogFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FinagleFilter</span> <span class="hljs-keyword">with</span> <span class="hljs-title">LogSupport</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, context: <span class="hljs-type">FinagleContext</span>): <span class="hljs-type">Future</span>[<span class="hljs-type">Response</span>] = {
-    context(request).map { response =&gt;
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FinagleFilter</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
+    <span class="hljs-keyword">if</span>(authorize(request)) {
+      request.getParam(<span class="hljs-string">"user_id"</span>).map { uid =&gt;
+        <span class="hljs-comment">// Pass a thread-local parameter to the parent response handler</span>
+        <span class="hljs-type">RPCContext</span>.current.setThreadLocal(<span class="hljs-string">"user_id"</span>, uid)
+      }
+    }
+    context(request)
+  }
+}
+
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthLogFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">RxHttpFilter</span> <span class="hljs-keyword">with</span> <span class="hljs-title">LogSupport</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
+    next(request).map { response =&gt;
       <span class="hljs-comment">// Read the thread-local parameter set in the context(request)</span>
-      context.getThreadLocal[<span class="hljs-type">String</span>](<span class="hljs-string">"user_id"</span>).map { uid =&gt;
+      <span class="hljs-type">RPCContext</span>.current.getThreadLocal[<span class="hljs-type">String</span>](<span class="hljs-string">"user_id"</span>).map { uid =&gt;
         info(<span class="hljs-string">s"user_id: <span class="hljs-subst">${uid}</span>"</span>)
       }
       response
@@ -339,44 +386,30 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
   }
 }
 
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FinagleFilter</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, context: <span class="hljs-type">FinagleContext</span>): <span class="hljs-type">Future</span>[<span class="hljs-type">Response</span>] = {
-    <span class="hljs-keyword">if</span>(authorize(request)) {
-      request.getParam(<span class="hljs-string">"user_id"</span>).map { uid =&gt;
-        <span class="hljs-comment">// Pass a thread-local parameter to the parent response handler</span>
-        context.setThreadLocal(<span class="hljs-string">"user_id"</span>, uid)
-      }
-    }
-    context(request)
-  }
-}
 
-
-<span class="hljs-type">Router</span>
-  .add(<span class="hljs-type">AuthLogFilter</span>)
+<span class="hljs-keyword">val</span> router = <span class="hljs-type">RxRouter</span>
+  .filter(<span class="hljs-type">AuthLogFilter</span>)
   .andThen(<span class="hljs-type">AuthFilter</span>)
   .andThen[<span class="hljs-type">MyApp</span>]
 </code></pre>
 <p>Using local variables inside filters will not work because the request processing will happen when Future[X] is evaluated, so we must use thead-local parmeter holder, which will be prepared for each request call.</p>
 <h2><a class="anchor" aria-hidden="true" id="access-logs"></a><a href="#access-logs" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Access Logs</h2>
-<p>airframe-http stores HTTP access logs at <code>log/http-access.json</code> by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.</p>
+<p>airframe-http stores HTTP access logs at <code>log/http-server.json</code> by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.</p>
 <p>The default logger will record request parameters, request headers (except Authorization headers), response parameters, and response headers.</p>
 <p>Example JSON logs:</p>
 <pre><code class="hljs css language-json">{<span class="hljs-attr">"time"</span>:<span class="hljs-number">1589319681</span>,<span class="hljs-attr">"event_time"</span>:<span class="hljs-string">"2020-05-12T14:41:21.567-0700"</span>,<span class="hljs-attr">"method"</span>:<span class="hljs-string">"GET"</span>,<span class="hljs-attr">"path"</span>:<span class="hljs-string">"/user/1"</span>,<span class="hljs-attr">"uri"</span>:<span class="hljs-string">"/user/1"</span>,<span class="hljs-attr">"request_size"</span>:<span class="hljs-number">0</span>,<span class="hljs-attr">"remote_host"</span>:<span class="hljs-string">"127.0.0.1"</span>,<span class="hljs-attr">"remote_port"</span>:<span class="hljs-number">52786</span>,<span class="hljs-attr">"host"</span>:<span class="hljs-string">"localhost:52785"</span>,<span class="hljs-attr">"connection"</span>:<span class="hljs-string">"Keep-Alive"</span>,<span class="hljs-attr">"user_agent"</span>:<span class="hljs-string">"okhttp/3.12.11"</span>,<span class="hljs-attr">"x_request_id"</span>:<span class="hljs-string">"10"</span>,<span class="hljs-attr">"content_length"</span>:<span class="hljs-string">"0"</span>,<span class="hljs-attr">"accept_encoding"</span>:<span class="hljs-string">"gzip"</span>,<span class="hljs-attr">"response_time_ms"</span>:<span class="hljs-number">714</span>,<span class="hljs-attr">"status_code"</span>:<span class="hljs-number">200</span>,<span class="hljs-attr">"status_code_name"</span>:<span class="hljs-string">"OK"</span>,<span class="hljs-attr">"response_content_type"</span>:<span class="hljs-string">"application/json;charset=utf-8"</span>}
 {<span class="hljs-attr">"time"</span>:<span class="hljs-number">1589319681</span>,<span class="hljs-attr">"event_time"</span>:<span class="hljs-string">"2020-05-12T14:41:21.573-0700"</span>,<span class="hljs-attr">"method"</span>:<span class="hljs-string">"GET"</span>,<span class="hljs-attr">"path"</span>:<span class="hljs-string">"/user/info"</span>,<span class="hljs-attr">"uri"</span>:<span class="hljs-string">"/user/info?id=2&amp;name=kai"</span>,<span class="hljs-attr">"query_string"</span>:<span class="hljs-string">"id=2&amp;name=kai"</span>,<span class="hljs-attr">"request_size"</span>:<span class="hljs-number">0</span>,<span class="hljs-attr">"remote_host"</span>:<span class="hljs-string">"127.0.0.1"</span>,<span class="hljs-attr">"remote_port"</span>:<span class="hljs-number">52786</span>,<span class="hljs-attr">"host"</span>:<span class="hljs-string">"localhost:52785"</span>,<span class="hljs-attr">"connection"</span>:<span class="hljs-string">"Keep-Alive"</span>,<span class="hljs-attr">"user_agent"</span>:<span class="hljs-string">"okhttp/3.12.11"</span>,<span class="hljs-attr">"x_request_id"</span>:<span class="hljs-string">"10"</span>,<span class="hljs-attr">"content_length"</span>:<span class="hljs-string">"0"</span>,<span class="hljs-attr">"accept_encoding"</span>:<span class="hljs-string">"gzip"</span>,<span class="hljs-attr">"response_time_ms"</span>:<span class="hljs-number">921</span>,<span class="hljs-attr">"status_code"</span>:<span class="hljs-number">200</span>,<span class="hljs-attr">"status_code_name"</span>:<span class="hljs-string">"OK"</span>,<span class="hljs-attr">"response_content_type"</span>:<span class="hljs-string">"application/json;charset=utf-8"</span>}
 </code></pre>
 <p>For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.finagle._
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.netty.*
 
-<span class="hljs-type">Finagle</span>
+<span class="hljs-type">Netty</span>
   .server
-  .withLoggingFilter {
-     <span class="hljs-type">HttpAccessLogFilter</span>
-      .<span class="hljs-keyword">default</span>
-      .addRequestLogger(...)
-      .addResponseLogger(...)
-      <span class="hljs-comment">// Remove unnecessary HTTP headers from logs</span>
-      .addExcludeHeaders(<span class="hljs-type">Set</span>(<span class="hljs-string">"X-XXX-Header"</span>))
+  .withHttpLoggerConfig {
+    _.withLogFilter { (m: <span class="hljs-type">Map</span>[<span class="hljs-type">String</span>, <span class="hljs-type">Any</span>]) =&gt;
+      <span class="hljs-comment">// You can customize the log entries here</span>
+      m
+    }
   }
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="reading-access-logs-with-fluentd"></a><a href="#reading-access-logs-with-fluentd" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Reading Access Logs with Fluentd</h3>
@@ -384,8 +417,8 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 <pre><code class="hljs">&lt;source&gt;
   @<span class="hljs-keyword">type</span> tail
   # Your <span class="hljs-keyword">log</span> file <span class="hljs-keyword">location</span> <span class="hljs-keyword">and</span> position file
-  <span class="hljs-type">path</span>     /var/<span class="hljs-keyword">log</span>/http_access.json
-  pos_file /var/<span class="hljs-keyword">log</span>/td-agent/http_access.json.pos
+  <span class="hljs-type">path</span>     /var/<span class="hljs-keyword">log</span>/http_server.json
+  pos_file /var/<span class="hljs-keyword">log</span>/td-agent/http_server.json.pos
   # [Optional] Append tags <span class="hljs-keyword">to</span> the log (<span class="hljs-keyword">For</span> <span class="hljs-keyword">using</span> td-agent)
   tag      td.(your <span class="hljs-keyword">database</span> <span class="hljs-type">name</span>).http_access
   <span class="hljs-keyword">format   json</span>
@@ -463,7 +496,7 @@ rx.toRxStream.map(x =&gt; x.contentString) <span class="hljs-comment">// Returns
 <span class="hljs-comment">// a Finagle-based sync client</span>
 <span class="hljs-type">Finagle</span>.client.newSyncClient(host_name)
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-rpc"><span class="arrow-prev">← </span><span>Airframe RPC</span></a><a class="docs-next button" href="/airframe/docs/airframe-rx"><span class="function-name-prevnext">airframe-rx: ReactiveX interface</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#defining-http-endpoints">Defining HTTP Endpoints</a><ul class="toc-headings"><li><a href="#path-parameter-types">Path Parameter Types</a></li><li><a href="#messagepack-support">MessagePack Support</a></li></ul></li><li><a href="#starting-a-finagle-http-server">Starting A Finagle HTTP Server</a></li><li><a href="#customizing-finagle">Customizing Finagle</a></li><li><a href="#integration-with-airframe-di">Integration with Airframe DI</a><ul class="toc-headings"><li><a href="#running-multiple-finagle-servers">Running Multiple Finagle Servers</a></li></ul></li><li><a href="#shutting-down-finagle-server">Shutting Down Finagle Server</a></li><li><a href="#static-content">Static Content</a></li><li><a href="#error-handling">Error Handling</a><ul class="toc-headings"><li><a href="#returning-custom-error-responses">Returning Custom Error Responses</a></li></ul></li><li><a href="#filters">Filters</a><ul class="toc-headings"><li><a href="#thread-local-storage">Thread-Local Storage</a></li></ul></li><li><a href="#access-logs">Access Logs</a><ul class="toc-headings"><li><a href="#reading-access-logs-with-fluentd">Reading Access Logs with Fluentd</a></li></ul></li><li><a href="#default-http-client">Default Http Client</a></li><li><a href="#customizing-http-clients">Customizing HTTP clients</a></li><li><a href="#rx-based-async-client">Rx-based async client</a><ul class="toc-headings"><li><a href="#urlconnection-client-for-java-8">URLConnection client for Java 8</a></li></ul></li><li><a href="#okhttp-client">OkHttp Client</a></li><li><a href="#finagle-http-client">Finagle Http Client</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2024 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-rpc"><span class="arrow-prev">← </span><span>Airframe RPC</span></a><a class="docs-next button" href="/airframe/docs/airframe-rx"><span class="function-name-prevnext">airframe-rx: ReactiveX interface</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#defining-http-endpoints">Defining HTTP Endpoints</a><ul class="toc-headings"><li><a href="#path-parameter-types">Path Parameter Types</a></li><li><a href="#messagepack-support">MessagePack Support</a></li></ul></li><li><a href="#starting-a-netty-http-server">Starting A Netty HTTP Server</a></li><li><a href="#customizing-netty">Customizing Netty</a></li><li><a href="#integration-with-airframe-di">Integration with Airframe DI</a><ul class="toc-headings"><li><a href="#running-multiple-netty-servers-with-airframe-di">Running Multiple Netty Servers with Airframe DI</a></li></ul></li><li><a href="#static-content">Static Content</a></li><li><a href="#reporting-errors">Reporting Errors</a><ul class="toc-headings"><li><a href="#returning-custom-error-responses">Returning Custom Error Responses</a></li></ul></li><li><a href="#filters">Filters</a><ul class="toc-headings"><li><a href="#thread-local-storage">Thread-Local Storage</a></li></ul></li><li><a href="#access-logs">Access Logs</a><ul class="toc-headings"><li><a href="#reading-access-logs-with-fluentd">Reading Access Logs with Fluentd</a></li></ul></li><li><a href="#default-http-client">Default Http Client</a></li><li><a href="#customizing-http-clients">Customizing HTTP clients</a></li><li><a href="#rx-based-async-client">Rx-based async client</a><ul class="toc-headings"><li><a href="#urlconnection-client-for-java-8">URLConnection client for Java 8</a></li></ul></li><li><a href="#okhttp-client">OkHttp Client</a></li><li><a href="#finagle-http-client">Finagle Http Client</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2024 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
