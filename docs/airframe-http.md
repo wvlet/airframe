@@ -3,7 +3,7 @@ id: airframe-http
 title: airframe-http: Creating REST Service
 ---
 
-airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server.
+airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server.
 
 - Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
@@ -12,27 +12,27 @@ airframe-http is a library for creating REST HTTP web servers at ease. airframe-
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/)
 [![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12)
 ```scala
-libraryDependencies += "org.wvlet.airframe" %% "airframe-http-finagle" % (version)
+libraryDependencies += "org.wvlet.airframe" %% "airframe-http-netty" % (version)
 ```
 
 ## Defining HTTP Endpoints
 
 **MyApi.scala**
 ```scala
-import com.twitter.finagle.http.{Request,Response}
-import com.twitter.util.Future
-import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
+
+import wvlet.airframe.http.*
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import scala.concurrent.Future
 
 object MyApi {
   case class User(name: String)
-
   case class NewUserRequest(name:String)
   case class ServerInfo(version:String, ua:Option[String])
 }
 
 // [Optional] Specify a common prefix for all endpoints
 @Endpoint(path="/v1")
-trait MyApi {
+class MyApi {
   import MyApi._
 
   // Binding http path parameters (e.g., :name) to method arguments
@@ -43,35 +43,30 @@ trait MyApi {
   @Endpoint(method = HttpMethod.POST, path = "/user")
   def createNewUser(request:NewUserRequest): User = User(request.name)
 
-  // To read http request headers, add a method argument of HttpMessage.Request type
+  // To read http request headers, get it from RPCContext
   @Endpoint(method = HttpMethod.GET, path = "/info")
-  def getInfo(request: HttpMessage.Request): ServerInfo = {
-    ServerInfo("1.0", request.userAgent)
-  }
-
-  // It is also possible to receive backend server specific Request type
-  @Endpoint(method = HttpMethod.GET, path = "/info2")
-  def getInfo(request: com.twitter.finagle.http.Request): ServerInfo = {
+  def getInfo(): ServerInfo = {
+    val request = RPCContext.current.httpRequest
     ServerInfo("1.0", request.userAgent)
   }
 
   // Returning Future[X] is also possible.
   // This style is convenient when you need to call another service that returns Future response.
   @Endpoint(method = HttpMethod.GET, path = "/info_f")
-  def getInfoFuture(request: HttpMessage.Request): Future[ServerInfo] = {
-    Future.value(ServerInfo("1.0", request.userAgent))
+  def getInfoFuture(): Future[ServerInfo] = {
+    val request = RPCContext.current.httpRequest
+    Future.apply(ServerInfo("1.0", request.userAgent))
   }
 
   // It is also possible to return custom HTTP responses
   @EndPoint(method = HttpMethod.GET, path = "/custom_response")
   def customResponse: Response = {
-    val response = Reponse()
-    response.contentString = "hello airframe-http"
+    val response = Http.response().withContent("hello airframe-http")
     response
   }
 
   import com.twitter.io.{Buf,Reader}
-  // If you return a Reader, the response will be streamed (i.e., it uses less memory)
+  // [finagle-backend only] If you return a Reader, the response will be streamed (i.e., it uses less memory)
   @EndPoint(method = HttpMethod.GET, path = "/stream_response")
   def streamingResponse: Reader[User] = {
      Reader.fromSeq(Seq(User("leo"), User("yui")))
@@ -103,42 +98,40 @@ Mapping between JSON values and Scala objects will be handled automatically.
 
 ### MessagePack Support
 
-If an HTTP POST request has `Content-Type: application/x-msgpack` header, airframe-http
+If an HTTP POST request has `Content-Type: application/msgpack` header, airframe-http
 will read the content body of the request as [MessagePack](https://msgpack.org) data, and bind it to the method arguments using
 [airframe-codec](https://wvlet.org/airframe/docs/airframe-codec.html),
 which will manage data type conversions (e.g, from msgpack into Int or objects) automatically.
 
-If an HTTP request has `Accept: application/x-msgpack` header, the response body will be
+If an HTTP request has `Accept: application/msgpack` header, the response body will be
 encoded with MessagePack format. This is useful for reducing the response size and
 sending data to the client as is. For example, JSON cannot represent precise double values and binary data
 without some transformations. With MessagePack, you can send the data to the client more naturally.
 
-## Starting A Finagle HTTP Server
+## Starting A Netty HTTP Server
 
 To start a server, create a finagle server configuration with Finagle.server, and
 ```scala
-import wvlet.airframe._
-import wvlet.airframe.http.finagle._
-import com.twitter.finagle.http.Request
+import wvlet.airframe.http.*
+import wvlet.airframe.http.netty.Netty
 
 // Define API routes. This will read all @Endpoint annotations in MyApi
 // You can add more routes by using `.add[X]` method.
-val router = Router.add[MyApi]
+val router = RxRouter.of[MyApi]
 
-Finagle.server
+Netty.server
   .withPort(8080)
   .withRouter(router)
   .start { server =>
-    // Finagle http server will start here
-    // To keep running the server, run `server.waitServerTermination`:
-    server.waitServerTermination
+    // Netty http server will start here
+    // Keep running the server 
+    server.awaitTermination
   }
-// The server will terminate here
 ```
 
-## Customizing Finagle
+## Customizing Netty
 
-To customize Finagle, use `Finagle.server.withXXX` methods.
+To customize Netty, use `Netty.server.withXXX` methods.
 
 For example, you can:
 - Customize HTTP filters
@@ -147,21 +140,30 @@ For example, you can:
 - Add more advanced server configurations using `.withServerInitializer(...)`
 
 ```scala
-import wvlet.airframe.http.finagle._
+import wvlet.airframe.http.*
+improt wvlet.airframe.http.netty.Netty
 
-val router = Router.add[MyApi]
+val router = RxRouter.add[MyApi]
 
-val server = Finagle.server
+val server = Netty.server
   .withName("my server")
   .withRouter(router)
   .withPort(8080)
-  // Enable tracer for Finagle
-  .withTracer(ConsoleTracer)
-  // Add your own Finagle specific customization here
-  .withServerInitializer{ x: Server => x }
-  .withStatsReceiver(...)
+  // [optional] Add custom log entries
+  .withExtraLogEntries { () => 
+    val m = ListMap.newBuilder[String, Any]
+    // Add a custom log entry
+    m += "application_version" -> "1.0"
+    // Add a thread-local parameter to the log
+    RPCContext.current.getThreadLocal[String]("user_id").map { uid =>
+      m += "user_id" -> uid
+    }
+    m.result
+  }
+  // [optional] Disable server-side logging (log/http_server.json)
+  .noLogging
   // Add a custom MessageCodec mapping
-  .withCustomCodec(Map(Surface.of[X] -> ...))
+  .withCustomCodec{ case s: Surface.of[MyClass] => ... }
 
 server.start { server =>
   // The customized server will start here
@@ -176,55 +178,73 @@ See also the examples in [here](https://github.com/wvlet/airframe/blob/main/airf
 By calling `.design`, you can get a design for Airframe DI:
 
 ```scala
-val design = Finagle.server
+val design = Netty.server
  .withName("my-server")
  .withRouter(router)
  .withPort(8080)
  .design
 
-design.build[FinagleServer] { server =>
+design.build[NettyServer] { server =>
    // A server will start here
 }
 // The server will terminate after exiting the session
 ```
 
+### Running Multiple Netty Servers with Airframe DI
 
-### Running Multiple Finagle Servers
-
-To run multiple HTTP servers, create a FinagleServerFactory and use `newFinagleServer(FinagleServerConfig)`:
-```scala
-import wvlet.airframe.http.finagle._
-
-// Use a design for not starting the default server:
-finagleBaseDesign.build[FinagleServerFactory] { factory =>
-  val config1 = Finagle.server.withName("server1").withPort(8080).withRouter(router1)
-  val config2 = Finagle.server.withName("server2").withPort(8081).withRouter(router2)
-
- factory.newFinagleServer(config1)
- factory.newFinagleServer(config2)
- // Two finagle servers will start at port 8081 and 8081
-}
-// Two servers will be stopped after exiting the session
-```
-
-## Shutting Down Finagle Server
-
-Closing the current Airframe session will terminate the finagle server as well:
+To run multiple HTTP servers with Airframe DI, wrapping NettyServer within different classes is recommended:
 
 ```scala
-import wvlet.airframe._
-import wvlet.airframe.http._
+import wvlet.airframe.*
+import wvlet.airframe.http.netty.Netty
 
-trait YourApi {
-   // Bind the current session
-   private val session = bind[Session]
+class MyAppServer(server: NettyServer):
+  export server.waitServerTermination
 
-   @Endpoint(path="/v1/shutdown", method=HttpMethod.POST)
-   def shutdown {
-     // Closing the current session will terminate the FinagleServer too.
-     session.shutdown
-   }
+class AdminServer(server: NettyServer):
+  export server.waitServerTermination
+
+class MyService(myAppServer: MyAppServer, adminServer: AdminServer):
+  def waitServerTermination: Unit = {
+    myAppServer.waitServerTermination
+    adminServer.waitServerTermination
+  }
+
+  // Explicitely stop the servers   
+  def stop: Unit = {
+    myAppServer.stop
+    adminServer.stop
+  }
+
+case class ServiceConfig(port:Int, adminPort:Int)
+
+val design = newDesign
+  .bind[ServiceConfig].toInstance(ServiceConfig(8080, 8081))  
+  .bind[MyAppServer].toProvider { (config: ServiceConfig, session: Session) =>
+    Netty.server
+     .withName("myapp")
+     .withRouter(router1)
+     .withPort(config.port) // port 8080
+     .newServer(session)
+  }
+  .bind[AdminServer].toProvider { (config: ServiceConfig, session: Session) =>
+    Netty.server
+     .withName("admin")
+     .withRouter(router2)
+     .withPort(config.adminPort) // port 8081
+     .newServer(session)
+  }
+  
+
+design.build[MyService] { service =>
+  // Two servers will start here
+  
+  // Await the MyApp server termination
+  service.waitServerTermination
 }
+
+// After existing the scope, the servers will be stopped automatically (via AutoCloseable.close() method).
+
 ```
 
 ## Static Content
@@ -232,7 +252,9 @@ trait YourApi {
 To return static contents (e.g., html, image files, etc.), use `StaticContent.fromResource(resourceBasePath, relativePath)`. This method finds a file from your class paths (e.g., files in dependency jar files or resource files).
 
 ```scala
-trait StaticContentServer {
+import wvlet.airframe.http.*
+
+class StaticContentServer {
   @Endpoint(path="/content/*path")
   def content(path:String) = StaticContent.fromResource(basePath = "/your/resource/package/path", path)
 }
@@ -249,9 +271,10 @@ val sc = StaticContent
 sc(path) // Create an HTTP response
 ```
 
-## Error Handling
 
-To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.
+## Reporting Errors
+
+To report server-side errors, you can throw HttpServerException with a custom HttpStatus code.
 
 ```scala
 import wvlet.airframe.http.Http
@@ -262,6 +285,11 @@ throw Http.serverException(HttpStatus.Forbidden_403)
 
 If the endpoint returns Future type, returning just `Future[Throwable]` (will produce 500 response code) or `Future[HttpServerException]` to customize the response code by yourself will also work.
 
+Throwing an RPCStatus as an exception will also work. An appropriate HTTP status code will be set automatically:
+
+```scala
+throw RPCStatus.INVALID_REQUEST_U1.newException("Unexpected message")
+```
 
 ### Returning Custom Error Responses
 
@@ -292,12 +320,12 @@ throw e
 
 ## Filters
 
-Router supports nesting HTTP request filters (e.g., authentication, logging) before processing the final `@EndPoint` method:
+Router supports nesting HTTP request filters (RxHttpFilter) for authentication, logging, etc. before processing the final `@EndPoint` method:
 
 ```scala
-import wvlet.airframe._
-import wvlet.airframe.http._
-import wvlet.airframe.http.finagle._
+import wvlet.airframe.*
+import wvlet.airframe.http.*
+import wvlet.airframe.rx.Rx
 
 // Your endpoint definition
 class MyApp {
@@ -307,17 +335,23 @@ class MyApp {
 
 // Implement FinagleFilter (or HttpFilter[Req, Resp, F])
 // to define a custom filter that will be applied before the endpoint processing.
-object LoggingFilter extends FinagleFilter with LogSupport {
-  def apply(request: Request, context: Context): Future[Response] = {
-    info(s"${request.path} is accessed")
-    // Call the child
-    context(request)
+
+class AuthFilter extends RxHttpFilter {
+  def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+    if (isValidAuth(request.authorization)) {
+      // Call the next filter chain
+      next(request)
+    }
+    else {
+      // Reject the request
+      throw RPCStatus.UNAUTHENTICATED_U13.newException("Invalid user")
+    }
   }
 }
 
-// Use .andThen[X] for nesting filters
-Router
- .add(LoggingFilter)
+// Add a filter and chain to the endpoint .andThen[X]:
+val router = RxRouter
+ .filter[AuthFilter]
  .andThen[MyApp]
 ```
 
@@ -326,11 +360,23 @@ Router
 To pass data between filters and applications, you can use thread-local storage in the context:
 
 ```scala
-object AuthLogFilter extends FinagleFilter with LogSupport {
-  def apply(request: Request, context: FinagleContext): Future[Response] = {
-    context(request).map { response =>
+object AuthFilter extends FinagleFilter {
+  def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+    if(authorize(request)) {
+      request.getParam("user_id").map { uid =>
+        // Pass a thread-local parameter to the parent response handler
+        RPCContext.current.setThreadLocal("user_id", uid)
+      }
+    }
+    context(request)
+  }
+}
+
+object AuthLogFilter extends RxHttpFilter with LogSupport {
+  def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+    next(request).map { response =>
       // Read the thread-local parameter set in the context(request)
-      context.getThreadLocal[String]("user_id").map { uid =>
+      RPCContext.current.getThreadLocal[String]("user_id").map { uid =>
         info(s"user_id: ${uid}")
       }
       response
@@ -338,21 +384,9 @@ object AuthLogFilter extends FinagleFilter with LogSupport {
   }
 }
 
-object AuthFilter extends FinagleFilter {
-  def apply(request: Request, context: FinagleContext): Future[Response] = {
-    if(authorize(request)) {
-      request.getParam("user_id").map { uid =>
-        // Pass a thread-local parameter to the parent response handler
-        context.setThreadLocal("user_id", uid)
-      }
-    }
-    context(request)
-  }
-}
 
-
-Router
-  .add(AuthLogFilter)
+val router = RxRouter
+  .filter(AuthLogFilter)
   .andThen(AuthFilter)
   .andThen[MyApp]
 ```
@@ -362,7 +396,7 @@ Using local variables inside filters will not work because the request processin
 
 ## Access Logs
 
-airframe-http stores HTTP access logs at `log/http-access.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.
+airframe-http stores HTTP access logs at `log/http-server.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.
 
 The default logger will record request parameters, request headers (except Authorization headers), response parameters, and response headers.
 
@@ -375,17 +409,15 @@ Example JSON logs:
 For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers:
 
 ```scala
-import wvlet.airframe.http.finagle._
+import wvlet.airframe.http.netty.*
 
-Finagle
+Netty
   .server
-  .withLoggingFilter {
-     HttpAccessLogFilter
-      .default
-      .addRequestLogger(...)
-      .addResponseLogger(...)
-      // Remove unnecessary HTTP headers from logs
-      .addExcludeHeaders(Set("X-XXX-Header"))
+  .withHttpLoggerConfig {
+    _.withLogFilter { (m: Map[String, Any]) =>
+      // You can customize the log entries here
+      m
+    }
   }
 ```
 
@@ -398,8 +430,8 @@ The generated HTTP access log files can be processed in Fluentd. For example, if
 <source>
   @type tail
   # Your log file location and position file
-  path     /var/log/http_access.json
-  pos_file /var/log/td-agent/http_access.json.pos
+  path     /var/log/http_server.json
+  pos_file /var/log/td-agent/http_server.json.pos
   # [Optional] Append tags to the log (For using td-agent)
   tag      td.(your database name).http_access
   format   json
