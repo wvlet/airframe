@@ -71,6 +71,7 @@ object NettyLoggingTest extends AirSpec {
     debug(logEntry)
     logEntry shouldContain ("server_name"      -> "log-test-server")
     logEntry shouldContain ("custom_log_entry" -> "test")
+    logEntry shouldContain ("user"             -> "xxxx_yyyy")
 
     test("add client custom log") {
       val clientLogEntry = clientLogger.getLogs.head

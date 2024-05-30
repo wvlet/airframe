@@ -37,8 +37,8 @@ trait HttpLogger extends AutoCloseable {
   * Http logger configuration
   */
 case class HttpLoggerConfig(
-    // The log file name. The default is log/http_access.json
-    logFileName: String = "log/http_access.json",
+    // The log file name. The default is log/http_server.json
+    logFileName: String = "log/http_server.json",
     /**
       * Case-insensitive list of HTTP headers that need to be excluded from the logs. For example, Authorization,
       * ProxyAuthorization, Cookie headers will be removed by default
