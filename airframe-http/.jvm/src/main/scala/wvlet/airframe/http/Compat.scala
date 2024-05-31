@@ -23,10 +23,7 @@ import scala.concurrent.ExecutionContext
 
 /**
   */
-object 
-
-
-Compat extends CompatApi {
+object Compat extends CompatApi {
   override def urlEncode(s: String): String = {
     URLEncoder.encode(s, "UTF-8")
   }
@@ -65,7 +62,7 @@ Compat extends CompatApi {
     // There is no notion of host server in JVM
     ServerAddress.empty
   }
-  
+
   override def currentRPCContext: RPCContext                     = LocalRPCContext.current
   override def attachRPCContext(context: RPCContext): RPCContext = LocalRPCContext.attach(context)
   override def detachRPCContext(previous: RPCContext): Unit      = LocalRPCContext.detach(previous)
