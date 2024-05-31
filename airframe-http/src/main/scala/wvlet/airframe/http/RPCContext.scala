@@ -58,7 +58,7 @@ trait RPCContext {
     * @return
     */
   @deprecated("Use getThreadLocal(key: String): Any instead", "24.5.0")
-  def getThreadLocaUnsafe[A](key: String): Option[A] = {
+  def getThreadLocalUnsafe[A](key: String): Option[A] = {
     getThreadLocal(key).map(_.asInstanceOf[A])
   }
 
