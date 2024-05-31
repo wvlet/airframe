@@ -190,14 +190,14 @@ improt wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
     <span class="hljs-comment">// Add a custom log entry</span>
     m += <span class="hljs-string">"application_version"</span> -&gt; <span class="hljs-string">"1.0"</span>
     <span class="hljs-comment">// Add a thread-local parameter to the log</span>
-    <span class="hljs-type">RPCContext</span>.current.getThreadLocal[<span class="hljs-type">String</span>](<span class="hljs-string">"user_id"</span>).map { uid =&gt;
+    <span class="hljs-type">RPCContext</span>.current.getThreadLocal(<span class="hljs-string">"user_id"</span>).map { uid =&gt;
       m += <span class="hljs-string">"user_id"</span> -&gt; uid
     }
     m.result
   }
   <span class="hljs-comment">// [optional] Disable server-side logging (log/http_server.json)</span>
   .noLogging
-  <span class="hljs-comment">// Add a custom MessageCodec mapping</span>
+  <span class="hljs-comment">// [optional] Add a custom MessageCodec mapping</span>
   .withCustomCodec{ <span class="hljs-keyword">case</span> s: <span class="hljs-type">Surface</span>.of[<span class="hljs-type">MyClass</span>] =&gt; ... }
 
 server.start { server =&gt;
@@ -372,7 +372,7 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
     next(request).map { response =&gt;
       <span class="hljs-comment">// Read the thread-local parameter set in the context(request)</span>
-      <span class="hljs-type">RPCContext</span>.current.getThreadLocal[<span class="hljs-type">String</span>](<span class="hljs-string">"user_id"</span>).map { uid =&gt;
+      <span class="hljs-type">RPCContext</span>.current.getThreadLocal(<span class="hljs-string">"user_id"</span>).map { uid =&gt;
         info(<span class="hljs-string">s"user_id: <span class="hljs-subst">${uid}</span>"</span>)
       }
       response
