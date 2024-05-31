@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-http: Creating REST Service · Airframe</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-http: Creating REST Service · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-http: Creating REST Service · Airframe</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-netty is an extension of airframe-http to use Netty as a backend HTTP server."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-http: Creating REST Service · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-netty is an extension of airframe-http to use Netty as a backend HTTP server."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
               (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
               (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
               m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -62,13 +62,12 @@
                 };
               }
             });
-        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-http: Creating REST Service</h1></header><article><div><span><p>airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server.</p>
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-http: Creating REST Service</h1></header><article><div><span><p>airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-netty is an extension of airframe-http to use Netty as a backend HTTP server.</p>
 <ul>
 <li>Blog article: <a href="https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f">Airframe HTTP: Building Low-Friction Web Services Over Finagle</a></li>
 </ul>
 <p><strong>build.sbt</strong></p>
-<p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg" alt="Maven Central"></a>
-<a href="http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12"><img src="http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12.svg?label=scaladoc" alt="Scaladoc"></a></p>
+<p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-netty_3/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-netty_3/badge.svg" alt="Maven Central"></a></p>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-netty"</span> % (version)
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="defining-http-endpoints"></a><a href="#defining-http-endpoints" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Defining HTTP Endpoints</h2>
@@ -157,7 +156,7 @@ encoded with MessagePack format. This is useful for reducing the response size a
 sending data to the client as is. For example, JSON cannot represent precise double values and binary data
 without some transformations. With MessagePack, you can send the data to the client more naturally.</p>
 <h2><a class="anchor" aria-hidden="true" id="starting-a-netty-http-server"></a><a href="#starting-a-netty-http-server" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Starting A Netty HTTP Server</h2>
-<p>To start a server, create a finagle server configuration with Finagle.server, and</p>
+<p>To start a server, create a netty server configuration with Netty.server, and</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.*
 <span class="hljs-keyword">import</span> wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
 
@@ -175,14 +174,7 @@ without some transformations. With MessagePack, you can send the data to the cli
   }
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="customizing-netty"></a><a href="#customizing-netty" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Customizing Netty</h2>
-<p>To customize Netty, use <code>Netty.server.withXXX</code> methods.</p>
-<p>For example, you can:</p>
-<ul>
-<li>Customize HTTP filters</li>
-<li>Start multiple Finagle HTTP servers with different configurations</li>
-<li>Add custom Tracer, StatsReceiver, etc.</li>
-<li>Add more advanced server configurations using <code>.withServerInitializer(...)</code></li>
-</ul>
+<p>To customize Netty, use <code>Netty.server.withXXX</code> methods. For example, you can customize server name, port, logging, etc.:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.*
 improt wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
 
@@ -213,7 +205,6 @@ server.start { server =&gt;
   server.waitServerTermination
 }
 </code></pre>
-<p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/main/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
 <h2><a class="anchor" aria-hidden="true" id="integration-with-airframe-di"></a><a href="#integration-with-airframe-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Integration with Airframe DI</h2>
 <p>By calling <code>.design</code>, you can get a design for Airframe DI:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> design = <span class="hljs-type">Netty</span>.server
@@ -224,6 +215,9 @@ server.start { server =&gt;
 
 design.build[<span class="hljs-type">NettyServer</span>] { server =&gt;
    <span class="hljs-comment">// A server will start here</span>
+   
+   <span class="hljs-comment">// Wait until the server is terminated</span>
+   server.waitServerTermination
 }
 <span class="hljs-comment">// The server will terminate after exiting the session</span>
 </code></pre>
@@ -339,8 +333,8 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getUser</span></span>(name: <span class="hljs-type">String</span>): <span class="hljs-type">User</span> = <span class="hljs-type">User</span>(name)
 }
 
-<span class="hljs-comment">// Implement FinagleFilter (or HttpFilter[Req, Resp, F])</span>
-<span class="hljs-comment">// to define a custom filter that will be applied before the endpoint processing.</span>
+<span class="hljs-comment">// Implement RxHttpFilter to define a custom filter </span>
+<span class="hljs-comment">// that will be applied before the endpoint processing.</span>
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">RxHttpFilter</span> </span>{
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
@@ -362,7 +356,7 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="thread-local-storage"></a><a href="#thread-local-storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Thread-Local Storage</h3>
 <p>To pass data between filters and applications, you can use thread-local storage in the context:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FinagleFilter</span> </span>{
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">RxHttpFilter</span> </span>{
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
     <span class="hljs-keyword">if</span>(authorize(request)) {
       request.getParam(<span class="hljs-string">"user_id"</span>).map { uid =&gt;
@@ -370,7 +364,7 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
         <span class="hljs-type">RPCContext</span>.current.setThreadLocal(<span class="hljs-string">"user_id"</span>, uid)
       }
     }
-    context(request)
+    next(request)
   }
 }
 
@@ -426,7 +420,7 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 &lt;/source&gt;
 </code></pre>
 <h1><a class="anchor" aria-hidden="true" id="http-clients"></a><a href="#http-clients" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>HTTP Clients</h1>
-<p>airframe-http has several HTTP client implementations (Java's http client, Finagle, OkHttp client, URLConnection client, etc.).
+<p>airframe-http has several HTTP client implementations (Java's http client, OkHttp client, URLConnection client, etc.).
 The http client has a built-in retry logic (for 5xx http status code, connection failures) and circuit breakers.</p>
 <h2><a class="anchor" aria-hidden="true" id="default-http-client"></a><a href="#default-http-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Default Http Client</h2>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http._
