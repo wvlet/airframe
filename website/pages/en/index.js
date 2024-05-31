@@ -102,7 +102,7 @@ class Index extends React.Component {
             <Container
                 padding={['bottom', 'top']}
                 background="light"
-                className="twoColumn">
+                className="oneColumn">
                 <div>
                     <img width='200px' src={`${baseUrl}img/logos/airframe-logo-tr.png`} alt="Project Logo"/>
                 </div>
@@ -110,8 +110,15 @@ class Index extends React.Component {
         );
 
         const Features = ({background = 'light'}) => (
-            <Block layout="twoColumn">
+            <Block layout="oneColumn">
                 {[
+                    {
+                        content: 'Airframe extends capability of Scala to the next level. Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
+                            'Airframe has redesigned these Java-based ecosystem as [airframe-log](docs/airframe-log), [airframe-codec](docs/airframe-codec), and [airframe-di](docs/airframe-di) in order to maximize the power of Scala. Scala 3 is also fully supported, as well as Scala.js and Scala Native.',
+                        image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
+                        imageAlign: 'top',
+                        title: 'Designed for Scala, Scala.js, and Scala Native',
+                    },
                     {
                         content: '[Airframe RPC](docs/airframe-rpc) supports seamless integration of server and clients using Scala as RPC interfaces. You can also define plain [REST](docs/airframe-http) interfaces.',
                         image: `${baseUrl}img/airframe-rpc/rpc-overview.png`,
@@ -119,24 +126,17 @@ class Index extends React.Component {
                         title: 'RPC and REST Framework',
                     },
                     {
-                        content: 'Airframe extends capability of Scala to the next level. Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
-                            'Airframe has redesigned these Java-based ecosystem as [airframe-log](docs/airframe-log), [airframe-codec](docs/airframe-codec), and [airframe-di](docs/airframe-di) in order to maximize the power of Scala',
-                        image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
+                        content: '[AirSpec](docs/airspec) is a simple unit testing framework. No need to remember complex DSLs for writing tests in Scala.',
+                        image: `${baseUrl}/img/features/airspec.png`,
                         imageAlign: 'top',
-                        title: 'Designed for Scala, Scala.js, and Scala Native',
+                        title: 'Simple Testing Framework'
                     },
                     {
                         content:
                             'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec) for fast and compact object serialization. [JSON](docs/airframe-json)-based serialization is also supported.',
                         image: `${baseUrl}img/features/msgpack.png`,
                         imageAlign: 'top',
-                        title: 'MessagePack-based Object Serialization',
-                    },
-                    {
-                        content: '[AirSpec](docs/airspec) is a simple unit testing framework. No need to remember complex DSLs for writing tests in Scala.',
-                        image: `${baseUrl}/img/features/airspec.png`,
-                        imageAlign: 'top',
-                        title: 'Simple Testing Framework'
+                        title: 'Object Serialization',
                     },
                     {
                         content: "[airframe-metrics](docs/airframe-metrics) provides human-friendly time range selectors (e.g., -1d, -1w) and data units for measuring elapsed time (e.g., 0.1s, 1.5h) and data sizes (e.g., GB, PB.)",
