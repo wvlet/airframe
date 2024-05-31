@@ -58,8 +58,8 @@ The chart below shows major features supported in selected DI frameworks. For co
 | Auto-wiring           |   ✓     |    ✓   |    ✓   |   (Manual wiring) |
 | Compile-time dependency check    |    |   |  ✓  |  ✓  |
 | Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit parameters](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
-| [Constructor injection](airframe-di.md#bind) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
-| [In-trait injection](airframe-di.md#bind) (mix-in support)  |   ✓    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
+| [Constructor injection](airframe-di.md) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
+| [In-trait injection](airframe-di.md) (mix-in support)  |   ✓ (Deprecated in favor of Constructor Injection)    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
 | [Life-cycle management](airframe-di.md#life-cycle) (On start/inject/shutdown hooks) |   ✓    | (Need an extension like [airlift](https://github.com/airlift/airlift/tree/main/bootstrap/src/main/java/io/airlift/bootstrap)) | limited (inject interceptor using reflection)| (Need to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/)) |
 | [Lazy/eager initialization switch](airframe-di.md#life-cycle)  |  ✓     |  ✓ (with [Stage](https://github.com/google/guice/wiki/Bootstrap))    |  (lazy only) |  (lazy only)  |
 | [Multi-bindings](airframe-di.md#multi-binding) |✓ (Just Scala) | ✓ |✓ (Just Scala) |✓ (Just Scala)
