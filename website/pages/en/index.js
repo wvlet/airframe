@@ -102,7 +102,7 @@ class Index extends React.Component {
             <Container
                 padding={['bottom', 'top']}
                 background="light"
-                className="oneColumn">
+                className="twoColumn">
                 <div>
                     <img width='200px' src={`${baseUrl}img/logos/airframe-logo-tr.png`} alt="Project Logo"/>
                 </div>
@@ -110,7 +110,7 @@ class Index extends React.Component {
         );
 
         const Features = ({background = 'light'}) => (
-            <Block layout="oneColumn">
+            <Block layout="twoColumn">
                 {[
                     {
                         content: 'Airframe extends capability of Scala to the next level. Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
