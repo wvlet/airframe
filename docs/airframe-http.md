@@ -3,14 +3,15 @@ id: airframe-http
 title: airframe-http: Creating REST Service
 ---
 
-airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Netty (or Finagle) as a backend HTTP server.
+airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-netty is an extension of airframe-http to use Netty as a backend HTTP server.
 
 - Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
 **build.sbt**
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/)
-[![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-netty_3/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-netty_3/)
+
+
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-http-netty" % (version)
 ```
@@ -110,7 +111,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 ## Starting A Netty HTTP Server
 
-To start a server, create a finagle server configuration with Finagle.server, and
+To start a server, create a netty server configuration with Netty.server, and
 ```scala
 import wvlet.airframe.http.*
 import wvlet.airframe.http.netty.Netty
@@ -131,13 +132,7 @@ Netty.server
 
 ## Customizing Netty
 
-To customize Netty, use `Netty.server.withXXX` methods.
-
-For example, you can:
-- Customize HTTP filters
-- Start multiple Finagle HTTP servers with different configurations
-- Add custom Tracer, StatsReceiver, etc.
-- Add more advanced server configurations using `.withServerInitializer(...)`
+To customize Netty, use `Netty.server.withXXX` methods. For example, you can customize server name, port, logging, etc.:
 
 ```scala
 import wvlet.airframe.http.*
@@ -171,8 +166,6 @@ server.start { server =>
 }
 ```
 
-See also the examples in [here](https://github.com/wvlet/airframe/blob/main/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
-
 ## Integration with Airframe DI
 
 By calling `.design`, you can get a design for Airframe DI:
@@ -186,6 +179,9 @@ val design = Netty.server
 
 design.build[NettyServer] { server =>
    // A server will start here
+   
+   // Wait until the server is terminated
+   server.waitServerTermination
 }
 // The server will terminate after exiting the session
 ```
@@ -333,8 +329,8 @@ class MyApp {
   def getUser(name: String): User = User(name)
 }
 
-// Implement FinagleFilter (or HttpFilter[Req, Resp, F])
-// to define a custom filter that will be applied before the endpoint processing.
+// Implement RxHttpFilter to define a custom filter 
+// that will be applied before the endpoint processing.
 
 class AuthFilter extends RxHttpFilter {
   def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
@@ -360,7 +356,7 @@ val router = RxRouter
 To pass data between filters and applications, you can use thread-local storage in the context:
 
 ```scala
-object AuthFilter extends FinagleFilter {
+object AuthFilter extends RxHttpFilter {
   def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
     if(authorize(request)) {
       request.getParam("user_id").map { uid =>
@@ -368,7 +364,7 @@ object AuthFilter extends FinagleFilter {
         RPCContext.current.setThreadLocal("user_id", uid)
       }
     }
-    context(request)
+    next(request)
   }
 }
 
@@ -442,7 +438,7 @@ The generated HTTP access log files can be processed in Fluentd. For example, if
 
 # HTTP Clients
 
-airframe-http has several HTTP client implementations (Java's http client, Finagle, OkHttp client, URLConnection client, etc.).
+airframe-http has several HTTP client implementations (Java's http client, OkHttp client, URLConnection client, etc.).
 The http client has a built-in retry logic (for 5xx http status code, connection failures) and circuit breakers. 
 
 ## Default Http Client 
