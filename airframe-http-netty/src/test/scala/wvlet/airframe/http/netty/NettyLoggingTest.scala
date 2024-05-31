@@ -26,9 +26,14 @@ object NettyLoggingTest extends AirSpec {
 
   @RPC
   class MyRPC extends LogSupport {
+    private var requestCount = 0
+
     def hello(): Unit = {
-      RPCContext.current.setThreadLocal("user", "xxxx_yyyy")
-      debug("hello rpc")
+      if (requestCount == 0) {
+        RPCContext.current.setThreadLocal("user", "xxxx_yyyy")
+      }
+      requestCount += 1
+      trace("hello rpc")
     }
   }
 
@@ -46,7 +51,7 @@ object NettyLoggingTest extends AirSpec {
         .withName("log-test-server")
         .withExtraLogEntries { () =>
           val m = ListMap.newBuilder[String, Any]
-          RPCContext.current.getThreadLocal[String]("user").foreach { v =>
+          RPCContext.current.getThreadLocal("user").foreach { v =>
             m += "user" -> v
           }
           m += ("custom_log_entry" -> "test")
@@ -67,11 +72,19 @@ object NettyLoggingTest extends AirSpec {
 
   test("add server custom log") { (syncClient: SyncClient) =>
     syncClient.send(Http.POST("/wvlet.airframe.http.netty.NettyLoggingTest.MyRPC/hello"))
-    val logEntry = serverLogger.getLogs.head
+    val logs     = serverLogger.getLogs
+    val logEntry = logs(0)
     debug(logEntry)
     logEntry shouldContain ("server_name"      -> "log-test-server")
     logEntry shouldContain ("custom_log_entry" -> "test")
     logEntry shouldContain ("user"             -> "xxxx_yyyy")
+
+    test("do not set TLS in the second request") {
+      syncClient.send(Http.POST("/wvlet.airframe.http.netty.NettyLoggingTest.MyRPC/hello"))
+      val l = serverLogger.getLogs(1)
+      debug(l)
+      l shouldNotContain ("user" -> "xxxx_yyyy")
+    }
 
     test("add client custom log") {
       val clientLogEntry = clientLogger.getLogs.head
