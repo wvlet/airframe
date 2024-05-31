@@ -40,7 +40,7 @@ class ThreadLocalStorageTest extends AirSpec {
 
     @Endpoint(path = "/rpc-context")
     def rpcContext: String = {
-      RPCContext.current.getThreadLocal[String]("client_id").getOrElse("unknown")
+      RPCContext.current.getThreadLocal("client_id").map(_.toString).getOrElse("unknown")
     }
 
     @Endpoint(path = "/rpc-header")

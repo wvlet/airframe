@@ -447,7 +447,7 @@ String "100" will be translated into an Int value `100` automatically.
 
 ### RPCContext
 
-Since Airframe 22.8.0, airframe-rpc introduced `RPCContext` for reading and writing the thread-local storage, and referencing the original HTTP request: 
+Since Airframe 22.8.0, airframe-rpc introduced `RPCContext.current` for reading and writing the thread-local storage, and referencing the original HTTP request: 
 
 ```scala
 import wvlet.airframe.http._
@@ -456,7 +456,7 @@ import wvlet.airframe.http._
 trait MyAPI {
   def hello: String = {
     // Read the thread-local storage
-    val userName = RPCContext.current.getThreadLocal[String]("context_user")
+    val userName = RPCContext.current.getThreadLocal("context_user")
     s"Hello ${userName}"
   } 
   

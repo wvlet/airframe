@@ -22,25 +22,25 @@ class NettyBackendTest extends AirSpec {
     val key = ULID.newULIDString
 
     test("must be None by default") {
-      NettyBackend.getThreadLocal[Int](key) shouldBe None
+      NettyBackend.getThreadLocal(key) shouldBe None
     }
 
     test("store different content for each thread") {
-      NettyBackend.setThreadLocal[Int](key, 123)
+      NettyBackend.setThreadLocal(key, 123)
 
       var valueInThread: Option[Int] = None
 
       val t = new Thread {
         override def run(): Unit = {
-          NettyBackend.getThreadLocal[Int](key) shouldBe None
-          NettyBackend.setThreadLocal[Int](key, 456)
-          valueInThread = NettyBackend.getThreadLocal[Int](key)
+          NettyBackend.getThreadLocal(key) shouldBe None
+          NettyBackend.setThreadLocal(key, 456)
+          valueInThread = NettyBackend.getThreadLocal(key)
         }
       }
       t.start()
       t.join()
 
-      NettyBackend.getThreadLocal[Int](key) shouldBe Some(123)
+      NettyBackend.getThreadLocal(key) shouldBe Some(123)
       valueInThread shouldBe Some(456)
     }
   }

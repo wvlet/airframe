@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.internal
 
-import wvlet.airframe.http.{RPCContext, EmptyRPCContext}
+import wvlet.airframe.http.{EmptyRPCContext, RPCContext}
 
 object LocalRPCContext {
   private val localContext = new ThreadLocal[RPCContext]()

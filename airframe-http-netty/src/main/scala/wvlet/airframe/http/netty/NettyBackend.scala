@@ -15,6 +15,7 @@ package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.*
+import wvlet.airframe.http.internal.TLSSupport
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
@@ -22,7 +23,7 @@ import scala.collection.mutable
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
-object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport { self =>
+object NettyBackend extends HttpBackend[Request, Response, Rx] with TLSSupport with LogSupport { self =>
   private val rxBackend = new RxNettyBackend
 
   override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =
@@ -89,21 +90,16 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
     f.toRx.map(body)
   }
 
-  private lazy val tls =
-    ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
-
-  private def storage: collection.mutable.Map[String, Any] = tls.get()
-
   override def withThreadLocalStore(request: => Rx[Response]): Rx[Response] = {
     //
     request
   }
 
   override def setThreadLocal[A](key: String, value: A): Unit = {
-    storage.put(key, value)
+    setTLS(key, value)
   }
 
   override def getThreadLocal[A](key: String): Option[A] = {
-    storage.get(key).asInstanceOf[Option[A]]
+    getTLS(key).map(_.asInstanceOf[A])
   }
 }

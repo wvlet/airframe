@@ -47,7 +47,7 @@ trait DemoApi extends LogSupport {
 
   def getRPCContext: Option[String] = {
     val ctx = RPCContext.current
-    ctx.getThreadLocal[String]("client_id")
+    ctx.getThreadLocal("client_id").map(_.toString)
   }
 
   def getRequest: Request = {

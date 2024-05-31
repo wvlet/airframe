@@ -150,14 +150,14 @@ val server = Netty.server
     // Add a custom log entry
     m += "application_version" -> "1.0"
     // Add a thread-local parameter to the log
-    RPCContext.current.getThreadLocal[String]("user_id").map { uid =>
+    RPCContext.current.getThreadLocal("user_id").map { uid =>
       m += "user_id" -> uid
     }
     m.result
   }
   // [optional] Disable server-side logging (log/http_server.json)
   .noLogging
-  // Add a custom MessageCodec mapping
+  // [optional] Add a custom MessageCodec mapping
   .withCustomCodec{ case s: Surface.of[MyClass] => ... }
 
 server.start { server =>
@@ -372,7 +372,7 @@ object AuthLogFilter extends RxHttpFilter with LogSupport {
   def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
     next(request).map { response =>
       // Read the thread-local parameter set in the context(request)
-      RPCContext.current.getThreadLocal[String]("user_id").map { uid =>
+      RPCContext.current.getThreadLocal("user_id").map { uid =>
         info(s"user_id: ${uid}")
       }
       response

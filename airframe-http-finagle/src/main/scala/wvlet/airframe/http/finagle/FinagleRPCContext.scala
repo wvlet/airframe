@@ -24,8 +24,12 @@ case class FinagleRPCContext(request: Request) extends RPCContext {
     FinagleBackend.setThreadLocal(key, value)
   }
 
-  override def getThreadLocal[A](key: String): Option[A] = {
+  override def getThreadLocal(key: String): Option[Any] = {
     FinagleBackend.getThreadLocal(key)
+  }
+
+  override def getThreadLocalUnsafe[A](key: String): Option[A] = {
+    getThreadLocal(key).map(_.asInstanceOf[A])
   }
 
   override def httpRequest: HttpMessage.Request = {

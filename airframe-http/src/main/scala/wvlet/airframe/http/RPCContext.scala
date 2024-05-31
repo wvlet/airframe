@@ -37,7 +37,10 @@ trait RPCContext {
   def httpRequest: HttpMessage.Request
 
   def rpcCallContext: Option[RPCCallContext] = {
-    getThreadLocal[RPCCallContext](HttpBackend.TLS_KEY_RPC)
+    getThreadLocal(HttpBackend.TLS_KEY_RPC) match {
+      case Some(c: RPCCallContext) => Some(c)
+      case _                       => None
+    }
   }
 
   /**
@@ -52,10 +55,19 @@ trait RPCContext {
     * Get a thread-local variable that is available only within the request scope. The type must be specified
     * explicitly.
     * @param key
-    * @tparam A
     * @return
     */
-  def getThreadLocal[A](key: String): Option[A]
+  @deprecated("Use getThreadLocal(key: String): Any instead", "24.5.0")
+  def getThreadLocalUnsafe[A](key: String): Option[A] = {
+    getThreadLocal(key).map(_.asInstanceOf[A])
+  }
+
+  /**
+    * Get a thread-local variable that is available only within the request scope.
+    * @param key
+    * @return
+    */
+  def getThreadLocal(key: String): Option[Any]
 }
 
 /**
@@ -65,7 +77,7 @@ object EmptyRPCContext extends RPCContext {
   override def setThreadLocal[A](key: String, value: A): Unit = {
     // no-op
   }
-  override def getThreadLocal[A](key: String): Option[A] = {
+  override def getThreadLocal(key: String): Option[Any] = {
     // no-op
     None
   }
