@@ -82,8 +82,8 @@ case class GrpcContext(
     storage.put(key, value)
   }
 
-  override def getThreadLocal[A](key: String): Option[A] = {
-    storage.get(key).asInstanceOf[Option[A]]
+  override def getThreadLocal(key: String): Option[Any] = {
+    storage.get(key)
   }
 
   override def httpRequest: HttpMessage.Request = {
