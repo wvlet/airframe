@@ -102,7 +102,7 @@ class Index extends React.Component {
             <Container
                 padding={['bottom', 'top']}
                 background="light"
-                className="threeColumn">
+                className="twoColumn">
                 <div>
                     <img width='200px' src={`${baseUrl}img/logos/airframe-logo-tr.png`} alt="Project Logo"/>
                 </div>
@@ -110,20 +110,20 @@ class Index extends React.Component {
         );
 
         const Features = ({background = 'light'}) => (
-            <Block layout="threeColumn">
+            <Block layout="twoColumn">
                 {[
                     {
-                        content: '[Airframe RPC](docs/airframe-rpc) supports seamless integration of server and clients using Scala as RPC interfaces.',
+                        content: '[Airframe RPC](docs/airframe-rpc) supports seamless integration of server and clients using Scala as RPC interfaces. You can also define plain [REST](docs/airframe-http) interfaces.',
                         image: `${baseUrl}img/airframe-rpc/rpc-overview.png`,
                         imageAlign: 'top',
-                        title: 'RPC Framework',
+                        title: 'RPC and REST Framework',
                     },
                     {
-                        content: 'Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
-                            'Airframe has redesigned these Java-based ecosystem as [airframe-log](docs/airframe-log), [airframe-codec](docs/airframe-codec), and [airframe-di](docs/airframe-di) in order to maximize the power of Scala and Scala.js',
+                        content: 'Airframe extends capability of Scala to the next level. Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
+                            'Airframe has redesigned these Java-based ecosystem as [airframe-log](docs/airframe-log), [airframe-codec](docs/airframe-codec), and [airframe-di](docs/airframe-di) in order to maximize the power of Scala',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
-                        title: 'Designed for Scala and Scala.js',
+                        title: 'Designed for Scala, Scala.js, and Scala Native',
                     },
                     {
                         content:
@@ -133,28 +133,10 @@ class Index extends React.Component {
                         title: 'MessagePack-based Object Serialization',
                     },
                     {
-                        content: '[AirSpec](docs/airspec) is a simple unit testing framework for Scala and Scala.js. You can use public methods in your classes as test cases. No need to remember complex DSLs for writing tests in Scala.',
+                        content: '[AirSpec](docs/airspec) is a simple unit testing framework. No need to remember complex DSLs for writing tests in Scala.',
                         image: `${baseUrl}/img/features/airspec.png`,
                         imageAlign: 'top',
                         title: 'Simple Testing Framework'
-                    },
-                    {
-                        content: "[airframe-http](docs/airframe-http) supports building REST web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to crate microservice API servers and clients at ease",
-                        image: `${baseUrl}/img/features/finagle.png`,
-                        imageAlign: 'top',
-                        title: 'REST Services'
-                    },
-                    {
-                        content: 'Retrying HTTP requests for API calls is an essential technique for connecting microservices. [airframe-control](docs/airframe-control) will provide essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
-                        image: `${baseUrl}/img/features/undraw_process_e90d.svg`,
-                        imageAlign: 'top',
-                        title: 'Retry, Rate Control'
-                    },
-                    {
-                        content: "Web application development often requires mock web servers. With [airframe-http-recorder](docs/airframe-http-recorder), you can record and replay the real server responses for running unit tests even if the servers are offline or unreachable from CI environments.",
-                        image: `${baseUrl}/img/features/undraw_server_down_s4lk.svg`,
-                        imageAlign: 'top',
-                        title: 'HTTP Client and Recorders',
                     },
                     {
                         content: "[airframe-metrics](docs/airframe-metrics) provides human-friendly time range selectors (e.g., -1d, -1w) and data units for measuring elapsed time (e.g., 0.1s, 1.5h) and data sizes (e.g., GB, PB.)",

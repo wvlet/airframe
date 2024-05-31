@@ -6,7 +6,7 @@ title: Overview
 
 <img style = "float: right; padding: 10px;" width="150px" src="../img/logos/airframe_icon_small.png"/>
 
-Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Ntive.
+Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Native.
 
 - [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
@@ -291,14 +291,6 @@ usage: myapp [options]
  -p [PORT]   port number
  -h, --help  show help messages
 ```
-
-### Application Config Flow
-
-![config](../img/immutable_config.png)
-
-[airframe-config](airframe-config.md) supports YAML-based application configurations and provides 
-immutable config objects that can be injected through DI. Partially overriding configurations is also asupported.
-
 
 
 ## List of Airframe Modules

@@ -615,13 +615,7 @@ display the lifecycle of AirframeSession and the injected objects:
 
 ## Use Cases
 
-This page illustrates typical use cases of Airframe.
-
-- [Configuring Applications](#configuring-applications)
-- [Managing Resources](#managing-resources)
-- [Factory Binding](#factory-binding)
-- [Service Mix-In](#service-mix-in)
-- [Override Bindings](#override-bindings)
+This page illustrates typical use cases of Airframe DI.
 
 ### Configuring Applications
 

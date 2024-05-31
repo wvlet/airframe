@@ -36,7 +36,7 @@ counter := 2
 // <div>count: 2</div>
 ```
 
-`Rx[A]` represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining actions (map operator, etc.) based on the current state of `counter` variable. These actions are observing the state of the variable, and if the `counter` variable is updated, the registered actions will be triggered. [airframe-rx-html](airframe-rx-html.md) uses this pattern a lot to build flexible UI code in [Scala.js](https://www.scala-js.org), which will be compiled to JavaScripts so that we can use Scala for web browsers.
+`Rx[A]` represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining actions (map operator, etc.) based on the current state of `counter` variable. These actions are observing the state of the variable, and if the `counter` variable is updated, the registered actions will be triggered. airframe-rx-html uses this pattern a lot to build flexible UI code in [Scala.js](https://www.scala-js.org), which will be compiled to JavaScripts so that we can use Scala for web browsers.
 
 ### Backend Programming
 
