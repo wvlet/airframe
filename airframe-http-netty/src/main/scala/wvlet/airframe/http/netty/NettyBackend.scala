@@ -15,6 +15,7 @@ package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.*
+import wvlet.airframe.http.internal.TLSSupport
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
@@ -22,7 +23,7 @@ import scala.collection.mutable
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
-object NettyBackend extends HttpBackend[Request, Response, Rx] with TLS with LogSupport { self =>
+object NettyBackend extends HttpBackend[Request, Response, Rx] with TLSSupport with LogSupport { self =>
   private val rxBackend = new RxNettyBackend
 
   override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =

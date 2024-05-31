@@ -11,15 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.netty
-
-import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.RPCContext
-import wvlet.airframe.http.internal.TLSSupport
+package wvlet.airframe.http.internal
 
 import scala.collection.mutable
 
-class NettyRPCContext(val httpRequest: Request) extends RPCContext with TLSSupport {
-  override def setThreadLocal[A](key: String, value: A): Unit = setTLS(key, value)
-  override def getThreadLocal(key: String): Option[Any]       = getTLS(key)
+/**
+  * Thread-local storage support
+  */
+private[http] trait TLSSupport {
+  private lazy val tls = ThreadLocal.withInitial[mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
+  private def tlsStorage(): mutable.Map[String, Any] = tls.get()
+
+  def setTLS(key: String, value: Any): Unit = tlsStorage().put(key, value)
+  def getTLS(key: String): Option[Any]      = tlsStorage().get(key)
 }

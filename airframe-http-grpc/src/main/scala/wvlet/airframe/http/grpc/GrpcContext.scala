@@ -14,6 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc.*
+import wvlet.airframe.http.internal.TLSSupport
 import wvlet.airframe.http.{Http, HttpMessage, RPCContext, RPCEncoding}
 import wvlet.log.LogSupport
 
@@ -57,15 +58,8 @@ case class GrpcContext(
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
 ) extends RPCContext
+    with TLSSupport
     with LogSupport {
-
-  // Grpc doesn't provide a mutable thread-local stage, so create our own TLS here.
-  private lazy val tls =
-    ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
-
-  private def storage: collection.mutable.Map[String, Any] = {
-    tls.get()
-  }
 
   // Return the accept header
   def accept: String = metadata.accept
@@ -79,11 +73,11 @@ case class GrpcContext(
   }
 
   override def setThreadLocal[A](key: String, value: A): Unit = {
-    storage.put(key, value)
+    setTLS(key, value)
   }
 
   override def getThreadLocal(key: String): Option[Any] = {
-    storage.get(key)
+    getTLS(key)
   }
 
   override def httpRequest: HttpMessage.Request = {
