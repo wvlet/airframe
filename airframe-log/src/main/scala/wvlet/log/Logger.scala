@@ -296,6 +296,28 @@ object Logger {
     }
   }
 
+  /**
+    * Reset log level set by the given pattern
+    * @param pattern
+    */
+  def resetLogLevel(pattern: String): Unit = {
+    if (pattern.contains("*")) {
+      val regexPattern    = pattern.replaceAll("\\.", "\\\\.").replaceAll("\\*", ".*").r
+      val regexPatternStr = regexPattern.regex
+      synchronized {
+        logLevelPatterns = logLevelPatterns.filter(x => x._1.regex != regexPatternStr)
+      }
+      // Reset the log level of already created loggers matching the removed pattern
+      loggerCache.values.foreach { l =>
+        if (regexPattern.findFirstIn(l.getName).isDefined) {
+          l.resetLogLevel
+        }
+      }
+    } else {
+      Logger(pattern).resetLogLevel
+    }
+  }
+
   def setDefaultFormatter(formatter: LogFormatter): Unit = {
     synchronized {
       rootLogger.resetHandler(new ConsoleLogHandler(formatter))
