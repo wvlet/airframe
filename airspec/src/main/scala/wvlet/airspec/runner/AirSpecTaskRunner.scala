@@ -90,6 +90,7 @@ private[airspec] class AirSpecTaskRunner(
     val startTimeNanos = System.nanoTime()
     val prevLogLevel   = Map.newBuilder[String, LogLevel]
     prevLogLevel += testClassName -> Logger(testClassName).getLogLevel
+
     Future
       .apply {
         // Set the default log level for the class

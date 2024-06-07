@@ -32,7 +32,9 @@ private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, _remoteArgs: Arra
 
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs
-      .map(t => new AirSpecTask(config, taskLogger, t, classLoader))
+      .map { t =>
+        new AirSpecTask(config, taskLogger, t, classLoader)
+      }
   }
 
   override def done(): String = {
@@ -57,50 +59,58 @@ private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, _remoteArgs: Arra
 
 private[airspec] object AirSpecSbtRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecSbtRunner = {
-
-    // Set log level with -l (log level)
-    val remaining           = Array.newBuilder[String]
-    var i                   = 0
-    var logLevel: LogLevel  = Logger.getDefaultLogLevel
-    val additionalLogLevels = Map.newBuilder[String, LogLevel]
-    while (i < args.length) {
-      args(i) match {
-        case "-l" if i < args.length - 1 =>
-          // Set the default log level for the test spec
-          logLevel = LogLevel(args(i + 1))
-          i += 1
-        case arg if arg.startsWith("-L") =>
-          arg.stripPrefix("-L").split("=") match {
-            case Array(pkg, level) =>
-              additionalLogLevels += pkg -> LogLevel(level)
-            case _ =>
-              warn(s"Ignoring invalid argument: ${arg}. Use -L(package)=(log level) to set log levels")
-          }
-        case other =>
-          remaining += other
-      }
-      i += 1
-    }
-
     new AirSpecSbtRunner(
-      AirSpecConfig(
-        remaining.result(),
-        defaultLogLevel = logLevel,
-        additionalLogLevels = additionalLogLevels.result()
-      ),
+      AirSpecConfig(args),
       remoteArgs,
       testClassLoader
     )
   }
 
   case class AirSpecConfig(
-      args: Array[String],
-      defaultLogLevel: LogLevel = LogLevel.INFO,
-      additionalLogLevels: Map[String, LogLevel] = Map.empty
-  ) {
+      args: Array[String]
+  ) extends LogSupport {
+    private var remainingArgs: Array[String] = _
+    private var _defaultLogLevel: LogLevel   = LogLevel.INFO
+    private var _additionalLogLevels         = Map.empty[String, LogLevel]
+
+    init
+
+    private def init: Unit = {
+      // Set log level with -l (log level)
+      val remaining           = Array.newBuilder[String]
+      var i                   = 0
+      var logLevel: LogLevel  = Logger.getDefaultLogLevel
+      val additionalLogLevels = Map.newBuilder[String, LogLevel]
+      while (i < args.length) {
+        args(i) match {
+          case "-l" if i < args.length - 1 =>
+            // Set the default log level for the test spec
+            logLevel = LogLevel(args(i + 1))
+            i += 1
+          case arg if arg.startsWith("-L") =>
+            arg.stripPrefix("-L").split("=") match {
+              case Array(pkg, level) =>
+                additionalLogLevels += pkg -> LogLevel(level)
+              case _ =>
+                warn(s"Ignoring invalid argument: ${arg}. Use -L(package)=(log level) to set log levels")
+            }
+          case other =>
+            remaining += other
+        }
+        i += 1
+      }
+
+      remainingArgs = remaining.result()
+      _defaultLogLevel = logLevel
+      _additionalLogLevels = additionalLogLevels.result()
+    }
+
+    def defaultLogLevel: LogLevel                  = _defaultLogLevel
+    def additionalLogLevels: Map[String, LogLevel] = _additionalLogLevels
+
     val specMatcher: AirSpecMatcher = {
       // For now, we only support regex-based test name matcher using the first argument
-      args.find(x => !x.startsWith("-")) match {
+      remainingArgs.find(x => !x.startsWith("-")) match {
         case Some(p) => new AirSpecMatcher(p)
         case None    => AirSpecMatcher.all
       }
