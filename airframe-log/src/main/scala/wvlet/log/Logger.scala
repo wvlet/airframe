@@ -264,7 +264,7 @@ object Logger {
   private def updateLogLevel(l: Logger): Unit = {
     logLevelPatterns
       .collectFirst {
-        case (p, level) if p.matches(l.name) => level
+        case (p, level) if p.findFirstIn(l.getName).isDefined => level
       }.foreach { level =>
         l.setLogLevel(level)
       }
