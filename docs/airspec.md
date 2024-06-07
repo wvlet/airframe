@@ -264,6 +264,11 @@ To change the log level only for a specific package or a class, use `-L(package 
 ```
 You can use multiple `-L` options to set different log levels for multiple packages.
 
+You can also use wildcard `*` with `-L` option for the ease of setting log levels for specific classes:
+```scala
+> testOnly -- -Lmyapp.*=debug
+> testOnly -- -L*.MyClass=debug
+```
 
 ### Configure Log Levels in log-test.properties
 

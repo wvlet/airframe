@@ -39,4 +39,12 @@ class LogLevelTest extends Spec {
     Logger.setLogLevel("example.app", LogLevel.WARN)
     l.getLogLevel shouldBe LogLevel.WARN
   }
+
+  test("Reset log level set by a pattern") {
+    val l = Logger.setLogLevel("example.*", LogLevel.WARN)
+    Logger("example.app").getLogLevel shouldBe LogLevel.WARN
+
+    Logger.resetLogLevel("example.*")
+    Logger("example.app").getLogLevel shouldBe LogLevel.INFO
+  }
 }

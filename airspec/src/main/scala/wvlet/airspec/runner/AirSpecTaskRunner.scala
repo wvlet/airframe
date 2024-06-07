@@ -87,9 +87,8 @@ private[airspec] class AirSpecTaskRunner(
     * Run this AirSpec task
     */
   def runTask: Future[Unit] = {
-    val startTimeNanos = System.nanoTime()
-    val prevLogLevel   = Map.newBuilder[String, LogLevel]
-    prevLogLevel += testClassName -> Logger(testClassName).getLogLevel
+    val startTimeNanos                   = System.nanoTime()
+    var loggerNamePatterns: List[String] = List(testClassName)
 
     Future
       .apply {
@@ -97,9 +96,9 @@ private[airspec] class AirSpecTaskRunner(
         Logger(testClassName).setLogLevel(config.defaultLogLevel)
 
         // Set log level for other classes
-        config.additionalLogLevels.foreach { case (pkg, level) =>
-          prevLogLevel += pkg -> Logger(pkg).getLogLevel
-          Logger(pkg).setLogLevel(level)
+        config.additionalLogLevels.foreach { case (pattern, level) =>
+          loggerNamePatterns = pattern :: loggerNamePatterns
+          Logger.setLogLevel(pattern, level)
         }
 
         // Start a background log level scanner thread. If a thread is already running, reuse it.
@@ -121,8 +120,8 @@ private[airspec] class AirSpecTaskRunner(
         compat.stopLogScanner
 
         // Reset log levels
-        prevLogLevel.result().foreach { case (pkg, level) =>
-          Logger(pkg).setLogLevel(level)
+        loggerNamePatterns.foreach { pattern =>
+          Logger.resetLogLevel(pattern)
         }
         ret
       }
