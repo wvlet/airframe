@@ -20,6 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
 import scala.util.Try
+import scala.util.matching.Regex
 
 /**
   * An wrapper of java.util.logging.Logger for supporting rich-format logging
@@ -210,7 +211,8 @@ object Logger {
 
   import scala.jdk.CollectionConverters.*
 
-  private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
+  private lazy val loggerCache                          = new ConcurrentHashMap[String, Logger].asScala
+  private var logLevelPatterns: List[(Regex, LogLevel)] = Nil
 
   val rootLogger = {
     val l = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
@@ -254,13 +256,44 @@ object Logger {
   }
 
   def apply(loggerName: String): Logger = {
-    loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
+    val l = loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
+    updateLogLevel(l)
+    l
+  }
+
+  private def updateLogLevel(l: Logger): Unit = {
+    logLevelPatterns
+      .collectFirst {
+        case (p, level) if p.matches(l.name) => level
+      }.foreach { level =>
+        l.setLogLevel(level)
+      }
+    l
   }
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
 
   def setDefaultLogLevel(level: LogLevel): Unit = {
     rootLogger.setLogLevel(level)
+  }
+
+  /**
+    * Set a log level for loggers matching the pattern with wildcards (e.g., "com.example.*")
+    * @param pattern
+    * @param level
+    */
+  def setLogLevel(pattern: String, level: LogLevel): Unit = {
+    if (pattern.contains("*")) {
+      val regexPattern = pattern.replaceAll("\\.", "\\\\.").replaceAll("\\*", ".*")
+      synchronized {
+        logLevelPatterns = (regexPattern.r, level) :: logLevelPatterns
+      }
+      loggerCache.values.foreach { l =>
+        updateLogLevel(l)
+      }
+    } else {
+      Logger(pattern).setLogLevel(level)
+    }
   }
 
   def setDefaultFormatter(formatter: LogFormatter): Unit = {
@@ -284,6 +317,7 @@ object Logger {
   def init: Unit = {
     clearAllHandlers
     resetDefaultLogLevel
+    logLevelPatterns = Nil
     rootLogger.resetHandler(LogEnv.defaultHandler)
   }
 
