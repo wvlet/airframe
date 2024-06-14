@@ -225,7 +225,7 @@ case class HigherKindedTypeSurface(
     override val typeArgs: Seq[Surface]
 ) extends GenericSurface(ref.rawType, typeArgs, ref.params, ref.objectFactory) {
   override def toString: String = {
-    val s = if (typeArgs.isEmpty) {
+    val s = if typeArgs.isEmpty then {
       name
     } else {
       s"${name}[${typeArgs.mkString(",")}]"
@@ -352,7 +352,7 @@ class GenericSurface(
 
   override def name: String = {
     val clsName = TypeName.sanitizeTypeName(getClassName)
-    val s = if (typeArgs.isEmpty) {
+    val s = if typeArgs.isEmpty then {
       clsName
     } else {
       s"${clsName}[${typeArgs.map(_.name).mkString(",")}]"
@@ -362,7 +362,7 @@ class GenericSurface(
 
   override def fullName: String = {
     val clsName = TypeName.sanitizeTypeName(rawType.getName)
-    val s = if (typeArgs.isEmpty) {
+    val s = if typeArgs.isEmpty then {
       clsName
     } else {
       s"${clsName}[${typeArgs.map(_.fullName).mkString(",")}]"
@@ -396,7 +396,7 @@ case class LazySurface(override val rawType: Class[_], fullName: String) extends
   protected def ref: Surface = wvlet.airframe.surface.getCached(fullName)
 
   def name: String = {
-    val s = if (typeArgs.isEmpty) {
+    val s = if typeArgs.isEmpty then {
       rawType.getSimpleName
     } else {
       s"${rawType.getSimpleName}[${typeArgs.map(_.name).mkString(",")}]"

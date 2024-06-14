@@ -37,7 +37,7 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
   }
   private[airspec] def popContext: Unit = {
     synchronized {
-      if (_currentContext.nonEmpty) {
+      if _currentContext.nonEmpty then {
         _currentContext = _currentContext.tail
       }
     }
@@ -151,7 +151,7 @@ private[airspec] object AirSpecSpi {
     val decodedClassName = scala.reflect.NameTransformer.decode(clsName)
 
     // For object names ending with $
-    if (decodedClassName.endsWith("$")) {
+    if decodedClassName.endsWith("$") then {
       decodedClassName.substring(0, decodedClassName.length - 1)
     } else {
       decodedClassName
@@ -162,8 +162,7 @@ private[airspec] object AirSpecSpi {
     // the full class name
     val pos = fullClassName.lastIndexOf('.')
     val leafName = {
-      if (pos == -1)
-        fullClassName
+      if pos == -1 then fullClassName
       else {
         fullClassName.substring((pos + 1).min(fullClassName.length - 1))
       }

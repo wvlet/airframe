@@ -30,7 +30,7 @@ case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSi
 
   override def toString: String = {
     // Has fraction?
-    if (value.floor == value) {
+    if value.floor == value then {
       s"${value.floor.toLong}${unit.unitString}"
     } else {
       f"${value}%.2f${unit.unitString}"
@@ -52,11 +52,11 @@ case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSi
   def mostSuccinctDataSize: DataSize = {
     @tailrec
     def loop(unit: DataSizeUnit, remaining: List[DataSizeUnit]): DataSizeUnit = {
-      if (remaining.isEmpty) {
+      if remaining.isEmpty then {
         unit
       } else {
         val nextUnit = remaining.head
-        if (valueOf(nextUnit) < 1.0) {
+        if valueOf(nextUnit) < 1.0 then {
           unit
         } else {
           loop(nextUnit, remaining.tail)
@@ -83,7 +83,7 @@ object DataSize {
   Zero.register(Surface.of[DataSize], DataSize(0, BYTE))
 
   private[metrics] def checkState(preCondition: Boolean, errorMessage: String): Unit = {
-    if (!preCondition) {
+    if !preCondition then {
       throw new IllegalStateException(errorMessage)
     }
   }

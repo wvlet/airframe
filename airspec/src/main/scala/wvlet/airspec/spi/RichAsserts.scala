@@ -51,7 +51,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 
   private[airspec] case object DefinedTarget extends OptionTarget {
     override def check[A](v: A, isEmpty: Boolean, code: SourceCode): Unit = {
-      if (isEmpty) {
+      if isEmpty then {
         throw AssertionFailure(s"${v} is empty", code)
       }
     }
@@ -60,7 +60,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 
   private[airspec] case object EmptyTarget extends OptionTarget {
     override def check[A](v: A, isEmpty: Boolean, code: SourceCode): Unit = {
-      if (!isEmpty) {
+      if !isEmpty then {
         throw AssertionFailure(s"${v} is not empty", code)
       }
     }
@@ -123,8 +123,8 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     }
 
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      if (expected == null) {
-        if (value != null) {
+      if expected == null then {
+        if value != null then {
           throw AssertionFailure(s"${pp(value)} should be null", code)
         }
       } else {
@@ -144,8 +144,8 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     }
 
     def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      if (expected == null) {
-        if (value == null) {
+      if expected == null then {
+        if value == null then {
           throw AssertionFailure(s"${pp(value)} should not be null", code)
         }
       } else {
@@ -167,15 +167,15 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     def shouldContain(expected: Any)(implicit code: SourceCode): Unit = {
       value match {
         case v: String =>
-          if (!v.contains(expected.toString)) {
+          if !v.contains(expected.toString) then {
             throw AssertionFailure(s"${pp(value)} doesn't contain ${pp(expected)}", code)
           }
         case v: Iterable[_] =>
-          if (!v.exists(_ == expected)) {
+          if !v.exists(_ == expected) then {
             throw AssertionFailure(s"${pp(value)} doesn't contain ${pp(expected)}", code)
           }
         case v: Array[_] =>
-          if (!v.exists(_ == expected)) {
+          if !v.exists(_ == expected) then {
             throw AssertionFailure(s"${pp(value)} doesn't contain ${pp(expected)}", code)
           }
         case _ =>
@@ -186,15 +186,15 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     def shouldNotContain(expected: Any)(implicit code: SourceCode): Unit = {
       value match {
         case v: String =>
-          if (v.contains(expected.toString)) {
+          if v.contains(expected.toString) then {
             throw AssertionFailure(s"${pp(value)} contains ${pp(expected)}", code)
           }
         case v: Iterable[_] =>
-          if (v.exists(_ == expected)) {
+          if v.exists(_ == expected) then {
             throw AssertionFailure(s"${pp(value)} contains ${pp(expected)}", code)
           }
         case v: Array[_] =>
-          if (v.exists(_ == expected)) {
+          if v.exists(_ == expected) then {
             throw AssertionFailure(s"${pp(value)} contains ${pp(expected)}", code)
           }
         case _ =>

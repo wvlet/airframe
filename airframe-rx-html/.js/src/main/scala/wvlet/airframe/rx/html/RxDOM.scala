@@ -39,7 +39,7 @@ object RxDOM {
     * @param f
     */
   def handleEvent(e: EventTarget)(f: PartialFunction[EventTarget, Unit]): Unit = {
-    if (f.isDefinedAt(e)) {
+    if f.isDefinedAt(e) then {
       f(e)
     }
   }

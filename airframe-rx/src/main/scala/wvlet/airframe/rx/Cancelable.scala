@@ -48,7 +48,7 @@ object Cancelable extends LogSupport {
       case 1 => lst.head
       case _ =>
         val nonEmpty = lst.filter(_ != Cancelable.empty)
-        if (nonEmpty.isEmpty) {
+        if nonEmpty.isEmpty then {
           Cancelable.empty
         } else {
           Cancelable { () =>
@@ -65,7 +65,7 @@ object Cancelable extends LogSupport {
                 throw failures.head
               case n if n > 1 =>
                 warn(s"Multiple exception occurred while cancelling")
-                for (f <- failures.tail) {
+                for f <- failures.tail do {
                   warn(f)
                 }
                 throw failures.head

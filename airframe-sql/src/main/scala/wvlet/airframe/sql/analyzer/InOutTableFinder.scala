@@ -37,7 +37,7 @@ class InOutTableFinder {
         g += target
         process(query, context.withOutputTable(target))
       case Query(withQuery, body, _) =>
-        for (query <- withQuery.queries) {
+        for query <- withQuery.queries do {
           val ref = Alias(query.name.value)
           g += ref
           process(body, context.withOutputTable(ref))
@@ -56,7 +56,7 @@ class InOutTableFinder {
             g += src
         }
       case other =>
-        for (c <- m.children) {
+        for c <- m.children do {
           process(c, context)
         }
     }

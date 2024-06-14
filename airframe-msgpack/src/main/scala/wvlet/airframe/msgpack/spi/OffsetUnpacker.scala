@@ -38,7 +38,7 @@ object OffsetUnpacker {
 
   def skipValue(cursor: ReadCursor, skipCount: Int = 1): Unit = {
     var count = skipCount
-    while (count > 0) {
+    while count > 0 do {
       val b  = cursor.readByte
       val mf = MessageFormat.of(b)
       mf match {
@@ -133,7 +133,7 @@ object OffsetUnpacker {
         val arr         = IndexedSeq.newBuilder[Value]
         arr.sizeHint(arrayLength)
         var i = 0
-        while (i < arrayLength) {
+        while i < arrayLength do {
           arr += unpackValue(cursor)
           i += 1
         }
@@ -144,7 +144,7 @@ object OffsetUnpacker {
         val map       = ListMap.newBuilder[Value, Value]
         map.sizeHint(mapLength)
         var i = 0
-        while (i < mapLength) {
+        while i < mapLength do {
           val key   = unpackValue(cursor)
           val value = unpackValue(cursor)
           map += (key -> value)
@@ -155,7 +155,7 @@ object OffsetUnpacker {
   }
 
   def unpackExt(extHeader: ExtTypeHeader, cursor: ReadCursor): Value = {
-    if (extHeader.extType == Code.EXT_TIMESTAMP) {
+    if extHeader.extType == Code.EXT_TIMESTAMP then {
       val instant = unpackTimestamp(extHeader, cursor)
       TimestampValue(instant)
     } else {
@@ -202,34 +202,34 @@ object OffsetUnpacker {
         b
       case Code.UINT8 =>
         val u8 = cursor.readByte
-        if (u8 < 0) throw overflowU8(u8)
+        if u8 < 0 then throw overflowU8(u8)
         u8
       case Code.UINT16 =>
         val u16 = cursor.readShort
-        if (u16 < 0 || !u16.isValidByte) throw overflowU16(u16)
+        if u16 < 0 || !u16.isValidByte then throw overflowU16(u16)
         u16.toByte
       case Code.UINT32 =>
         val u32 = cursor.readInt
-        if (u32 < 0 || !u32.isValidByte) throw overflowU32(u32)
+        if u32 < 0 || !u32.isValidByte then throw overflowU32(u32)
         u32.toByte
       case Code.UINT64 =>
         val u64 = cursor.readLong
-        if (u64 < 0 || !u64.isValidByte) throw overflowU64(u64)
+        if u64 < 0 || !u64.isValidByte then throw overflowU64(u64)
         u64.toByte
       case Code.INT8 =>
         val i8 = cursor.readByte
         i8
       case Code.INT16 =>
         val i16 = cursor.readShort
-        if (!i16.isValidByte) throw overflowI16(i16)
+        if !i16.isValidByte then throw overflowI16(i16)
         i16.toByte
       case Code.INT32 =>
         val i32 = cursor.readInt
-        if (!i32.isValidByte) throw overflowI32(i32)
+        if !i32.isValidByte then throw overflowI32(i32)
         i32.toByte
       case Code.INT64 =>
         val i64 = cursor.readLong
-        if (!i64.isValidByte) throw overflowI64(i64)
+        if !i64.isValidByte then throw overflowI64(i64)
         i64.toByte
       case _ =>
         cursor.reverseCursor
@@ -247,15 +247,15 @@ object OffsetUnpacker {
         (u8 & 0xff).toShort
       case Code.UINT16 =>
         val u16 = cursor.readShort
-        if (u16 < 0) throw overflowU16(u16)
+        if u16 < 0 then throw overflowU16(u16)
         u16.toShort
       case Code.UINT32 =>
         val u32 = cursor.readInt
-        if (u32 < 0 || !u32.isValidShort) throw overflowU32(u32)
+        if u32 < 0 || !u32.isValidShort then throw overflowU32(u32)
         u32.toShort
       case Code.UINT64 =>
         val u64 = cursor.readLong
-        if (u64 < 0 || !u64.isValidShort) throw overflowU64(u64)
+        if u64 < 0 || !u64.isValidShort then throw overflowU64(u64)
         u64.toShort
       case Code.INT8 =>
         val i8 = cursor.readByte
@@ -265,11 +265,11 @@ object OffsetUnpacker {
         i16.toShort
       case Code.INT32 =>
         val i32 = cursor.readInt
-        if (!i32.isValidShort) throw overflowI32(i32)
+        if !i32.isValidShort then throw overflowI32(i32)
         i32.toShort
       case Code.INT64 =>
         val i64 = cursor.readLong
-        if (!i64.isValidShort) throw overflowI64(i64)
+        if !i64.isValidShort then throw overflowI64(i64)
         i64.toShort
       case _ =>
         cursor.reverseCursor
@@ -290,11 +290,11 @@ object OffsetUnpacker {
         u16 & 0xffff
       case Code.UINT32 =>
         val u32 = cursor.readInt
-        if (u32 < 0) throw overflowU32(u32)
+        if u32 < 0 then throw overflowU32(u32)
         u32
       case Code.UINT64 =>
         val u64 = cursor.readLong
-        if (u64 < 0 || !u64.isValidInt) throw overflowU64(u64)
+        if u64 < 0 || !u64.isValidInt then throw overflowU64(u64)
         u64.toInt
       case Code.INT8 =>
         val i8 = cursor.readByte
@@ -307,7 +307,7 @@ object OffsetUnpacker {
         i32.toInt
       case Code.INT64 =>
         val i64 = cursor.readLong
-        if (!i64.isValidInt) throw overflowI64(i64)
+        if !i64.isValidInt then throw overflowI64(i64)
         i64.toInt
       case _ =>
         cursor.reverseCursor
@@ -328,14 +328,14 @@ object OffsetUnpacker {
         (u16 & 0xffff).toLong
       case Code.UINT32 =>
         val u32 = cursor.readInt
-        if (u32 < 0) {
+        if u32 < 0 then {
           (u32 & 0x7fffffff).toLong + 0x80000000L
         } else {
           u32.toLong
         }
       case Code.UINT64 =>
         val u64 = cursor.readLong
-        if (u64 < 0) throw overflowU64(u64)
+        if u64 < 0 then throw overflowU64(u64)
         u64.toLong
       case Code.INT8 =>
         val i8 = cursor.readByte
@@ -368,14 +368,14 @@ object OffsetUnpacker {
         BigInteger.valueOf((u16 & 0xffff).toLong)
       case Code.UINT32 =>
         val u32 = cursor.readInt
-        if (u32 < 0) {
+        if u32 < 0 then {
           BigInteger.valueOf((u32 & 0x7fffffff).toLong + 0x80000000L)
         } else {
           BigInteger.valueOf(u32.toLong)
         }
       case Code.UINT64 =>
         val u64 = cursor.readLong
-        if (u64 < 0) {
+        if u64 < 0 then {
           BigInteger.valueOf(u64 + Long.MaxValue + 1L).setBit(63)
         } else {
           BigInteger.valueOf(u64.toLong)
@@ -438,7 +438,7 @@ object OffsetUnpacker {
 
   private def readNextLength32(cursor: ReadCursor): Int = {
     val u32 = cursor.readInt
-    if (u32 < 0) {
+    if u32 < 0 then {
       cursor.reverseCursor
       throw overflowU32Size(u32)
     }
@@ -471,15 +471,15 @@ object OffsetUnpacker {
 
   def unpackRawStringHeader(cursor: ReadCursor): Int = {
     val b = cursor.readByte
-    if (Code.isFixedRaw(b)) {
+    if Code.isFixedRaw(b) then {
       b & 0x1f
     } else {
       val slen = tryReadStringHeader(b, cursor)
-      if (slen >= 0) {
+      if slen >= 0 then {
         slen
       } else {
         val blen = tryReadBinaryHeader(b, cursor)
-        if (blen >= 0) {
+        if blen >= 0 then {
           blen
         } else {
           cursor.reverseCursor
@@ -491,15 +491,15 @@ object OffsetUnpacker {
 
   def unpackBinaryHeader(cursor: ReadCursor): Int = {
     val b = cursor.readByte
-    if (Code.isFixedRaw(b)) {
+    if Code.isFixedRaw(b) then {
       b & 0x1f
     } else {
       val blen = tryReadBinaryHeader(b, cursor)
-      if (blen >= 0) {
+      if blen >= 0 then {
         blen
       } else {
         val slen = tryReadStringHeader(b, cursor)
-        if (slen >= 0) {
+        if slen >= 0 then {
           slen
         } else {
           cursor.reverseCursor
@@ -512,9 +512,9 @@ object OffsetUnpacker {
   def unpackString(cursor: ReadCursor): String = {
     val len       = unpackRawStringHeader(cursor)
     val headerLen = cursor.lastReadLength
-    if (len == 0) {
+    if len == 0 then {
       EMPTY_STRING
-    } else if (len >= Integer.MAX_VALUE) {
+    } else if len >= Integer.MAX_VALUE then {
       cursor.reverseCursor
       throw new TooLargeMessageException(len)
     } else {
@@ -587,7 +587,7 @@ object OffsetUnpacker {
         ExtTypeHeader(tpe, len)
       case Code.EXT32 =>
         val u32 = cursor.readInt
-        if (u32 < 0) {
+        if u32 < 0 then {
           cursor.reverseCursor
           throw overflowU32Size(u32)
         }
@@ -606,7 +606,7 @@ object OffsetUnpacker {
   }
 
   def unpackTimestamp(extTypeHeader: ExtTypeHeader, cursor: ReadCursor): Instant = {
-    if (extTypeHeader.extType != Code.EXT_TIMESTAMP) {
+    if extTypeHeader.extType != Code.EXT_TIMESTAMP then {
       cursor.reverseCursor
       throw unexpected(ValueType.EXTENSION, extTypeHeader.extType)
     }
@@ -662,7 +662,7 @@ object OffsetUnpacker {
 
   private[spi] def unexpected(expectedCode: ValueType, actual: Byte): Nothing = {
     val f = MessageFormat.of(actual)
-    if (f == MessageFormat.NEVER_USED) {
+    if f == MessageFormat.NEVER_USED then {
       throw new MessageException(NEVER_USED_FORMAT, s"Expected ${expectedCode}, but found 0xC1 (NEVER_USED) byte")
     } else {
       val name     = f.valueType.name

@@ -141,8 +141,8 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
-          val returnType = if (isAsync) s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
-          if (m.isRPC) {
+          val returnType = if isAsync then s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
+          if m.isRPC then {
             s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
                |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
                |}""".stripMargin

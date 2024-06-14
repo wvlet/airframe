@@ -133,7 +133,7 @@ class HtmlTest extends AirSpec {
       style.noValue
     )
 
-    val d = div()
+    val d           = div()
     d(style           -> "width: 10px;")
     d.addModifier(cls -> "test")
   }

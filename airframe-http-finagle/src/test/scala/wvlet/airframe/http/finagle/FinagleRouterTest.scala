@@ -309,7 +309,7 @@ class FinagleRouterTest extends AirSpec {
       val codec = MessageCodec.of[RichInfo]
 
       Control.withResource(MessagePack.newUnpacker(msgpack)) { unpacker =>
-        while (unpacker.hasNext) {
+        while unpacker.hasNext do {
           val v = unpacker.unpackValue
           codec.fromMsgPack(v.toMsgpack) shouldBe richInfo
         }

@@ -18,7 +18,7 @@ class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandl
           r.source.map(source => s"- (${source.fileLoc})").getOrElse("")
 
         import scala.scalajs.js.DynamicImplicits.truthValue
-        if (global.selectDynamic("console")) {
+        if global.selectDynamic("console") then {
           global.console.log(
             s"""%c${ts} %c${level} %c[${r.leafLoggerName}] %c${r.message} %c${loc}""",
             s"color:${logColorPalette.timestamp}", // timestamp

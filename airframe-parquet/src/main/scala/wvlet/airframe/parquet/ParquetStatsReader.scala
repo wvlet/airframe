@@ -72,9 +72,9 @@ object ParquetStatsReader extends LogSupport {
     val compressedSize   = new ColumnMetric()
 
     // Read each Parquet block
-    for (block <- metadata.getBlocks.asScala) {
+    for block <- metadata.getBlocks.asScala do {
       rowCount += block.getRowCount
-      for (columnMetaData <- block.getColumns.asScala) {
+      for columnMetaData <- block.getColumns.asScala do {
         val columnName = columnMetaData.getPath.toDotString
         uncompressedSize.add(columnName, columnMetaData.getTotalUncompressedSize)
         compressedSize.add(columnName, columnMetaData.getTotalSize)

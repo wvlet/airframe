@@ -28,7 +28,7 @@ package object okhttp {
     override def headerOf(request: Request): HttpMultiMap = {
       var h = toHttpMultiMap(request.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
-      for (b <- Option(request.body)) {
+      for b <- Option(request.body) do {
         Option(b.contentType()).foreach { x => h += HttpHeader.ContentType -> x.toString }
         Option(b.contentLength()).foreach { x => h += HttpHeader.ContentLength -> x.toString }
       }
@@ -80,7 +80,7 @@ package object okhttp {
     override def headerOf(resp: okhttp3.Response): HttpMultiMap = {
       var h = toHttpMultiMap(resp.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
-      for (b <- Option(resp.body)) {
+      for b <- Option(resp.body) do {
         Option(b.contentType()).foreach { x => h += HttpHeader.ContentType -> x.toString }
         Option(b.contentLength()).foreach { x => h += HttpHeader.ContentLength -> x.toString }
       }
@@ -90,7 +90,7 @@ package object okhttp {
 
   private def toHttpMultiMap(h: Headers): HttpMultiMap = {
     val m = HttpMultiMap.newBuilder
-    for ((k, lst) <- h.toMultimap.asScala; v <- lst.asScala) {
+    for (k, lst) <- h.toMultimap.asScala; v <- lst.asScala do {
       m += k -> v
     }
     m.result()

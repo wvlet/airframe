@@ -44,7 +44,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
       }
       override def isObjectContext: Boolean = true
       override def add(v: JSONValue): Unit = {
-        if (key == null) {
+        if key == null then {
           key = v.toString
         } else {
           list += key -> v
@@ -82,7 +82,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
   }
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
-    val num: JSONNumber = if (dotIndex >= 0 || expIndex >= 0) {
+    val num: JSONNumber = if dotIndex >= 0 || expIndex >= 0 then {
       JSONDouble(v.toDouble)
     } else {
       try {
@@ -97,7 +97,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
   }
 
   override def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {
-    val b = if (v) JSONTrue else JSONFalse
+    val b = if v then JSONTrue else JSONFalse
     add(b)
   }
 }

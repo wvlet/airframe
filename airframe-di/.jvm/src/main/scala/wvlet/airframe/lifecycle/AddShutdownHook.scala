@@ -26,8 +26,8 @@ object AddShutdownHook extends LifeCycleEventHandler {
       shutdownHooks.get(lifeCycleManager).map { h =>
         // Properly unregister shutdown hooks
         // This will be a workaround for sbt-1.3.0-RC2 https://github.com/sbt/sbt/issues/4794 (user class will not be visible at sbt shutdown)
-        if (h != null) {
-          if (!h.isAlive) {
+        if h != null then {
+          if !h.isAlive then {
             // Remove the shutdown hook if JVM shutdown is not yet started
             h.remove()
           }
@@ -35,7 +35,7 @@ object AddShutdownHook extends LifeCycleEventHandler {
         shutdownHooks.remove(lifeCycleManager)
       }
       // Resetting the logger when all LifeCycleManagers have terminated
-      if (shutdownHooks.isEmpty) {
+      if shutdownHooks.isEmpty then {
         // AirframeLogManager.resetFinally
       }
     }

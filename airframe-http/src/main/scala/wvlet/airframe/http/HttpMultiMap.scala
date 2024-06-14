@@ -38,7 +38,7 @@ object HttpMultiMap {
 
   def fromHeaderNames(headerNames: Iterable[String]): HttpMultiMap = {
     val b = newBuilder
-    for (h <- headerNames) {
+    for h <- headerNames do {
       b += (h -> "")
     }
     b.result()
@@ -72,7 +72,7 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
 
   def entries: Seq[HttpMultiMapEntry] = {
     val b = Seq.newBuilder[HttpMultiMapEntry]
-    for ((k, v) <- underlying) {
+    for (k, v) <- underlying do {
       v match {
         case s: String =>
           b += HttpMultiMapEntry(k, s)

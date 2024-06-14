@@ -61,7 +61,7 @@ object HttpRequestMapper extends LogSupport {
       var remainingArgs: List[MethodParameter] = Nil
 
       // Populate http request context parameters first (e.g., HttpMessage.Request, HttpContext, etc.)
-      for (arg <- methodSurface.args) {
+      for arg <- methodSurface.args do {
         val argSurface = arg.surface
         val value: Option[Any] = argSurface.rawType match {
           case cl if classOf[HttpMessage.Request].isAssignableFrom(cl) =>
@@ -98,8 +98,8 @@ object HttpRequestMapper extends LogSupport {
       }
 
       // GET requests should have no body content, so we need to construct method arg objects using query strings
-      if (adapter.methodOf(request) == HttpMethod.GET) {
-        while (remainingArgs.nonEmpty) {
+      if adapter.methodOf(request) == HttpMethod.GET then {
+        while remainingArgs.nonEmpty do {
           val arg        = remainingArgs.head
           val argSurface = arg.surface
 
@@ -134,7 +134,7 @@ object HttpRequestMapper extends LogSupport {
         // Build the method argument instance from the content body for non GET requests
         val contentBytes = adapter.contentBytesOf(request)
 
-        if (contentBytes.isEmpty) {
+        if contentBytes.isEmpty then {
           None
         } else {
           adapter.contentTypeOf(request).map(_.split(";")(0).toLowerCase()) match {
@@ -194,7 +194,7 @@ object HttpRequestMapper extends LogSupport {
                         throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
                       }
                     case None =>
-                      if (isRPC) {
+                      if isRPC then {
                         // For RPC calls, we do not support empty keys
                         throw new IllegalArgumentException(s"No key for ${arg.name} is found: ${v}")
                       } else {
@@ -203,7 +203,7 @@ object HttpRequestMapper extends LogSupport {
                       }
                   }
                 case _ =>
-                  if (isRPC) {
+                  if isRPC then {
                     throw new IllegalArgumentException(s"No key for ${arg.name} is found: ${v}")
                   } else {
                     Some(argCodec.fromMsgPack(msgpack))
@@ -220,7 +220,7 @@ object HttpRequestMapper extends LogSupport {
             MessagePack.newUnpacker(msgpack).unpackValue match {
               case m: MapValue =>
                 val mapValue = toCanonicalKeyNameMap(m)
-                while (remainingArgs.nonEmpty) {
+                while remainingArgs.nonEmpty do {
                   val arg = remainingArgs.head
                   val argValueOpt: Option[Any] = mapValue
                     .get(CName.toCanonicalName(arg.name))

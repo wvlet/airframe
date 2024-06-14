@@ -64,8 +64,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   }
 
   def withColor(colorEsc: String, s: String) = {
-    if (useAnciColor)
-      s"${colorEsc}${s}${RESET}"
+    if useAnciColor then s"${colorEsc}${s}${RESET}"
     else
       s
   }
@@ -119,7 +118,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     }
 
     val prefix = {
-      if (showTestName) {
+      if showTestName then {
         s"${withColor(GRAY, " -")} ${withColor(baseColor, e.fullyQualifiedName())} ${elapsedTime}"
       } else {
         s"${withColor(GRAY, " <")} ${elapsedTime}"
@@ -140,7 +139,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     }
     info(s"${indent(indentLevel)}${prefix}${tail}")
 
-    if (showStackTraces) {
+    if showStackTraces then {
       val ex         = wvlet.airspec.compat.findCause(e.throwable().get())
       val stackTrace = LogFormatter.formatStacktrace(ex)
       error(stackTrace)

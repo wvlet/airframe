@@ -65,8 +65,7 @@ object YAMLFormatter {
         }
       }
 
-      if (isNumber(k))
-        s"'${k}'"
+      if isNumber(k) then s"'${k}'"
       else
         k
     }
@@ -74,7 +73,7 @@ object YAMLFormatter {
     private def blockString(s: String): String = {
       s.split("\n")
         .map { line =>
-          if (line.isEmpty) {
+          if line.isEmpty then {
             ""
           } else {
             s"${indent(1)}${line}"
@@ -128,7 +127,7 @@ object YAMLFormatter {
     }
 
     override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
-      if (isPrimitive(v)) {
+      if isPrimitive(v) then {
         contextStack.head match {
           case OBJECT_ARRAY(0) =>
             // The first object element inside array should have `-` prefix

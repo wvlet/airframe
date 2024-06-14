@@ -75,10 +75,10 @@ case class Router(
     val name = getRouterName.map(routerName => s"[${routerName}]").getOrElse("")
     s += s"${ws}- Router${name}"
 
-    for (r <- localRoutes) {
+    for r <- localRoutes do {
       s += s"${ws}  + ${r}"
     }
-    for (c <- children) {
+    for c <- children do {
       s += c.printNode(indentLevel + 1)
     }
     s.result().mkString("\n")
@@ -152,7 +152,7 @@ case class Router(
 
     val newRouter =
       new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
-    if (this.isEmpty) {
+    if this.isEmpty then {
       newRouter
     } else {
       Router.merge(List(this, newRouter))
@@ -165,7 +165,7 @@ object Router extends router.RouterObjectBase with LogSupport {
   def apply(): Router = empty
 
   def apply(children: Router*): Router = {
-    if (children == null) {
+    if children == null then {
       empty
     } else {
       children.toList match {
@@ -180,10 +180,10 @@ object Router extends router.RouterObjectBase with LogSupport {
   def merge(routes: List[Router]): Router = {
     @tailrec
     def loop(h: Router, t: List[Router]): Router = {
-      if (t.isEmpty) {
+      if t.isEmpty then {
         h
       } else {
-        if (h.hasNoOperation) {
+        if h.hasNoOperation then {
           loop(h.addChild(t.head), t.tail)
         } else {
           loop(empty.addChild(h), t)

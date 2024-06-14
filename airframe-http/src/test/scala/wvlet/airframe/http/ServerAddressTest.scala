@@ -72,7 +72,7 @@ class ServerAddressTest extends AirSpec {
   )
 
   test("parse host and port") {
-    for (x <- examples) {
+    for x <- examples do {
       x._1 shouldBe x._2
       x._1.uri shouldBe x._3
       x._1.hostAndPort shouldBe x._4

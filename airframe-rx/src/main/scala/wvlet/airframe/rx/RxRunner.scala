@@ -17,7 +17,7 @@ import scala.util.{Failure, Success, Try}
 sealed trait RxResult {
   def toContinue: Boolean
   def &&(other: RxResult): RxResult = {
-    if (this.toContinue && other.toContinue) {
+    if this.toContinue && other.toContinue then {
       RxResult.Continue
     } else {
       RxResult.Stop
@@ -290,7 +290,7 @@ class RxRunner(
               cache.expirationAfterWriteNanos
                 .map(expireNanos => expireNanos <= nanosSinceLastUpdate)
                 .getOrElse(false)
-            if (!isExpired) {
+            if !isExpired then {
               effect(OnNext(v))
             }
           case None =>
@@ -307,7 +307,7 @@ class RxRunner(
         var count = 0
         run(in) {
           case OnNext(v) =>
-            if (count < n) {
+            if count < n then {
               count += 1
               effect(OnNext(v.asInstanceOf[A]))
             } else {
@@ -325,7 +325,7 @@ class RxRunner(
         val timer: Timer = compat.newTimer
         timer.schedule(intervalMillis) { interval =>
           val canContinue = effect(OnNext(interval))
-          if (!canContinue.toContinue) {
+          if !canContinue.toContinue then {
             timer.cancel
           }
         }
@@ -348,7 +348,7 @@ class RxRunner(
           case next @ OnNext(v) =>
             val currentTimeNanos = System.nanoTime()
             val elapsed          = unit.convert(currentTimeNanos - lastUpdateTimeNanos, TimeUnit.NANOSECONDS)
-            if (elapsed >= interval) {
+            if elapsed >= interval then {
               lastUpdateTimeNanos = currentTimeNanos
               effect(next)
             } else {
@@ -369,10 +369,10 @@ class RxRunner(
           lastItem match {
             case Some(x) =>
               lastItem = Some(x)
-              if (lastReported != lastItem) {
+              if lastReported != lastItem then {
                 lastReported = lastItem
                 canContinue = effect(OnNext(x))
-                if (!canContinue.toContinue) {
+                if !canContinue.toContinue then {
                   timer.cancel
                 }
               }
@@ -509,7 +509,7 @@ class RxRunner(
         var lastResult: RxResult = RxResult.Continue
         @tailrec
         def loop(lst: List[A]): Unit = {
-          if (continuous || lastResult.toContinue) {
+          if continuous || lastResult.toContinue then {
             lst match {
               case Nil =>
                 lastResult = effect(OnCompletion)
@@ -528,7 +528,7 @@ class RxRunner(
         var toContinue = true
         @tailrec
         def loop: Unit = {
-          if (continuous || toContinue) {
+          if continuous || toContinue then {
             val ev = source.next
             ev match {
               case OnNext(_) =>
@@ -595,11 +595,11 @@ class RxRunner(
       // Scan the last events and emit the next value or a completion event
       def processEvents(doEmit: Boolean): RxResult = {
         val errors = lastEvent.collect { case Some(e @ OnError(ex)) => ex }
-        if (errors.isEmpty) {
-          if (doEmit) {
+        if errors.isEmpty then {
+          if doEmit then {
             emit
           } else {
-            if (isCompleted && completed.compareAndSet(false, true)) {
+            if isCompleted && completed.compareAndSet(false, true) then {
               trace(s"emit OnCompletion")
               effect(OnCompletion)
             } else {
@@ -608,7 +608,7 @@ class RxRunner(
           }
         } else {
           // Report the completion event only once
-          if (continuous || completed.compareAndSet(false, true)) {
+          if continuous || completed.compareAndSet(false, true) then {
             // If there are multiple exceptions, add them to the suppressed list
             val ex: Throwable = errors.reduce { (e1, e2) =>
               e1.addSuppressed(e2); e1
@@ -620,7 +620,7 @@ class RxRunner(
         }
       }
 
-      for (i <- 0 until size) {
+      for i <- 0 until size do {
         c(i) = runner.run(input.parents(i)) { e =>
           lastEvent(i) = Some(e)
           trace(s"c(${i}) ${e}")
@@ -646,7 +646,7 @@ class RxRunner(
       Array.fill(size)(Queue.empty[A])
 
     override protected def nextValue: Option[Seq[Any]] = {
-      if (lastValueBuffer.forall(_.nonEmpty)) {
+      if lastValueBuffer.forall(_.nonEmpty) then {
         val values = for (i <- 0 until lastValueBuffer.size) yield {
           val (v, newQueue) = lastValueBuffer(i).dequeue
           lastValueBuffer(i) = newQueue
@@ -675,7 +675,7 @@ class RxRunner(
     private val lastValue: Array[Option[A]] = Array.fill(size)(None)
 
     override protected def nextValue: Option[Seq[Any]] = {
-      if (lastValue.forall(_.nonEmpty)) {
+      if lastValue.forall(_.nonEmpty) then {
         val values = for (i <- 0 until lastValue.size) yield {
           lastValue(i).get
         }

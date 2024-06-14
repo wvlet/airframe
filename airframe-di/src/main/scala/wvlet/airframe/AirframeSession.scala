@@ -134,7 +134,7 @@ private[airframe] class AirframeSession(
   }
 
   override def newChildSession(d: Design, inheritParentDesignOptions: Boolean): Session = {
-    val childDesign = if (inheritParentDesignOptions) {
+    val childDesign = if inheritParentDesignOptions then {
       new Design(design.designOptions, d.binding, d.hooks) // Inherit parent options
     } else {
       d
@@ -159,7 +159,7 @@ private[airframe] class AirframeSession(
   private[airframe] def init: Unit = {
     debug(s"[${name}] Initializing. Stage:${stage}")
     val production = stage == Stage.PRODUCTION
-    if (production) {
+    if production then {
       debug(s"[${name}] Eagerly initializing singletons in production mode")
     }
     tracer.onSessionInitStart(this)
@@ -207,7 +207,7 @@ private[airframe] class AirframeSession(
 
     // Add additional lifecycle hooks for the injectee
     trace(s"Checking lifecycle hooks for ${tpe}: ${design.hooks.length}")
-    for (hook <- findLifeCycleHooksFor(tpe)) {
+    for hook <- findLifeCycleHooksFor(tpe) do {
       val h = EventHookHolder(tpe, injectee, hook.hook)
       lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
     }
@@ -222,12 +222,12 @@ private[airframe] class AirframeSession(
       * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call close() if
       * there is no other shutdown hooks
       */
-    if (classOf[AutoCloseable].isAssignableFrom(injectee.getClass)) {
+    if classOf[AutoCloseable].isAssignableFrom(injectee.getClass) then {
       injectee match {
         case s: Session =>
         // Do not close Session automatically
         case _ =>
-          if (!lifeCycleManager.hasShutdownHooksFor(bindTarget)) {
+          if !lifeCycleManager.hasShutdownHooksFor(bindTarget) then {
             debug(s"Add close hook for ${bindTarget}")
             lifeCycleManager.addShutdownHook(new CloseHook(new Injectee(bindTarget, injectee)))
           }
@@ -240,7 +240,7 @@ private[airframe] class AirframeSession(
 
   private def findLifeCycleHooksFor(t: Surface): Seq[LifeCycleHookDesign] = {
     // trace(s"[${name}] findLifeCycleHooksFor ${t}")
-    if (design.hooks.isEmpty) {
+    if design.hooks.isEmpty then {
       parent.map(_.findLifeCycleHooksFor(t)).getOrElse(Seq.empty)
     } else {
       val lst = Seq.newBuilder[LifeCycleHookDesign]
@@ -259,7 +259,7 @@ private[airframe] class AirframeSession(
     * ever built t.
     */
   private[airframe] def findOwnerSessionOf(t: Surface): Option[AirframeSession] = {
-    if (bindingTable.contains(t) || observedTypes.contains(t)) {
+    if bindingTable.contains(t) || observedTypes.contains(t) then {
       Some(this)
     } else {
       parent.flatMap(_.findOwnerSessionOf(t))
@@ -279,7 +279,7 @@ private[airframe] class AirframeSession(
     tracer.onInjectStart(this, tpe)
 
     trace(s"[${name}] Search bindings for ${tpe}, dependencies:[${seen.mkString(" <- ")}]")
-    if (seen.contains(tpe)) {
+    if seen.contains(tpe) then {
       error(s"Found cyclic dependencies within types [${seen.mkString(", ")}] at ${sourceCode}")
       throw new CYCLIC_DEPENDENCY(seen, sourceCode)
     }
@@ -345,7 +345,7 @@ private[airframe] class AirframeSession(
                   factory.create(dependencies)
                 }
 
-                if (provideSingleton) {
+                if provideSingleton then {
                   getOrBuildSingleton(p.from, registerInjectee(p.from, p.from, buildWithProvider))
                 } else {
                   registerInjectee(p.from, p.from, buildWithProvider)
@@ -359,12 +359,12 @@ private[airframe] class AirframeSession(
     val result =
       obj.getOrElse {
         // strict mode
-        if (design.designOptions.defaultInstanceInjection.contains(false)) {
+        if design.designOptions.defaultInstanceInjection.contains(false) then {
           throw new MISSING_DEPENDENCY(tpe :: seen, sourceCode)
         }
 
         trace(s"[${name}] No binding is found for ${tpe}. Building the instance. create = ${create}")
-        if (create) {
+        if create then {
           // Create a new instance for bindFactory[X] or building X using its default value
           registerInjectee(
             bindTarget,
@@ -425,7 +425,7 @@ private[airframe] class AirframeSession(
       seen: List[Surface]
   ): Any = {
     trace(s"[${name}] buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
-    if (surface.isPrimitive) {
+    if surface.isPrimitive then {
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(seen, sourceCode)
     } else {

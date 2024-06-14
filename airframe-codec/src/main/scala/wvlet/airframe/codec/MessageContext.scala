@@ -81,7 +81,7 @@ case class MessageContext(
   }
 
   def setObject(v: Any): Unit = {
-    if (v == null) {
+    if v == null then {
       setNull
     } else {
       setValue(ANY, v)
@@ -90,7 +90,7 @@ case class MessageContext(
 
   protected def setValue(dataType: DataType, v: Any): Unit = {
     this.dataType = dataType
-    if (v != null) {
+    if v != null then {
       value = Some(v)
     } else {
       value = None

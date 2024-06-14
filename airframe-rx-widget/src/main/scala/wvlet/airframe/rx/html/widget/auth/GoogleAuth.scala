@@ -75,7 +75,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     * Initialize GoogleAPI Auth2 and return true if the user is already authenticated
     */
   def init: RxOption[Boolean] = {
-    if (!initialSignInState.isCompleted) {
+    if !initialSignInState.isCompleted then {
       js.Dynamic.global.gapi.load(
         "auth2",
         () => {
@@ -89,7 +89,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
             )
 
           auth2.isSignedIn.listen((isSignedIn: Boolean) => {
-            if (!isSignedIn) {
+            if !isSignedIn then {
               // If logged out somewhere, unset the current user
               currentUser := None
             }
@@ -101,7 +101,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
             // currentUser := None will be visible even though the user is already signed-in.
             val signedIn = isSignedIn
             debug(s"gapi.auth2 is initialized. signedIn: ${signedIn}")
-            if (signedIn) {
+            if signedIn then {
               updateUser
             }
 
@@ -141,7 +141,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     )
     getAuthInstance
       .signIn(signInOptions).`then`({ () =>
-        if (isSignedIn) {
+        if isSignedIn then {
           updateUser
         }
       })

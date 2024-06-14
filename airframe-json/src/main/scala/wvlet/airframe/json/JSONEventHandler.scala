@@ -28,7 +28,7 @@ trait JSONContext[Expr] extends JSONHandler[Expr] {
   def result: Expr
   def isObjectContext: Boolean
   private[json] final def endScannerState: Int = {
-    if (isObjectContext) {
+    if isObjectContext then {
       JSONScanner.OBJECT_END
     } else {
       JSONScanner.ARRAY_END

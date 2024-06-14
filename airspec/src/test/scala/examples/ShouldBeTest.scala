@@ -188,7 +188,7 @@ class ShouldBeTest extends AirSpec {
       (MyObj(1, "a"), MyObj(1, "b"))
     )
 
-    for ((a, b) <- list) {
+    for (a, b) <- list do {
       checkEqual(a, a)
       checkNotEqual(a, b)
 

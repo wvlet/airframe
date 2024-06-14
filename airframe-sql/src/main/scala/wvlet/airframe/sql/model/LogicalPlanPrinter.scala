@@ -42,14 +42,14 @@ object LogicalPlanPrinter extends LogSupport {
         val outputAttrs = m.outputAttributes
         val attr        = m.childExpressions.map(_.toString)
         val functionSig =
-          if (inputAttrs.isEmpty && outputAttrs.isEmpty) {
+          if inputAttrs.isEmpty && outputAttrs.isEmpty then {
             ""
           } else {
             def printAttr(s: Seq[Attribute]): String = {
               val lst = s
                 .map(_.typeDescription)
                 .mkString(", ")
-              if (s.size >= 1) {
+              if s.size >= 1 then {
                 s"(${lst})"
               } else {
                 lst
@@ -74,7 +74,7 @@ object LogicalPlanPrinter extends LogSupport {
             val attrStr = attr.map(x => s"${attrWs}- ${x}").mkString("\n")
             out.println(attrStr)
         }
-        for (c <- m.children) {
+        for c <- m.children do {
           print(c, out, level + 1)
         }
     }

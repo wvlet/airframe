@@ -96,7 +96,7 @@ class RxWidgetTest extends AirSpec {
     val content = div(
       v.map { selected =>
         ul(
-          Seq("Home", "Blog").map { page => li(_class -> { if (page == selected) Some("active") else None }, page) }
+          Seq("Home", "Blog").map { page => li(_class -> { if page == selected then Some("active") else None }, page) }
         )
       }
     )

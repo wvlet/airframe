@@ -77,7 +77,7 @@ class SessionBuilder(
     val d = design.minimize
     // Combine the lifecycle logger and event handlers
     val lifeCycleLogger =
-      if (d.designOptions.enabledLifeCycleLogging.getOrElse(true)) {
+      if d.designOptions.enabledLifeCycleLogging.getOrElse(true) then {
         ShowLifeCycleLog
       } else {
         // Show life cycle log in debug level only
@@ -86,7 +86,7 @@ class SessionBuilder(
 
     // Add a shutdown hook handler if necessary
     val lh = lifeCycleEventHandler.removeAll(AddShutdownHook)
-    val eventHandler = if (addShutdownHook) {
+    val eventHandler = if addShutdownHook then {
       lh andThen AddShutdownHook
     } else {
       lh

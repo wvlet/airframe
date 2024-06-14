@@ -111,7 +111,7 @@ object MessageCodecFinder extends LogSupport {
         }
       // Map[A, B]
       case g: GenericSurface if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
-        if (classOf[ListMap[_, _]].isAssignableFrom(g.rawType)) {
+        if classOf[ListMap[_, _]].isAssignableFrom(g.rawType) then {
           CollectionCodec.ListMapCodec(
             factory.ofSurface(g.typeArgs(0), seenSet),
             factory.ofSurface(g.typeArgs(1), seenSet)

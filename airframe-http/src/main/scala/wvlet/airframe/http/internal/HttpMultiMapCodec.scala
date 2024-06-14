@@ -30,7 +30,7 @@ object HttpMultiMapCodec extends MessageCodec[HttpMultiMap] {
       v: MessageContext
   ): Unit = {
     codec.unpack(u, v)
-    if (!v.isNull) {
+    if !v.isNull then {
       val m = v.getLastValue.asInstanceOf[Map[String, Any]]
       v.setObject(HttpMultiMap(m))
     }

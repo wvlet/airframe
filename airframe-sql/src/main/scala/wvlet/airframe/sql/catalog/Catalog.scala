@@ -38,7 +38,7 @@ trait Catalog extends LogSupport {
   def findFromQName(contextDatabase: String, qname: QName): Option[Catalog.Table] = {
     qname.parts match {
       case catalog :: db :: tbl :: Nil =>
-        if (catalog == catalogName) {
+        if catalog == catalogName then {
           findTable(db, tbl)
         } else {
           None

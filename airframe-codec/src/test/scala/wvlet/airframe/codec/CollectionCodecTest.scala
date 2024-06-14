@@ -41,8 +41,7 @@ class CollectionCodecTest extends CodecSpec {
   }
 
   test("support Java Map type") {
-    if (isScalaJS)
-      skip("Scala.js do not support Java Map")
+    if isScalaJS then skip("Scala.js do not support Java Map")
     val v = Map("id" -> 1).asJava
     roundtrip(Surface.of[java.util.Map[String, Int]], v, DataType.ANY)
   }
@@ -71,8 +70,7 @@ class CollectionCodecTest extends CodecSpec {
   }
 
   test("support JSON Map to java.util.Map") {
-    if (isScalaJS)
-      skip("Scala.js doesn't support Java Map")
+    if isScalaJS then skip("Scala.js doesn't support Java Map")
     val codec   = MessageCodec.of[java.util.Map[String, Int]]
     val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
     codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2).asJava)
@@ -109,7 +107,7 @@ class CollectionCodecTest extends CodecSpec {
     val codec    = MessageCodec.of[Array[Any]]
     val arr      = codec.fromJson("""[1, "a", true]""")
     val expected = Array(1, "a", true)
-    for (i <- 0 until arr.size) {
+    for i <- 0 until arr.size do {
       arr(i) shouldBe expected(i)
     }
   }

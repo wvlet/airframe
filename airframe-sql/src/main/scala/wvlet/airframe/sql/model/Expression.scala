@@ -111,14 +111,14 @@ sealed trait Expression extends TreeNode[Expression] with Product {
       arg match {
         case e: Expression =>
           val newPlan = e.transformExpression(rule)
-          if (e eq newPlan) e
+          if e eq newPlan then e
           else {
             changed = true
             newPlan
           }
         case l: LogicalPlan =>
           val newPlan = l.transformExpressions(rule)
-          if (l eq newPlan) l
+          if l eq newPlan then l
           else {
             changed = true
             newPlan
@@ -135,7 +135,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
 
     // Next, apply the rule to child nodes
     val newArgs = newExpr.productIterator.map(recursiveTransform).toIndexedSeq
-    if (changed) {
+    if changed then {
       newExpr.copyInstance(newArgs)
     } else {
       newExpr
@@ -153,14 +153,14 @@ sealed trait Expression extends TreeNode[Expression] with Product {
       arg match {
         case e: Expression =>
           val newPlan = e.transformUpExpression(rule)
-          if (e eq newPlan) e
+          if e eq newPlan then e
           else {
             changed = true
             newPlan
           }
         case l: LogicalPlan =>
           val newPlan = l.transformUpExpressions(rule)
-          if (l eq newPlan) l
+          if l eq newPlan then l
           else {
             changed = true
             newPlan
@@ -173,7 +173,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
 
     // Apply the rule first to child nodes
     val newArgs = productIterator.map(iter).toIndexedSeq
-    val newExpr = if (changed) {
+    val newExpr = if changed then {
       copyInstance(newArgs)
     } else {
       this
@@ -209,7 +209,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
         case null           =>
       }
 
-    if (rule.isDefinedAt(this)) {
+    if rule.isDefinedAt(this) then {
       rule.apply(this)
     }
     // Unlike transform, this will traverse the selected children by the Expression
@@ -221,7 +221,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     traverseExpressions(new PartialFunction[Expression, Unit] {
       override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
       override def apply(v1: Expression): Unit = {
-        if (cond.apply(v1)) {
+        if cond.apply(v1) then {
           l += v1
         }
       }
@@ -310,7 +310,7 @@ trait Attribute extends LeafExpression with LogSupport {
       case Some(alias) =>
         this match {
           case a: Alias =>
-            if (name != alias) a.copy(name = alias) else a
+            if name != alias then a.copy(name = alias) else a
           case other if other.name == alias =>
             // No need to have alias
             other
@@ -393,10 +393,10 @@ trait Attribute extends LeafExpression with LogSupport {
     val result: Seq[Attribute] = columnPath match {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case ColumnPath(Some(databaseName), Some(tableName), columnName) =>
-        if (databaseName == context.database) {
-          if (qualifier.contains(tableName)) {
+        if databaseName == context.database then {
+          if qualifier.contains(tableName) then {
             findMatched(None, columnName).map(_.withQualifier(qualifier))
-          } else if (tableAlias.contains(tableName)) {
+          } else if tableAlias.contains(tableName) then {
             findMatched(None, columnName)
           } else {
             findMatched(Some(tableName), columnName)
@@ -409,9 +409,9 @@ trait Attribute extends LeafExpression with LogSupport {
           }
         }
       case ColumnPath(None, Some(tableName), columnName) =>
-        if (qualifier.contains(tableName)) {
+        if qualifier.contains(tableName) then {
           findMatched(None, columnName).map(_.withQualifier(qualifier))
-        } else if (tableAlias.contains(tableName)) {
+        } else if tableAlias.contains(tableName) then {
           findMatched(None, columnName)
         } else {
           findMatched(Some(tableName), columnName)
@@ -420,8 +420,8 @@ trait Attribute extends LeafExpression with LogSupport {
         findMatched(None, columnName)
     }
 
-    if (result.size > 1) {
-      val q = if (result.forall(_.qualifier == result.head.qualifier)) {
+    if result.size > 1 then {
+      val q = if result.forall(_.qualifier == result.head.qualifier) then {
         // Preserve the qualifier
         result.head.qualifier
       } else {
@@ -440,7 +440,7 @@ object Expression {
 
   def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
     require(expr.length > 0, None)
-    if (expr.length == 1) {
+    if expr.length == 1 then {
       expr.head
     } else {
       expr.tail.foldLeft(expr.head) { case (prev, next) =>
@@ -457,11 +457,11 @@ object Expression {
   }
 
   def newIdentifier(x: String): Identifier = {
-    if (x.startsWith("`") && x.endsWith("`")) {
+    if x.startsWith("`") && x.endsWith("`") then {
       BackQuotedIdentifier(x.stripPrefix("`").stripSuffix("`"), None)
-    } else if (x.startsWith("\"") && x.endsWith("\"")) {
+    } else if x.startsWith("\"") && x.endsWith("\"") then {
       QuotedIdentifier(x.stripPrefix("\"").stripSuffix("\""), None)
-    } else if (x.matches("[0-9]+")) {
+    } else if x.matches("[0-9]+") then {
       DigitId(x, None)
     } else {
       UnquotedIdentifier(x, None)
@@ -478,10 +478,10 @@ object Expression {
     override def toString: String = fullName
     override def sqlExpr: String = parts
       .map { part =>
-        if (part.matches("[0-9]+")) {
+        if part.matches("[0-9]+") then {
           // Quotations are needed for digits to generate valid SQL
           Expression.newIdentifier(s""""$part"""")
-        } else if (!part.matches("[0-9a-zA-Z_]*")) {
+        } else if !part.matches("[0-9a-zA-Z_]*") then {
           // Quotations are needed with special characters to generate valid SQL
           Expression.newIdentifier(s""""$part"""")
         } else {
@@ -495,7 +495,7 @@ object Expression {
     }
 
     def unquote(s: String): String = {
-      if (s.startsWith("\"") && s.endsWith("\"")) {
+      if s.startsWith("\"") && s.endsWith("\"") then {
         s.substring(1, s.length - 1)
       } else s
     }
@@ -816,11 +816,11 @@ object Expression {
 
     override def sqlExpr: String = {
       val s = Seq.newBuilder[String]
-      if (partitionBy.nonEmpty) {
+      if partitionBy.nonEmpty then {
         s += "PARTITION BY"
         s += partitionBy.map(_.sqlExpr).mkString(", ")
       }
-      if (orderBy.nonEmpty) {
+      if orderBy.nonEmpty then {
         s += "ORDER BY"
         s += orderBy.map(_.sqlExpr).mkString(", ")
       }
@@ -868,11 +868,11 @@ object Expression {
     override def toString: String = {
       val s = Seq.newBuilder[String]
       s += frameType.toString
-      if (end.isDefined) {
+      if end.isDefined then {
         s += "BETWEEN"
       }
       s += start.toString
-      if (end.isDefined) {
+      if end.isDefined then {
         s += "AND"
         s += end.get.toString
       }
@@ -890,7 +890,7 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def dataType: DataType = {
-      if (functionName == "count") {
+      if functionName == "count" then {
         DataType.LongType
       } else {
         // TODO: Resolve the function return type using a function catalog
@@ -903,7 +903,7 @@ object Expression {
 
     override def sqlExpr: String = {
       val argList   = args.map(_.sqlExpr).mkString(", ")
-      val argPrefix = if (isDistinct) "DISTINCT " else ""
+      val argPrefix = if isDistinct then "DISTINCT " else ""
       val f         = filter.map(x => s" FILTER (WHERE ${x.sqlExpr})").getOrElse("")
       val wd        = window.map(_.sqlExpr).getOrElse("")
       s"${name}(${argPrefix}${argList})${f}${wd}"
@@ -1080,7 +1080,7 @@ object Expression {
   ) extends ArithmeticExpression
       with BinaryExpression {
     override def dataType: DataType = {
-      if (left.dataType == right.dataType) {
+      if left.dataType == right.dataType then {
         left.dataType
       } else {
         // TODO type escalation e.g., (Double) op (Long) -> (Double)
@@ -1243,7 +1243,7 @@ object Expression {
   case class ArrayConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
     def elementType: DataType = {
       val elemTypes = values.map(_.dataType).distinct
-      if (elemTypes.size == 1) {
+      if elemTypes.size == 1 then {
         elemTypes.head
       } else {
         AnyType

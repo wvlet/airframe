@@ -41,7 +41,7 @@ object LogTimestampFormatter {
 
       val tzBuf: Ptr[Byte] = alloc[Byte](5)
       strftime(tzBuf, 5.toUSize, c"%z", tmPtr)
-      if (strlen(tzBuf) <= 1.toUSize) {
+      if strlen(tzBuf) <= 1.toUSize then {
         // For UTC-00:00
         strcat(buf, c"Z")
       } else {

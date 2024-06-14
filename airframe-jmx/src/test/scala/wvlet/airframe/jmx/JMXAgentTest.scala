@@ -20,7 +20,7 @@ import wvlet.airspec.AirSpec
   */
 class JMXAgentTest extends AirSpec {
   test("find jmx registry") {
-    if (!JMXUtil.isAtLeastJava9) {
+    if !JMXUtil.isAtLeastJava9 then {
       val agent = JMXAgent.defaultAgent
       agent.withConnector { connector =>
         val connection = connector.getMBeanServerConnection()

@@ -65,7 +65,7 @@ class RxVar[A](private var currentValue: A) extends Rx[A] with RxVarOps[A] {
     */
   override def update(updater: A => A, force: Boolean = false): Unit = {
     val newValue = updater(currentValue)
-    if (force || currentValue != newValue) {
+    if force || currentValue != newValue then {
       currentValue = newValue
       propagateEvent(OnNext(newValue))
     }

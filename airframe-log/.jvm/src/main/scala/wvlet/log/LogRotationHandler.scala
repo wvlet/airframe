@@ -82,7 +82,7 @@ class LogRotationHandler(
 
     rollingPolicy.setContext(context)
     val fileNameStem =
-      if (fileName.endsWith(logFileExt)) fileName.substring(0, fileName.length - logFileExt.length) else fileName
+      if fileName.endsWith(logFileExt) then fileName.substring(0, fileName.length - logFileExt.length) else fileName
     rollingPolicy.setFileNamePattern(s"${fileNameStem}-%d{yyyy-MM-dd}.%i${logFileExt}.gz")
     rollingPolicy.setMaxHistory(maxNumberOfFiles)
     rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy)
@@ -111,7 +111,7 @@ class LogRotationHandler(
   private def toException(t: Throwable) = new Exception(t.getMessage, t)
 
   override def publish(record: jl.LogRecord): Unit = {
-    if (isLoggable(record)) {
+    if isLoggable(record) then {
       Try(formatter.format(record)) match {
         case Success(message) =>
           Try(fileAppender.doAppend(s"${message}\n")) match {
@@ -145,7 +145,7 @@ class LogRotationHandler(
       val newName = tempFile.getName().substring(0, tempFile.getName().length() - tempFileExt.size)
       val newFile = new File(tempFile.getParent, newName + logFileExt)
 
-      if (!tempFile.renameTo(newFile)) {
+      if !tempFile.renameTo(newFile) then {
         reportError(s"Failed to rename temp file ${tempFile} to ${newFile}", null, ErrorManager.OPEN_FAILURE)
       }
     }

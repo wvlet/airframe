@@ -51,14 +51,14 @@ object ScalaStandardCodec {
     override def pack(p: Packer, v: Product): Unit = {
       val arity = v.productArity
       p.packArrayHeader(arity)
-      for ((e, codec) <- v.productIterator.toSeq.zip(elementCodec)) {
+      for (e, codec) <- v.productIterator.toSeq.zip(elementCodec) do {
         codec.asInstanceOf[MessageCodec[Any]].pack(p, e)
       }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val numElems = u.unpackArrayHeader
-      if (numElems != elementCodec.size) {
+      if numElems != elementCodec.size then {
         u.skipValue(numElems)
         v.setIncompatibleFormatException(
           this,
@@ -66,7 +66,7 @@ object ScalaStandardCodec {
         )
       } else {
         val b = Array.newBuilder[Any]
-        for (codec <- elementCodec) {
+        for codec <- elementCodec do {
           codec.unpack(u, v)
           b += v.getLastValue
         }
@@ -204,7 +204,7 @@ object ScalaStandardCodec {
             )
           case _ => null
         }
-        if (tuple != null) {
+        if tuple != null then {
           v.setObject(tuple)
         } else {
           v.setIncompatibleFormatException(this, s"Tuples of ${numElems} elements is not supported")
@@ -232,7 +232,7 @@ object ScalaStandardCodec {
       u.getNextValueType match {
         case ValueType.ARRAY =>
           val size = u.unpackArrayHeader
-          if (size != 2) {
+          if size != 2 then {
             u.skipValue(size)
             v.setIncompatibleFormatException(
               this,
@@ -245,12 +245,12 @@ object ScalaStandardCodec {
             (left, right) match {
               case (l, NilValue) =>
                 leftCodec.unpack(MessagePack.newUnpacker(l.toMsgpack), v)
-                if (!v.isNull) {
+                if !v.isNull then {
                   v.setObject(Left(v.getLastValue))
                 }
               case (NilValue, r) =>
                 rightCodec.unpack(MessagePack.newUnpacker(r.toMsgpack), v)
-                if (!v.isNull) {
+                if !v.isNull then {
                   v.setObject(Right(v.getLastValue))
                 }
               case _ =>

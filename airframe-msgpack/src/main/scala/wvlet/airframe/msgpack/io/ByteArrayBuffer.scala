@@ -35,9 +35,9 @@ class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ByteArrayB
 
 class InfiniteByteArrayBuffer extends ByteArrayBufferBase(new Array[Byte](10), 0, 10) {
   override def ensureCapacity(position: Int, requestedLength: Int): Unit = {
-    if (!hasCapacity(position, requestedLength)) {
+    if !hasCapacity(position, requestedLength) then {
       var newLength = a.length
-      while (newLength < position + requestedLength) {
+      while newLength < position + requestedLength do {
         newLength *= 2
       }
       val newArray = new Array[Byte](newLength)
@@ -65,7 +65,7 @@ abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: I
       position + arraySize <= capacity,
       s"Insufficient array length (${a.length}, offset:${offset}, size:${capacity}) for slice(${position}, ${arraySize})"
     )
-    if (a.length == offset + position + arraySize) {
+    if a.length == offset + position + arraySize then {
       a
     } else {
       val newArray = new Array[Byte](arraySize)
@@ -87,7 +87,7 @@ abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: I
   }
 
   def ensureCapacity(position: Int, requestedLength: Int): Unit = {
-    if (!hasCapacity(position, requestedLength)) {
+    if !hasCapacity(position, requestedLength) then {
       throw new InsufficientBufferException(position, requestedLength)
     }
   }

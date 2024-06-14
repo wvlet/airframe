@@ -72,7 +72,7 @@ abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetWrit
 object ParquetWriteCodec extends LogSupport {
 
   private[parquet] def parquetCodecOf(tpe: Type, surface: Surface, codec: MessageCodec[_]): ParquetWriteCodec = {
-    if (tpe.isPrimitive) {
+    if tpe.isPrimitive then {
       val primitiveCodec = tpe.asPrimitiveType().getPrimitiveTypeName match {
         case PrimitiveTypeName.INT32 =>
           new PrimitiveParquetCodec(codec) {
@@ -132,7 +132,7 @@ object ParquetWriteCodec extends LogSupport {
           primitiveCodec
       }
     } else {
-      if (surface.params.length > 0) {
+      if surface.params.length > 0 then {
         // group type
         val groupCodec = ParquetObjectWriter.buildFromSurface(surface, Parquet.toParquetSchema(surface))
         tpe match {

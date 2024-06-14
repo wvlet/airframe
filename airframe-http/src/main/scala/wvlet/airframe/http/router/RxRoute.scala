@@ -19,7 +19,7 @@ import wvlet.airframe.surface.{MethodSurface, Surface}
 case class RxRoute(filter: Option[FilterNode], controllerSurface: Surface, methodSurfaces: Seq[MethodSurface]) {
   override def toString: String = {
     val s = Seq.newBuilder[String]
-    for (m <- methodSurfaces) {
+    for m <- methodSurfaces do {
       s += s"${m.name}(${m.args.map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${m.returnType}"
     }
     s.result().mkString("\n")

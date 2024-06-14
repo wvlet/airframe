@@ -50,7 +50,7 @@ case class TableScan(
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
-    if (config.embedTableNames) {
+    if config.embedTableNames then {
       table.fullName
     } else {
       "T"
@@ -116,8 +116,7 @@ case class CTERelationRef(name: String, outputColumns: Seq[Attribute], nodeLocat
     extends Relation
     with LeafPlan {
   override def sig(config: QuerySignatureConfig): String = {
-    if (config.embedTableNames)
-      name
+    if config.embedTableNames then name
     else
       "T"
   }

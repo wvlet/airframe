@@ -58,7 +58,7 @@ class ParquetReadSupportAdapter[A](surface: Surface, plan: Option[ParquetQueryPl
       case _ =>
         surface.params.map(p => CName(p.name).canonicalName).toSet
     }
-    if (targetColumns.isEmpty) {
+    if targetColumns.isEmpty then {
       // e.g., Json, Map where all parameters need to be extracted
       new ReadContext(parquetFileSchema)
     } else {

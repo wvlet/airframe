@@ -27,7 +27,7 @@ object Asserts {
   private[airspec] case object Failed extends TestResult
 
   private[airspec] def check(cond: Boolean): TestResult = {
-    if (cond) {
+    if cond then {
       Ok
     } else {
       Failed
@@ -39,13 +39,13 @@ object Asserts {
   */
 trait Asserts { this: AirSpecSpi =>
   protected def assert(cond: => Boolean)(implicit code: SourceCode) = {
-    if (!cond) {
+    if !cond then {
       throw AssertionFailure("assertion failed", code)
     }
   }
 
   protected def assert(cond: => Boolean, message: String)(implicit code: SourceCode) = {
-    if (!cond) {
+    if !cond then {
       throw AssertionFailure(message, code)
     }
   }

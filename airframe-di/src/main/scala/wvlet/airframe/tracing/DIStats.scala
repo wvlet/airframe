@@ -35,14 +35,14 @@ case class DIStatsReport(
     // Coverage report
     report += "[coverage]"
     report += f"design coverage: ${coverage * 100}%.1f%%"
-    if (unusedTypes.nonEmpty) {
+    if unusedTypes.nonEmpty then {
       report += "[unused types]"
       unusedTypes.map { x => report += x.toString }
     }
     // Access stat report
     report += "[access stats]"
     val allTypes = injectCount.keySet ++ initCount.keySet
-    for (s <- observedTypes) {
+    for s <- observedTypes do {
       report += s"[${s}] init:${initCount.getOrElse(s, 0)}, inject:${injectCount.getOrElse(s, 0)}"
     }
 
@@ -91,14 +91,14 @@ class DIStats extends LogSupport with Serializable {
       bindingCount += 1
       val surface     = b.from
       val injectCount = getInjectCount(surface)
-      if (injectCount > 0) {
+      if injectCount > 0 then {
         usedBindingCount += 1
       } else {
         unusedBindings += surface
       }
     }
     val coverage =
-      if (bindingCount == 0) {
+      if bindingCount == 0 then {
         1.0
       } else {
         usedBindingCount.toDouble / bindingCount

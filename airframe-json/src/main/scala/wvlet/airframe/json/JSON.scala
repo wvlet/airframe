@@ -73,7 +73,7 @@ object JSON extends LogSupport {
       val s = new StringBuilder()
       v match {
         case x: JSONObject =>
-          if (x.v.isEmpty) {
+          if x.v.isEmpty then {
             s.append("{}")
           } else {
             s.append("{\n")
@@ -93,7 +93,7 @@ object JSON extends LogSupport {
             s.append("}")
           }
         case x: JSONArray =>
-          if (x.v.isEmpty) {
+          if x.v.isEmpty then {
             s.append("[]")
           } else {
             s.append("[\n")
@@ -124,7 +124,7 @@ object JSON extends LogSupport {
   }
 
   final case class JSONBoolean(val v: Boolean) extends JSONValue {
-    override def toJSON: String = if (v) "true" else "false"
+    override def toJSON: String = if v then "true" else "false"
   }
 
   val JSONTrue  = JSONBoolean(true)

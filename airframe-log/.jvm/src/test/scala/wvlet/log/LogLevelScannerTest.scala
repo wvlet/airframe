@@ -36,7 +36,7 @@ class LogLevelScannerTest extends Spec {
       scanner.setConfig(config)
       scanner.start
       // Wait the first scan
-      while (scanner.scanCount.get == lastScanCount) {
+      while scanner.scanCount.get == lastScanCount do {
         Thread.sleep(15)
       }
       f

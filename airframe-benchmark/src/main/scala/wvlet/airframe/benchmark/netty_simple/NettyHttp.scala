@@ -120,15 +120,15 @@ object NettyHttp {
             .headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN)
             .setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes())
 
-          if (keepAlive) {
-            if (!req.protocolVersion().isKeepAliveDefault) {
+          if keepAlive then {
+            if !req.protocolVersion().isKeepAliveDefault then {
               response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
             }
           } else {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
           }
           val f = ctx.write(response)
-          if (!keepAlive) {
+          if !keepAlive then {
             f.addListener(ChannelFutureListener.CLOSE)
           }
 
@@ -184,7 +184,7 @@ class NettyHttp {
     val counter = new AtomicInteger(0)
 
     blackhole.consume {
-      for (i <- 0 until HttpBenchmark.asyncIteration) {
+      for i <- 0 until HttpBenchmark.asyncIteration do {
         val rx = asyncClient
           .send(Http.POST("/").withJson("""{"name":"Netty"}"""))
           .map { _ =>
@@ -199,7 +199,7 @@ class NettyHttp {
           }
         }
       }
-      while (counter.get() != HttpBenchmark.asyncIteration) {
+      while counter.get() != HttpBenchmark.asyncIteration do {
         Thread.sleep(0)
       }
     }

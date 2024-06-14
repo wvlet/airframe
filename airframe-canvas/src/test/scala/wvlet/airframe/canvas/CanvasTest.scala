@@ -28,38 +28,38 @@ class CanvasTest extends AirSpec with PropertyCheck {
   }
 
   protected def checkReadWritePrimitiveValues(c: Canvas): Unit = {
-    for (offset <- 0L until c.size) {
+    for offset <- 0L until c.size do {
       forAll { (v: Boolean) => check(v, c, _.writeBoolean(offset, v), _.readBoolean(offset)) }
     }
-    for (offset <- 0L until c.size - 4) {
+    for offset <- 0L until c.size - 4 do {
       forAll { (v: Int) => check(v, c, _.writeInt(offset, v), _.readInt(offset)) }
     }
-    for (offset <- 0L until c.size - 4) {
+    for offset <- 0L until c.size - 4 do {
       forAll { (v: Int) => check(v, c, _.writeIntBigEndian(offset, v), _.readIntBigEndian(offset)) }
     }
-    for (offset <- 0L until c.size - 8) {
+    for offset <- 0L until c.size - 8 do {
       forAll { (v: Long) => check(v, c, _.writeLong(offset, v), _.readLong(offset)) }
     }
-    for (offset <- 0L until c.size - 8) {
+    for offset <- 0L until c.size - 8 do {
       forAll { (v: Long) => check(v, c, _.writeLongBigEndian(offset, v), _.readLongBigEndian(offset)) }
     }
-    for (offset <- 0L until c.size - 2) {
+    for offset <- 0L until c.size - 2 do {
       forAll { (v: Short) => check(v, c, _.writeShort(offset, v), _.readShort(offset)) }
     }
 
-    for (offset <- 0L until c.size) {
+    for offset <- 0L until c.size do {
       forAll { (v: Byte) => check(v, c, _.writeByte(offset, v), _.readByte(offset)) }
     }
 
-    for (offset <- 0L until c.size - 4) {
+    for offset <- 0L until c.size - 4 do {
       forAll { (v: Float) => check(v, c, _.writeFloat(offset, v), _.readFloat(offset)) }
     }
-    for (offset <- 0L until c.size - 8) {
+    for offset <- 0L until c.size - 8 do {
       forAll { (v: Double) => check(v, c, _.writeDouble(offset, v), _.readDouble(offset)) }
     }
 
     forAll { (v: Array[Byte]) =>
-      for (offset <- 0L to c.size - v.size) {
+      for offset <- 0L to c.size - v.size do {
         check(v, c, _.writeBytes(offset, v), _.readBytes(offset, v.size))
       }
     }
@@ -101,7 +101,7 @@ class CanvasTest extends AirSpec with PropertyCheck {
 
   test("create slices") {
     val c = Canvas.newCanvas(100)
-    for (i <- 0L until c.size) {
+    for i <- 0L until c.size do {
       c.writeByte(i, i.toByte)
     }
     c.slice(0, c.size) shouldBe c
@@ -131,7 +131,7 @@ class CanvasTest extends AirSpec with PropertyCheck {
     val c1 = Canvas.newCanvas(100)
     val c2 = Canvas.newCanvas(100)
 
-    for (i <- 0L until c1.size) {
+    for i <- 0L until c1.size do {
       c1.writeByte(i, i.toByte)
     }
     c1.readBytes(30, c2, 20, 10)

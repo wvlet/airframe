@@ -78,15 +78,17 @@ object Cors extends LogSupport {
 
     private def setOriginAndCredential(resp: Response, origin: String): Response = {
       var r = resp.withHeader("Access-Control-Allow-Origin", origin)
-      if (policy.supportsCredentials && origin != "*") {
+      if policy.supportsCredentials && origin != "*" then {
         r = r.withHeader("Access-Control-Allow-Credentials", "true")
       }
       r
     }
 
     private def addExposedHeaders(response: Response): Response = {
-      if (policy.exposedHeaders.nonEmpty)
-        response.withHeader("Access-Control-Expose-Headers", policy.exposedHeaders.mkString(", "))
+      if policy.exposedHeaders.nonEmpty then response.withHeader(
+        "Access-Control-Expose-Headers",
+        policy.exposedHeaders.mkString(", ")
+      )
       else
         response
     }

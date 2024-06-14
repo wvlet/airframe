@@ -102,7 +102,7 @@ trait DemoApi extends LogSupport {
           appErrorCode = 11,
           metadata = Map("retry" -> 0)
         )
-        if (suppress) {
+        if suppress then {
           ex.noStackTrace
         }
         throw ex

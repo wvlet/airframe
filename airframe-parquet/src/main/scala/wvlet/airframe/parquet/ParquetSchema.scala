@@ -105,7 +105,7 @@ object ParquetSchema extends LogSupport {
       case s: Surface if s.params.size > 0 =>
         // e.g., case class objects
         var groupType = Types.buildGroup(rep.getOrElse(Repetition.OPTIONAL))
-        for (p <- s.params) {
+        for p <- s.params do {
           groupType = groupType.addField(toParquetType(p.name, p.surface, Some(Repetition.REQUIRED)))
         }
         groupType
@@ -117,7 +117,7 @@ object ParquetSchema extends LogSupport {
 
   def buildSurfaceFromParquetSchema(schema: Type): Surface = {
     def toSurface(t: Type): Surface = {
-      if (t.isPrimitive) {
+      if t.isPrimitive then {
         val p = t.asPrimitiveType()
         p.getPrimitiveTypeName match {
           case PrimitiveTypeName.INT32 =>
@@ -143,7 +143,7 @@ object ParquetSchema extends LogSupport {
       } else {
         val g = t.asGroupType()
         var r = RecordSurface.newSurface(t.getName)
-        for ((f, i) <- g.getFields.asScala.zipWithIndex) {
+        for (f, i) <- g.getFields.asScala.zipWithIndex do {
           r = r.addParam(RecordParameter(i, f.getName, toSurface(f)))
         }
         r

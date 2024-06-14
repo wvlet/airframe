@@ -31,7 +31,7 @@ import scala.jdk.CollectionConverters.*
   */
 class URLConnectionChannel(val destination: ServerAddress, config: HttpClientConfig) extends HttpChannel {
   override def send(request: Request, channelConfig: HttpChannelConfig): Response = {
-    val url = s"${request.dest.getOrElse(destination).uri}${if (request.uri.startsWith("/")) request.uri
+    val url = s"${request.dest.getOrElse(destination).uri}${if request.uri.startsWith("/") then request.uri
       else s"/${request.uri}"}"
 
     val conn0: HttpURLConnection =
@@ -45,13 +45,13 @@ class URLConnectionChannel(val destination: ServerAddress, config: HttpClientCon
       case _ =>
         conn0.setRequestMethod(request.method)
     }
-    for (e <- request.header.entries) {
+    for e <- request.header.entries do {
       conn0.setRequestProperty(e.key, e.value)
     }
     conn0.setDoInput(true)
 
     def timeoutMillis(d: Duration): Int = {
-      if (d.isFinite) {
+      if d.isFinite then {
         d.toMillis.toInt
       } else {
         0
@@ -64,7 +64,7 @@ class URLConnectionChannel(val destination: ServerAddress, config: HttpClientCon
 
     val conn    = conn0 // config.connectionFilter(conn0)
     val content = request.contentBytes
-    if (content.nonEmpty) {
+    if content.nonEmpty then {
       conn.setDoOutput(true)
       Control.withResource(conn.getOutputStream()) { (out: OutputStream) =>
         out.write(content)
@@ -90,7 +90,7 @@ class URLConnectionChannel(val destination: ServerAddress, config: HttpClientCon
     val status = HttpStatus.ofCode(conn.getResponseCode)
 
     val h = HttpMultiMap.newBuilder
-    for ((k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala) {
+    for (k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala do {
       h += k -> v
     }
     val response = Http.response(status).withHeader(h.result())

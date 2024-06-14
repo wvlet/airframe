@@ -234,7 +234,7 @@ object GrpcClient extends LogSupport {
         try {
           val trailers = Status.trailersFromThrowable(ex)
           // For the server-side RPC error, it should have an RPCException message in the trailer
-          if (trailers != null && trailers.containsKey(GrpcException.rpcErrorBodyKey)) {
+          if trailers != null && trailers.containsKey(GrpcException.rpcErrorBodyKey) then {
             try {
               val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
               RPCException.fromJson(rpcErrorJson)

@@ -47,7 +47,7 @@ class JSHttpClientChannel(val destination: ServerAddress, private[client] val co
 
     val xhr = new dom.XMLHttpRequest()
 
-    val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
+    val path = if request.uri.startsWith("/") then request.uri else s"/${request.uri}"
     val uri  = s"${request.dest.getOrElse(destination).uri}${path}"
 
     trace(s"Sending request: ${request}: ${uri}")
@@ -61,18 +61,18 @@ class JSHttpClientChannel(val destination: ServerAddress, private[client] val co
     val promise = Promise[Response]()
 
     xhr.onerror = { (e: dom.Event) =>
-      if (!promise.isCompleted) {
+      if !promise.isCompleted then {
         promise.failure(new IOException(s"Request failed for unknown reason: ${request}"))
       }
     }
     xhr.ontimeout = { (e: dom.Event) =>
-      if (!promise.isCompleted) {
+      if !promise.isCompleted then {
         promise.failure(new TimeoutException(s"Request timed out: ${request}"))
       }
     }
 
     val data: Array[Byte] = request.contentBytes
-    if (data.isEmpty) {
+    if data.isEmpty then {
       xhr.send()
     } else {
       val input: InputData = ByteBuffer.wrap(data)
@@ -80,7 +80,7 @@ class JSHttpClientChannel(val destination: ServerAddress, private[client] val co
     }
 
     xhr.onreadystatechange = { (e: dom.Event) =>
-      if (xhr.readyState == 4) { // Ajax request is DONE
+      if xhr.readyState == 4 then { // Ajax request is DONE
         // Prepare HttpMessage.Response
         var resp = Http.response(HttpStatus.ofCode(xhr.status))
         // This part needs to be exception-free
@@ -110,7 +110,7 @@ class JSHttpClientChannel(val destination: ServerAddress, private[client] val co
           }
         }
         trace(s"Get response: ${resp}")
-        if (!promise.isCompleted) {
+        if !promise.isCompleted then {
           promise.success(resp)
         }
       }

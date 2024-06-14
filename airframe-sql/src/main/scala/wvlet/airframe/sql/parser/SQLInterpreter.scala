@@ -48,7 +48,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   private def getLocation(token: Token): Option[NodeLocation] = {
-    if (withNodeLocation) {
+    if withNodeLocation then {
       Some(NodeLocation(token.getLine, token.getCharPositionInLine + 1))
     } else {
       None
@@ -84,7 +84,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitQuery(ctx: QueryContext): Relation = {
     val inputRelation = visit(ctx.queryNoWith()).asInstanceOf[Relation]
 
-    if (ctx.`with`() == null) {
+    if ctx.`with`() == null then {
       inputRelation
     } else {
       val w = visitWith(ctx.`with`())
@@ -128,16 +128,16 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val isDistinct = Option(ctx.setQuantifier())
       .map(visitSetQuantifier(_).isDistinct)
       .getOrElse(true)
-    val base = if (ctx.INTERSECT() != null) {
+    val base = if ctx.INTERSECT() != null then {
       Intersect(children, getLocation(ctx.INTERSECT()))
-    } else if (ctx.UNION() != null) {
+    } else if ctx.UNION() != null then {
       Union(children, getLocation(ctx.UNION()))
-    } else if (ctx.EXCEPT() != null) {
+    } else if ctx.EXCEPT() != null then {
       Except(children(0), children(1), getLocation(ctx.EXCEPT()))
     } else {
       throw unknown(ctx)
     }
-    if (isDistinct) {
+    if isDistinct then {
       Distinct(base, base.nodeLocation)
     } else {
       base
@@ -149,7 +149,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     // TODO
 
     // TODO union, except, intersect
-    val withSort = if (ctx.sortItem().isEmpty) {
+    val withSort = if ctx.sortItem().isEmpty then {
       inputRelation
     } else {
       val sortKeys = ctx
@@ -162,7 +162,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       Sort(inputRelation, sortKeys, getLocation(ctx.ORDER()))
     }
 
-    if (ctx.limit == null) {
+    if ctx.limit == null then {
       withSort
     } else {
       Option(ctx.INTEGER_VALUE())
@@ -204,7 +204,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): LogicalPlan = {
     val filter: Option[Expression] = {
-      if (ctx.where == null) {
+      if ctx.where == null then {
         None
       } else {
         Option(ctx.where)
@@ -235,7 +235,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val withAggregation = {
       val having = Option(ctx.having).map(expression(_))
 
-      if (ctx.groupBy() == null) {
+      if ctx.groupBy() == null then {
         // No aggregation in the query
         // Check the presence of distinct
         val distinct = Option(ctx.setQuantifier())
@@ -245,7 +245,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
         having match {
           case Some(h) =>
             // Aggregation without grouping keys
-            if (distinct) {
+            if distinct then {
               Aggregate(Distinct(inputRelation, getLocation(ctx)), selectItem, List.empty, Some(h), getLocation(ctx))
             } else {
               Aggregate(inputRelation, selectItem, List.empty, Some(h), getLocation(ctx))
@@ -253,7 +253,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
           case None =>
             // Regular aggregate
             val p = Project(inputRelation, selectItem, getLocation(ctx))
-            if (distinct) {
+            if distinct then {
               Distinct(p, p.nodeLocation)
             } else {
               p
@@ -263,7 +263,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
         // aggregation
         val gb = ctx.groupBy()
         assert(gb != null)
-        if (inputRelation.isInstanceOf[EmptyRelation]) {
+        if inputRelation.isInstanceOf[EmptyRelation] then {
           throw SQLErrorCode.SyntaxError.newException(
             "group by statement requires input relation",
             inputRelation.nodeLocation
@@ -393,7 +393,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitDereference(ctx: DereferenceContext): Attribute = {
     val qualifier = {
-      if (ctx.base.getText.isEmpty) None else Some(ctx.base.getText)
+      if ctx.base.getText.isEmpty then None else Some(ctx.base.getText)
     }.map(x => QName(x, None).fullName)
 
     val name = QName.unquote(ctx.fieldName.getText)
@@ -424,15 +424,15 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val b: BooleanExpressionContext = ctx.booleanExpression()
     b match {
       case lb: LogicalBinaryContext =>
-        if (lb.AND() != null) {
+        if lb.AND() != null then {
           And(expression(lb.left), expression(lb.right), getLocation(ctx))
-        } else if (lb.OR() != null) {
+        } else if lb.OR() != null then {
           Or(expression(lb.left), expression(lb.right), getLocation(ctx))
         } else {
           throw unknown(lb)
         }
       case ln: LogicalNotContext =>
-        if (ln.NOT() != null) {
+        if ln.NOT() != null then {
           Not(expression(ln.booleanExpression()), getLocation(ctx))
         } else {
           throw unknown(ln)
@@ -460,7 +460,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitTypeConstructor(ctx: TypeConstructorContext): Expression = {
     val v = expression(ctx.str()).asInstanceOf[StringLiteral].value
 
-    if (ctx.DOUBLE_PRECISION() != null) {
+    if ctx.DOUBLE_PRECISION() != null then {
       // TODO Parse double-type precision properly
       GenericLiteral("DOUBLE", v, getLocation(ctx))
     } else {
@@ -515,9 +515,9 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     CaseExpr(None, whenClauses, defaultClauses, getLocation(ctx))
   }
   override def visitCast(ctx: CastContext): Expression = {
-    if (ctx.CAST() != null) {
+    if ctx.CAST() != null then {
       Cast(expression(ctx.expression()), ctx.`type`().getText, tryCast = false, getLocation(ctx))
-    } else if (ctx.TRY_CAST() != null) {
+    } else if ctx.TRY_CAST() != null then {
       Cast(expression(ctx.expression()), ctx.`type`().getText, tryCast = true, getLocation(ctx))
     } else {
       throw unknown(ctx)
@@ -549,34 +549,34 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitPredicated(ctx: PredicatedContext): Expression = {
     val e = expression(ctx.valueExpression)
-    if (ctx.predicate != null) {
+    if ctx.predicate != null then {
       // TODO add predicate
       ctx.predicate() match {
         case n: NullPredicateContext =>
-          if (n.NOT() == null) IsNull(e, getLocation(n))
+          if n.NOT() == null then IsNull(e, getLocation(n))
           else IsNotNull(e, getLocation(n))
         case b: BetweenContext =>
-          if (b.NOT() != null) {
+          if b.NOT() != null then {
             NotBetween(e, expression(b.lower), expression(b.upper), getLocation(b))
           } else {
             Between(e, expression(b.lower), expression(b.upper), getLocation(b))
           }
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
-          if (i.NOT() == null) InSubQuery(e, subQuery, getLocation(i))
+          if i.NOT() == null then InSubQuery(e, subQuery, getLocation(i))
           else NotInSubQuery(e, subQuery, getLocation(i))
         case i: InListContext =>
           val inList = i.expression().asScala.map(x => expression(x)).toSeq
-          if (i.NOT() == null) In(e, inList, getLocation(i))
+          if i.NOT() == null then In(e, inList, getLocation(i))
           else NotIn(e, inList, getLocation(i))
         case l: LikeContext =>
           // TODO: Handle ESCAPE
           val likeExpr = expression(l.pattern)
-          if (l.NOT() == null) Like(e, likeExpr, getLocation(l))
+          if l.NOT() == null then Like(e, likeExpr, getLocation(l))
           else NotLike(e, likeExpr, getLocation(l))
         case d: DistinctFromContext =>
           val distinctExpr = expression(d.valueExpression())
-          if (d.NOT() == null) DistinctFrom(e, distinctExpr, getLocation(d))
+          if d.NOT() == null then DistinctFrom(e, distinctExpr, getLocation(d))
           else NotDistinctFrom(e, distinctExpr, getLocation(d))
         case other =>
           // TODO
@@ -644,7 +644,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitBooleanLiteral(ctx: BooleanLiteralContext): Literal = {
-    if (ctx.booleanValue().TRUE() != null) {
+    if ctx.booleanValue().TRUE() != null then {
       TrueLiteral(getLocation(ctx))
     } else {
       FalseLiteral(getLocation(ctx))
@@ -708,7 +708,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val e = Option(ctx.BETWEEN()).map { x =>
       visitFrameBound(ctx.end)
     }
-    if (ctx.RANGE() != null) {
+    if ctx.RANGE() != null then {
       WindowFrame(RangeFrame, s, e, getLocation(ctx))
     } else {
       WindowFrame(RowsFrame, s, e, getLocation(ctx))
@@ -724,17 +724,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
           case other =>
             throw new IllegalArgumentException(s"Unknown bound context: ${other}")
         }
-        if (bf.PRECEDING() != null) {
+        if bf.PRECEDING() != null then {
           Preceding(bound)
-        } else if (bf.FOLLOWING() != null) {
+        } else if bf.FOLLOWING() != null then {
           Following(bound)
         } else {
           throw unknown(bf)
         }
       case ub: UnboundedFrameContext =>
-        if (ub.PRECEDING() != null) {
+        if ub.PRECEDING() != null then {
           UnboundedPreceding
-        } else if (ub.FOLLOWING() != null) {
+        } else if ub.FOLLOWING() != null then {
           UnboundedFollowing
         } else {
           throw unknown(ctx)
@@ -761,7 +761,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       .map(x => visitSetQuantifier(x).isDistinct)
       .getOrElse(false)
 
-    if (ctx.ASTERISK() != null) {
+    if ctx.ASTERISK() != null then {
       FunctionCall(
         name,
         Seq(AllColumns(None, None, None, getLocation(ctx))),
@@ -788,7 +788,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitSetQuantifier(ctx: SetQuantifierContext): SetQuantifier = {
-    if (ctx.DISTINCT() != null) {
+    if ctx.DISTINCT() != null then {
       DistinctSet(getLocation(ctx))
     } else {
       All(getLocation(ctx))
@@ -798,7 +798,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitNullLiteral(ctx: NullLiteralContext): Literal = NullLiteral(getLocation(ctx))
 
   override def visitInterval(ctx: IntervalContext): IntervalLiteral = {
-    val sign = if (ctx.MINUS() != null) {
+    val sign = if ctx.MINUS() != null then {
       Negative
     } else {
       Positive
@@ -813,17 +813,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitIntervalField(ctx: IntervalFieldContext): IntervalField = {
-    if (ctx.YEAR() != null) {
+    if ctx.YEAR() != null then {
       Year(getLocation(ctx.YEAR()))
-    } else if (ctx.MONTH() != null) {
+    } else if ctx.MONTH() != null then {
       Month(getLocation(ctx.MONTH()))
-    } else if (ctx.DAY() != null) {
+    } else if ctx.DAY() != null then {
       Day(getLocation(ctx.DAY()))
-    } else if (ctx.HOUR() != null) {
+    } else if ctx.HOUR() != null then {
       Hour(getLocation(ctx.HOUR()))
-    } else if (ctx.MINUTE() != null) {
+    } else if ctx.MINUTE() != null then {
       Minute(getLocation(ctx.MINUTE()))
-    } else if (ctx.SECOND() != null) {
+    } else if ctx.SECOND() != null then {
       Second(getLocation(ctx.SECOND()))
     } else {
       throw unknown(ctx)

@@ -120,19 +120,19 @@ object HttpRequestDispatcher extends LogSupport {
           .getOrElse(parentFilter)
 
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
-      for (route <- router.localRoutes) {
+      for route <- router.localRoutes do {
         val controllerOpt = router.controllerInstance.orElse {
           controllerProvider.findController(session, route.controllerSurface)
         }
-        if (controllerOpt.isEmpty) {
+        if controllerOpt.isEmpty then {
           throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
         }
         m += (route -> RouteFilter(currentFilter, controllerOpt.get))
       }
-      for (c <- router.children) {
+      for c <- router.children do {
         m ++= buildMappingsFromRouteToFilter(c, currentFilter)
       }
-      if (router.isLeafFilter) {
+      if router.isLeafFilter then {
         leafFilters += currentFilter
       }
 
@@ -142,7 +142,7 @@ object HttpRequestDispatcher extends LogSupport {
     val mappings = buildMappingsFromRouteToFilter(rootRouter, baseFilter)
 
     val lf = leafFilters.result()
-    if (lf.size > 1) {
+    if lf.size > 1 then {
       warn(s"Multiple leaf filters are found in the router. Using the first one: ${lf.head}")
     }
 

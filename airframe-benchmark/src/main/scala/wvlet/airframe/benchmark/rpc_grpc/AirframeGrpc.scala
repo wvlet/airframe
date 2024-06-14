@@ -65,7 +65,7 @@ class AirframeGrpc extends LogSupport {
   @OperationsPerInvocation(asyncIteration)
   def rpcAsync(blackhole: Blackhole): Unit = {
     val counter = new AtomicInteger(0)
-    for (i <- 0 until asyncIteration) {
+    for i <- 0 until asyncIteration do {
       blackhole.consume(
         asyncClient.Greeter.hello(
           "RPC",
@@ -81,7 +81,7 @@ class AirframeGrpc extends LogSupport {
         )
       )
     }
-    while (counter.get() != asyncIteration) {
+    while counter.get() != asyncIteration do {
       Thread.sleep(0)
     }
   }

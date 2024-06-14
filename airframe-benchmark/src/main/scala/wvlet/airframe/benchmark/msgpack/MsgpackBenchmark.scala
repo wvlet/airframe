@@ -44,7 +44,7 @@ abstract class UnpackBenchmark extends MsgpackData {
   @Group("unpack")
   def intArray(blackhole: Blackhole): Unit = {
     initUnpacker(msgpackIntArray)
-    while (hasNext) {
+    while hasNext do {
       blackhole.consume(unpackInt)
     }
   }
@@ -53,7 +53,7 @@ abstract class UnpackBenchmark extends MsgpackData {
   @Group("unpack")
   def floatArray(blackhole: Blackhole): Unit = {
     initUnpacker(msgpackFloatArray)
-    while (hasNext) {
+    while hasNext do {
       blackhole.consume(unpackFloat)
     }
   }
@@ -62,7 +62,7 @@ abstract class UnpackBenchmark extends MsgpackData {
   @Group("unpack")
   def booleanArray(blackhole: Blackhole): Unit = {
     initUnpacker(msgpackBooleaArray)
-    while (hasNext) {
+    while hasNext do {
       blackhole.consume(unpackBoolean)
     }
   }

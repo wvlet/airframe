@@ -26,9 +26,9 @@ private[airspec] object JsObjectMatcher {
   }
 
   def jsObjEquals(v1: js.Object, v2: js.Object): Boolean = {
-    if (v1 == v2) {
+    if v1 == v2 then {
       true
-    } else if (v1 == null || v2 == null) {
+    } else if v1 == null || v2 == null then {
       false
     } else {
       deepEqual(v1, v2)
@@ -44,9 +44,9 @@ private[airspec] object JsObjectMatcher {
     val k1 = js.Object.keys(v1)
     val k2 = js.Object.keys(v2)
 
-    if (k1.length != k2.length) {
+    if k1.length != k2.length then {
       false
-    } else if (k1.length == 0) {
+    } else if k1.length == 0 then {
       js.JSON.stringify(v1) == js.JSON.stringify(v2)
     } else {
       val values1 = getValues(v1)
@@ -54,8 +54,8 @@ private[airspec] object JsObjectMatcher {
       values1.zip(values2).forall {
         case ((k1, _), (k2, _)) if k1 != k2 => false
         case ((_, v1), (_, v2)) =>
-          if (js.typeOf(v1.asInstanceOf[js.Any]) == "object" && js.typeOf(v2.asInstanceOf[js.Any]) == "object")
-            jsObjEquals(v1.asInstanceOf[js.Object], v2.asInstanceOf[js.Object])
+          if js.typeOf(v1.asInstanceOf[js.Any]) == "object" && js.typeOf(v2.asInstanceOf[js.Any]) == "object"
+          then jsObjEquals(v1.asInstanceOf[js.Object], v2.asInstanceOf[js.Object])
           else
             v1 == v2
       }

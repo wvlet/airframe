@@ -38,7 +38,7 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
 
     targetMethod match {
       case Some(m) =>
-        if (x == null || x.isEmpty) {
+        if x == null || x.isEmpty then {
           trace(s"Calling method ${name}")
           m.invoke(obj)
         } else {

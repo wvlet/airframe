@@ -178,7 +178,7 @@ class OpenAPITest extends AirSpec {
     )
 
     fragments.foreach { x =>
-      if (!yaml.contains(x)) {
+      if !yaml.contains(x) then {
         fail(s"Missing YAML fragment for:\n${x}")
       }
     }
@@ -530,7 +530,7 @@ class OpenAPITest extends AirSpec {
     }
 
     test("optional method parameter") {
-      if (isScala3) {
+      if isScala3 then {
         pending("Need to find default method parameter in Scala 3")
       }
 

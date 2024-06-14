@@ -78,7 +78,7 @@ object GrpcException extends LogSupport {
           .withCause(e)
           .withDescription(e.getMessage)
 
-        if (e.message.nonEmpty) {
+        if e.message.nonEmpty then {
           val m        = e.message
           val metadata = new Metadata()
           metadata.put[String](rpcErrorBodyKey, s"${m.toContentString}")

@@ -42,7 +42,7 @@ object ParquetSchemaTest extends AirSpec {
     }
 
     // Check for all primitive types
-    for ((surface, tpe) <- primitiveTypeMapping) {
+    for (surface, tpe) <- primitiveTypeMapping do {
       check(surface, tpe)
     }
 
@@ -52,7 +52,7 @@ object ParquetSchemaTest extends AirSpec {
   }
 
   test("Array type") {
-    for ((surface, tpe) <- primitiveTypeMapping) {
+    for (surface, tpe) <- primitiveTypeMapping do {
       val t = ParquetSchema.toParquetType("a1", ArraySurface(classOf[Array[_]], surface))
       t.getRepetition shouldBe Repetition.REPEATED
       t.asPrimitiveType().getPrimitiveTypeName shouldBe tpe
@@ -60,7 +60,7 @@ object ParquetSchemaTest extends AirSpec {
   }
 
   test("Seq type") {
-    for ((surface, tpe) <- primitiveTypeMapping) {
+    for (surface, tpe) <- primitiveTypeMapping do {
       val t = ParquetSchema.toParquetType("a1", new GenericSurface(classOf[Seq[_]], Seq(surface)))
       t.getRepetition shouldBe Repetition.REPEATED
       t.asPrimitiveType().getPrimitiveTypeName shouldBe tpe
@@ -68,7 +68,7 @@ object ParquetSchemaTest extends AirSpec {
   }
 
   test("Option type") {
-    for ((surface, tpe) <- primitiveTypeMapping) {
+    for (surface, tpe) <- primitiveTypeMapping do {
       val t = ParquetSchema.toParquetType("c0", OptionSurface(surface.rawType, surface))
       t.getRepetition shouldBe Repetition.OPTIONAL
       t.asPrimitiveType().getPrimitiveTypeName shouldBe tpe

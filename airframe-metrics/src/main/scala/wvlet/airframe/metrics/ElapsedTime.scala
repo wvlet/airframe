@@ -30,12 +30,10 @@ case class ElapsedTime(value: Double, unit: TimeUnit) extends Comparable[Elapsed
   def convertToMostSuccinctTimeUnit: ElapsedTime = {
     @tailrec
     def unitToUse(current: TimeUnit, unitsToTest: List[TimeUnit]): TimeUnit = {
-      if (unitsToTest.isEmpty)
-        current
+      if unitsToTest.isEmpty then current
       else {
         val next = unitsToTest.head
-        if (valueIn(next) > 0.9999)
-          unitToUse(next, unitsToTest.tail)
+        if valueIn(next) > 0.9999 then unitToUse(next, unitsToTest.tail)
         else
           current
       }
@@ -73,7 +71,7 @@ object ElapsedTime {
 
   def parse(s: String): ElapsedTime = {
     val m = PATTERN.matcher(s)
-    if (!m.matches()) {
+    if !m.matches() then {
       throw new IllegalArgumentException(s"${s} is not a valid duration string")
     }
     val value      = m.group(1).toDouble

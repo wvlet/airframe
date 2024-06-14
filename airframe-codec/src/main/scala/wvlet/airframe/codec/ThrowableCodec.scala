@@ -78,7 +78,7 @@ object GenericException {
 
     val stackTrace = extractStackTrace(e)
     val cause = Option(e.getCause).flatMap { ce =>
-      if (seen.contains(ce)) {
+      if seen.contains(ce) then {
         None
       } else {
         Some(GenericException.fromThrowable(ce, seen + e))

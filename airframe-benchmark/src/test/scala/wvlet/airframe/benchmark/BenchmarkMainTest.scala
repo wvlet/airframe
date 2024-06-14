@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class BenchmarkMainTest extends AirSpec {
-  if (inCI) {
+  if inCI then {
     skip("Running benchmark on CI with coverage report has too much overhead")
   }
 

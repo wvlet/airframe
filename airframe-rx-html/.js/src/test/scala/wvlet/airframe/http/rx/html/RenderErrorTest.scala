@@ -67,7 +67,7 @@ object RenderErrorTest extends AirSpec {
 
   class RxElem1(fail: Boolean) extends RxElem {
     override def render: RxElement = {
-      if (fail) {
+      if fail then {
         throw new RuntimeException("failed")
       } else {
         div("hello")

@@ -100,7 +100,7 @@ object GrpcTest extends AirSpec {
 
   test("run server") { (server: Server, channel: ManagedChannel) =>
     val client = MyService.newBlockingStub(channel)
-    for (i <- 0 to 10) {
+    for i <- 0 to 10 do {
       val ret = client.hello(s"airframe-grpc ${i}")
       debug(ret)
       ret shouldBe s"Hello airframe-grpc ${i}"

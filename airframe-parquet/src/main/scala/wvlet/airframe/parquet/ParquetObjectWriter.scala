@@ -91,7 +91,7 @@ class ParquetOptionWriter(parameterCodec: ParquetParameterWriter) extends Parque
   }
 
   override def writeMsgPack(recordConsumer: RecordConsumer, v: MsgPack): Unit = {
-    if (v != null && (v.length == 1 && v(0) != Code.NIL)) {
+    if v != null && (v.length == 1 && v(0) != Code.NIL) then {
       parameterCodec.writeMsgPack(recordConsumer, v)
     }
   }
@@ -101,15 +101,15 @@ class ParquetSeqWriter(elementCodec: ParquetWriteCodec) extends ParquetWriteCode
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     v match {
       case s: Seq[_] =>
-        for (elem <- s) {
+        for elem <- s do {
           elementCodec.write(recordConsumer, elem)
         }
       case a: Array[_] =>
-        for (elem <- a) {
+        for elem <- a do {
           elementCodec.write(recordConsumer, elem)
         }
       case javaSeq: java.util.Collection[_] =>
-        for (elem <- javaSeq.asScala) {
+        for elem <- javaSeq.asScala do {
           elementCodec.write(recordConsumer, elem)
         }
       case _ =>
@@ -130,7 +130,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
       trace(s"Write object: ${v}")
-      if (isRoot) {
+      if isRoot then {
         recordConsumer.startMessage()
       } else {
         recordConsumer.startGroup()
@@ -149,7 +149,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
           }
       }
     } finally {
-      if (isRoot) {
+      if isRoot then {
         recordConsumer.endMessage()
       } else {
         recordConsumer.endGroup()
@@ -166,7 +166,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
     val value = ValueCodec.fromMsgPack(msgpack)
 
-    if (isRoot) {
+    if isRoot then {
       recordConsumer.startMessage()
     } else {
       recordConsumer.startGroup()
@@ -174,7 +174,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
     try {
       packValue(recordConsumer, value)
     } finally {
-      if (isRoot) {
+      if isRoot then {
         recordConsumer.endMessage()
       } else {
         recordConsumer.endGroup()
@@ -206,8 +206,8 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
     value match {
       case arr: ArrayValue =>
         // Array value
-        if (arr.size == paramWriters.length) {
-          for ((e, colIndex) <- arr.elems.zipWithIndex) {
+        if arr.size == paramWriters.length then {
+          for (e, colIndex) <- arr.elems.zipWithIndex do {
             val colName = columnNames(colIndex)
             writeColumnValue(colName, e)
           }
@@ -216,7 +216,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
           throw new IllegalArgumentException(s"${arr} size doesn't match with ${paramWriters}")
         }
       case m: MapValue =>
-        for ((k, v) <- m.entries) {
+        for (k, v) <- m.entries do {
           val keyValue = k.toString
           val cKey     = CName.toCanonicalName(keyValue)
           writeColumnValue(cKey, v)
@@ -232,7 +232,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
         }
       case s: StringValue =>
         val str = s.toString
-        if (str.startsWith("{") || str.startsWith("[")) {
+        if str.startsWith("{") || str.startsWith("[") then {
           // Assume the input is a json object or an array
           try {
             val msgpack = JSONCodec.toMsgPack(str)

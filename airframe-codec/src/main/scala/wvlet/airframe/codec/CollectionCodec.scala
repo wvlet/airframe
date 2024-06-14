@@ -32,7 +32,7 @@ object CollectionCodec {
       // [e1, e2, ...]
       val len = v.length
       p.packArrayHeader(len)
-      for (e <- v) {
+      for e <- v do {
         elementCodec.pack(p, e)
       }
     }
@@ -62,9 +62,9 @@ object CollectionCodec {
           val len = u.unpackArrayHeader
           val b   = newBuilder
           b.sizeHint(len)
-          for (i <- 0 until len) {
+          for i <- 0 until len do {
             elementCodec.unpack(u, v)
-            if (v.isNull) {
+            if v.isNull then {
               // Add default value
               val z = Zero.zeroOf(surface).asInstanceOf[A]
               b += z
@@ -76,7 +76,7 @@ object CollectionCodec {
         case ValueType.STRING =>
           // Assumes JSON array
           val s = u.unpackString
-          if (s.startsWith("[")) {
+          if s.startsWith("[") then {
             try {
               val jsonArrayMsgPack = JSONCodec.toMsgPack(s)
               val unpacker         = MessagePack.newUnpacker(jsonArrayMsgPack)
@@ -150,7 +150,7 @@ object CollectionCodec {
     override def pack(p: Packer, v: util.List[A]): Unit = {
       val len = v.size
       p.packArrayHeader(len)
-      for (e <- v.asScala) {
+      for e <- v.asScala do {
         elementCodec.pack(p, e)
       }
     }
@@ -159,7 +159,7 @@ object CollectionCodec {
       val len = u.unpackArrayHeader
       val b   = Seq.newBuilder[Any]
       b.sizeHint(len)
-      for (i <- 0 until len) {
+      for i <- 0 until len do {
         elementCodec.unpack(u, v)
         b += v.getLastValue
       }
@@ -171,7 +171,7 @@ object CollectionCodec {
       extends MessageCodec[MapType[A, B]] {
     protected def packMap(p: Packer, m: Map[A, B]): Unit = {
       p.packMapHeader(m.size)
-      for ((k, v) <- m) {
+      for (k, v) <- m do {
         keyCodec.pack(p, k)
         valueCodec.pack(p, v)
       }
@@ -189,7 +189,7 @@ object CollectionCodec {
           val len = u.unpackMapHeader
           val b   = newMapBuilder
           b.sizeHint(len)
-          for (i <- 0 until len) {
+          for i <- 0 until len do {
             keyCodec.unpack(u, v)
             val key = v.getLastValue
             valueCodec.unpack(u, v)

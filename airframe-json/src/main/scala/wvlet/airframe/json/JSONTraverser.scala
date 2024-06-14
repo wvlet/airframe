@@ -39,7 +39,7 @@ object JSONTraverser {
     json match {
       case o: JSONObject =>
         visitor.visitObject(o)
-        for ((jk, jv) <- o.v) {
+        for (jk, jv) <- o.v do {
           visitor.visitKeyValue(jk, jv)
           traverse(jv, visitor)
           visitor.leaveKeyValue(jk, jv)

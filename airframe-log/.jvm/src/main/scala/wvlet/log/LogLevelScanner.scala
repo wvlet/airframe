@@ -103,7 +103,7 @@ object LogLevelScanner {
   private[log] def scan(logLevelFileCandidates: List[String], lastScannedMillis: Option[Long]): Option[Long] = {
     @tailrec
     def findLogLevelFile(candidates: List[String]): Option[URL] = {
-      if (candidates.isEmpty) {
+      if candidates.isEmpty then {
         None
       } else {
         Resource.find(candidates.head) match {
@@ -122,7 +122,7 @@ object LogLevelScanner {
             case "file" =>
               val f            = new File(url.toURI)
               val lastModified = f.lastModified()
-              if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
+              if lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified then {
                 LogLevelScanner.setLogLevels(f)
                 Some(System.currentTimeMillis())
               } else {
@@ -173,7 +173,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   def setConfig(config: LogLevelScannerConfig): Unit = {
     guard {
       val prev = this.config.get()
-      if (prev.logLevelFileCandidates != config.logLevelFileCandidates) {
+      if prev.logLevelFileCandidates != config.logLevelFileCandidates then {
         lastScannedMillis = None
       }
       this.config.set(config)
@@ -186,7 +186,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   def start: Unit = {
     guard {
       state.compareAndSet(STOPPING, RUNNING)
-      if (state.compareAndSet(STOPPED, RUNNING)) {
+      if state.compareAndSet(STOPPED, RUNNING) then {
         // Create a new thread if the previous thread is terminated
         new LogLevelScannerThread().start()
       }
@@ -205,11 +205,11 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   private def run: Unit = {
     // We need to exit here so that the thread can be automatically discarded after the scan interval has passed
     // Otherwise, the thread remains in the classloader(s) if used for running test cases
-    while (!state.compareAndSet(STOPPING, STOPPED)) {
+    while !state.compareAndSet(STOPPING, STOPPED) do {
       // Periodically run
       val currentTimeMillis  = System.currentTimeMillis()
       val scanIntervalMillis = getConfig.scanInterval.toMillis
-      if (lastScheduledMillis.isEmpty || currentTimeMillis - lastScheduledMillis.get > scanIntervalMillis) {
+      if lastScheduledMillis.isEmpty || currentTimeMillis - lastScheduledMillis.get > scanIntervalMillis then {
         val updatedLastScannedMillis = scan(getConfig.logLevelFileCandidates, lastScannedMillis)
         scanCount.incrementAndGet()
         guard {
@@ -223,7 +223,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
         math.min(scanIntervalMillis, currentTimeMillis - lastScheduledMillis.get)
       )
       guard {
-        if (configChanged.await(sleepTime, TimeUnit.MILLISECONDS)) {
+        if configChanged.await(sleepTime, TimeUnit.MILLISECONDS) then {
           // awaken due to config change
         }
       }

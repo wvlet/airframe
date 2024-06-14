@@ -33,8 +33,8 @@ trait RxRouter {
     val ws = " " * (indentLevel * 2)
     s += s"${ws}- Router[${name}]"
 
-    if (isLeaf) {
-      for (r <- routes) {
+    if isLeaf then {
+      for r <- routes do {
         val rstr = r.toString
         rstr.split("\n").map { x =>
           s += s"${ws}  + ${x}"
@@ -42,7 +42,7 @@ trait RxRouter {
       }
     }
 
-    for (c <- children) {
+    for c <- children do {
       s += c.printNode(indentLevel + 1)
     }
     s.result().mkString("\n")
@@ -60,7 +60,7 @@ object RxRouter extends RxRouterObjectBase {
   }
 
   def of(routers: RxRouter*): RxRouter = {
-    if (routers.size == 1) {
+    if routers.size == 1 then {
       routers.head
     } else {
       StemNode(children = routers.toList)

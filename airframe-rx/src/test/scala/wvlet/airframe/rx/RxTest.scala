@@ -571,7 +571,7 @@ object RxTest extends AirSpec {
       }
 
     test("normal behavior") {
-      for ((name, t, expected) <- newTests(Rx.single(1))) {
+      for (name, t, expected) <- newTests(Rx.single(1)) do {
         test(name) {
           var executed = false
           val b        = Seq.newBuilder[Any]
@@ -584,7 +584,7 @@ object RxTest extends AirSpec {
     }
 
     test("failure recovery") {
-      for ((name, t, expected) <- newTests(Rx.single(throw new IllegalArgumentException("test failure")))) {
+      for (name, t, expected) <- newTests(Rx.single(throw new IllegalArgumentException("test failure"))) do {
         test(name) {
           var executed = false
           t.run { x =>
@@ -739,7 +739,7 @@ object RxTest extends AirSpec {
       val ex = new IllegalArgumentException("test")
       eval(
         Rx.sequence(1, 2, 3)
-          .filter(x => if (x == 2) throw ex else x % 2 == 1)
+          .filter(x => if x == 2 then throw ex else x % 2 == 1)
       ) shouldBe Seq(
         OnNext(1),
         OnError(ex)
@@ -762,7 +762,7 @@ object RxTest extends AirSpec {
 
       val v = Rx.variable(1)
       val rx = v.map { x =>
-        if (x == 3) {
+        if x == 3 then {
           throw ex
         } else {
           x * 2
@@ -794,7 +794,7 @@ object RxTest extends AirSpec {
 
       val v = Rx.variable(1)
       val rx = v.flatMap { x =>
-        if (x == 3) {
+        if x == 3 then {
           throw ex
         } else {
           Rx.single(x * 2)
@@ -824,7 +824,7 @@ object RxTest extends AirSpec {
     test("filter") {
       val ex = new IllegalArgumentException("test")
       val v  = Rx.variable(1)
-      val rx = v.filter(x => if (x == 2) throw ex else x % 2 == 1)
+      val rx = v.filter(x => if x == 2 then throw ex else x % 2 == 1)
 
       val b = Seq.newBuilder[RxEvent]
       RxRunner.runContinuously(rx)(b += _)

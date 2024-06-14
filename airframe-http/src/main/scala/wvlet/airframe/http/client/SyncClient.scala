@@ -142,7 +142,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     val response: Response = sendSafe(request, context = context)
 
     // Parse the RPC response
-    if (response.status.isSuccessful) {
+    if response.status.isSuccessful then {
       val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
       ret.asInstanceOf[Resp]
     } else {

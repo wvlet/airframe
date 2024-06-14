@@ -37,7 +37,7 @@ trait JMXRegistry extends JMXMBeanServerService with JMXRegistryCompat with LogS
 
   def register[A](mbean: JMXMBean, objectName: ObjectName, obj: A): Unit = {
     synchronized {
-      if (mbeanServer.isRegistered(objectName)) {
+      if mbeanServer.isRegistered(objectName) then {
         // Avoid the duplicate registration
         mbeanServer.unregisterMBean(objectName)
       }
@@ -53,7 +53,7 @@ trait JMXRegistry extends JMXMBeanServerService with JMXRegistryCompat with LogS
 
   def unregisterAll: Unit = {
     synchronized {
-      for (name <- registeredMBean) {
+      for name <- registeredMBean do {
         Try(mbeanServer.unregisterMBean(name)) match {
           case Failure(e) =>
             error(e.getMessage, e)
@@ -71,16 +71,16 @@ object JMXRegistry {
   private[jmx] def getSimpleClassName(cl: Class[_]): String = {
     var name = cl.getName
 
-    if (name.endsWith("$")) {
+    if name.endsWith("$") then {
       // Remove trailing $ of Scala Object name
       name = name.substring(0, name.length - 1)
     }
 
     // When class is an anonymous trait
-    if (name.contains("$anon$")) {
+    if name.contains("$anon$") then {
       import scala.jdk.CollectionConverters.*
       val interfaces = cl.getInterfaces
-      if (interfaces != null && interfaces.length > 0) {
+      if interfaces != null && interfaces.length > 0 then {
         // Use the first interface name instead of the anonymous name
         name = interfaces(0).getName
       }
@@ -88,7 +88,7 @@ object JMXRegistry {
 
     // Extract the leaf logger name
     val dotPos = name.lastIndexOf(".")
-    if (dotPos == -1) {
+    if dotPos == -1 then {
       name
     } else {
       name.substring(dotPos + 1)

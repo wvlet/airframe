@@ -435,7 +435,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   }
 
   test("find the actual codec for Any case objects") {
-    if (isScala3) {
+    if isScala3 then {
       pending(
         "ReflectSurfaceFactory.ofClass(cl) causes illegal multithreaded access to ContextBase: https://github.com/wvlet/airframe/issues/1698"
       )
@@ -474,8 +474,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     )
 
     test("unpack test") {
-      if (isScalaNative)
-        pending("Scala Native crashes with this test")
+      if isScalaNative then pending("Scala Native crashes with this test")
 
       val msgpack = codec.toMsgPack(input)
       val result  = codec.unpackMsgPack(msgpack)

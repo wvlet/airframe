@@ -21,8 +21,7 @@ import scala.util.Try
 abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
   override def toString: String = typeDescription
   def typeDescription: String = {
-    if (typeParams.isEmpty)
-      typeName
+    if typeParams.isEmpty then typeName
     else {
       s"${typeName}(${typeParams.mkString(", ")})"
     }
@@ -81,7 +80,7 @@ object DataType extends LogSupport {
       extends DataType(field.toString.toLowerCase, precision.toSeq) {
     override def toString: String = {
       val base = super.toString
-      if (withTimeZone) {
+      if withTimeZone then {
         s"${base} with time zone"
       } else {
         base

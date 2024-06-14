@@ -160,11 +160,11 @@ object RPCStatus {
     httpStatusMapping.get(httpStatus) match {
       case Some(status) => status
       case _ =>
-        if (httpStatus.isSuccessful) {
+        if httpStatus.isSuccessful then {
           RPCStatus.SUCCESS_S0
-        } else if (httpStatus.isClientError) {
+        } else if httpStatus.isClientError then {
           RPCStatus.USER_ERROR_U0
-        } else if (httpStatus.isServerError) {
+        } else if httpStatus.isServerError then {
           RPCStatus.INTERNAL_ERROR_I0
         } else {
           RPCStatus.UNKNOWN_I1
@@ -400,7 +400,7 @@ object RPCStatus {
         throw new AssertionError(s"Invalid code name ${name}. It must end with (U/I/R)[0-9]+")
       case pos =>
         val suffix = name.substring(pos + 1)
-        if (suffix.length < 2) {
+        if suffix.length < 2 then {
           throw new AssertionError(
             s"Invalid code suffix ${name}. It must have a suffix (U/I/R)[0-9]+"
           )
@@ -485,7 +485,7 @@ sealed abstract class RPCStatus(
       status = this,
       message = message,
       cause = Option(cause),
-      appErrorCode = if (appErrorCode == -1) None else Some(appErrorCode),
+      appErrorCode = if appErrorCode == -1 then None else Some(appErrorCode),
       metadata = metadata
     )
   }

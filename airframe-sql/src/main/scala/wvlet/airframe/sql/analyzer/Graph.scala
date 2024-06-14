@@ -45,7 +45,7 @@ case class Graph(nodes: Set[Node], edges: Set[Edge]) {
 case object EdgeOrdering extends Ordering[Edge] {
   override def compare(x: Edge, y: Edge): Int = {
     val diff = x.src.name.compareTo(y.src.name)
-    if (diff != 0) {
+    if diff != 0 then {
       diff
     } else {
       x.dest.name.compareTo(y.dest.name)

@@ -40,7 +40,7 @@ case class UnionCodec(codecs: Map[Surface, MessageCodec[_]]) extends MessageCode
             v.setObject(a)
           }.isDefined
       }.isDefined
-    if (!found) {
+    if !found then {
       v.setError(
         new MessageCodecException(
           INVALID_DATA,

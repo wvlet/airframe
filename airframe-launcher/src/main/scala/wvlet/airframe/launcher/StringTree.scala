@@ -121,7 +121,7 @@ object StringTree extends LogSupport {
 
   private[launcher] case object EmptyNode extends StringTree {
     override def setNode(path: Path, value: StringTree): StringTree = {
-      if (path.isEmpty) {
+      if path.isEmpty then {
         value
       } else {
         Node(IMap.empty[String, StringTree]).setNode(path, value)
@@ -139,7 +139,7 @@ object StringTree extends LogSupport {
       s"{${child.map(e => s"${e._1}:${e._2}").mkString(", ")}}"
 
     override def setNode(path: Path, value: StringTree): StringTree = {
-      if (path.isEmpty) {
+      if path.isEmpty then {
         throw new IllegalStateException("path cannot be empty")
       } else {
         val p = child.getOrElse(path.head, EmptyNode).setNode(path.tailPath, value)
@@ -148,7 +148,7 @@ object StringTree extends LogSupport {
     }
 
     override def get(path: Path): StringTree = {
-      if (path.isEmpty) {
+      if path.isEmpty then {
         this
       } else {
         child.get(path.head) map { _.get(path.tailPath) } getOrElse EmptyNode
@@ -166,7 +166,7 @@ object StringTree extends LogSupport {
     }
 
     override def get(path: Path): StringTree = {
-      if (path.isEmpty) {
+      if path.isEmpty then {
         this
       } else {
         EmptyNode
@@ -188,7 +188,7 @@ object StringTree extends LogSupport {
     }
 
     def get(path: Path) =
-      if (path.isEmpty) {
+      if path.isEmpty then {
         this
       } else {
         EmptyNode

@@ -35,7 +35,7 @@ private[log] object LogEnv extends LogEnvBase {
     var name = cl.getName
 
     val pos = name.indexOf("$")
-    if (pos > 0) {
+    if pos > 0 then {
       // Remove trailing $xxx
       name = name.substring(0, pos)
     }

@@ -36,17 +36,17 @@ object IO {
 
   def readFully(in: InputStream): Array[Byte] = {
     val byteArray =
-      if (in == null) {
+      if in == null then {
         Array.emptyByteArray
       } else {
         withResource(new ByteArrayOutputStream) { b =>
           val buf = new Array[Byte](8192)
           withResource(in) { src =>
             var readBytes = 0
-            while ({
+            while {
               readBytes = src.read(buf);
               readBytes != -1
-            }) {
+            } do {
               b.write(buf, 0, readBytes)
             }
           }

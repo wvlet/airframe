@@ -77,7 +77,7 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
     debug(f"Releasing memory at ${address}%x")
     allocatedMemoryAddresses.get(address) match {
       case Some(h) =>
-        if (address != 0) {
+        if address != 0 then {
           UnsafeUtil.unsafe.freeMemory(address)
           totalAllocatedMemorySize.getAndAdd(-h.size)
         }
@@ -88,7 +88,7 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
   }
 
   override def close(): Unit = {
-    for (address <- allocatedMemoryAddresses.keys) {
+    for address <- allocatedMemoryAddresses.keys do {
       releaseMemoryAt(address)
     }
   }

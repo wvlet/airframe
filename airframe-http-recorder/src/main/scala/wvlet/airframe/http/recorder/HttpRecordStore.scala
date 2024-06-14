@@ -36,7 +36,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     with LogSupport {
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
   private val connectionPool = {
-    val dbFilePath = if (inMemory) ":memory:" else recorderConfig.sqliteFilePath
+    val dbFilePath = if inMemory then ":memory:" else recorderConfig.sqliteFilePath
     new EmbeddedDBConnectionPool(DbConfig.ofSQLite(dbFilePath))
   }
   private def recordTableName = recorderConfig.recordTableName
@@ -55,7 +55,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     createRecorderInfoTable
     val lastVersion: Option[Int] = connectionPool.executeQuery("select format_version from recorder_info limit 1") {
       handler =>
-        if (handler.next()) {
+        if handler.next() then {
           Some(handler.getInt(1))
         } else {
           None
@@ -86,21 +86,21 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)"
     )
     // TODO: Detect schema change
-    if (dropSession) {
+    if dropSession then {
       clearSession
     }
     cleanupExpiredRecords
   }
 
   private def clearAllRecords: Unit = {
-    if (!inMemory) {
+    if !inMemory then {
       warn(s"Deleting all records in ${recorderConfig.sqliteFilePath}")
       connectionPool.executeUpdate(s"drop table if exists ${recordTableName}")
     }
   }
 
   def clearSession: Unit = {
-    if (!inMemory) {
+    if !inMemory then {
       warn(s"Deleting old session records for session:${recorderConfig.sessionName}")
       connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
     }
@@ -118,7 +118,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
           s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}' and strftime('%s', 'now') - strftime('%s', createdAt) >= ${diffSec}"
         )
 
-        if (deletedRows > 0) {
+        if deletedRows > 0 then {
           warn(
             s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}"
           )
@@ -134,7 +134,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     connectionPool.executeQuery(
       s"select count(1) cnt from ${recordTableName} where session = '${recorderConfig.sessionName}'"
     ) { rs =>
-      if (rs.next()) {
+      if rs.next() then {
         rs.getLong(1)
       } else {
         0L
@@ -148,7 +148,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     // If there are multiple records for the same request, use the counter to find
     // n-th request, where n is the access count to the same path
     val counter  = requestCounter.getOrElseUpdate(rh, new AtomicInteger())
-    val hitCount = if (incrementHitCount) counter.getAndIncrement() else counter.get()
+    val hitCount = if incrementHitCount then counter.getAndIncrement() else counter.get()
     trace(s"findNext: request hash: ${rh} for ${request}, hitCount: ${hitCount}")
     connectionPool.queryWith(
       // Get the next request matching the requestHash
@@ -263,7 +263,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       case (name, value) if name == "Content-Type" =>
         value
     }
-    if (contentType.contains(MediaType.OctetStream)) {
+    if contentType.contains(MediaType.OctetStream) then {
       base64Encoded
     } else {
       new String(HttpRecordStore.decodeFromBase64(base64Encoded), StandardCharsets.UTF_8)

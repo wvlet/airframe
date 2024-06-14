@@ -16,7 +16,7 @@ private[log] object LogEnv extends LogEnvBase {
 
     // In Scala.js we cannot use cl.getInterfaces to find the actual type
     val pos = name.indexOf("$")
-    if (pos > 0) {
+    if pos > 0 then {
       // Remove trailing $xxx
       name = name.substring(0, pos)
     }

@@ -26,7 +26,7 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
 
   private def checkProperty(prop: Prop): Unit = {
     val result = Test.check(scalaCheckConfig, prop)
-    if (!result.passed) {
+    if !result.passed then {
       result match {
         case Result(PropException(args, e: AirSpecFailureBase, labels), succeeded, discarded, _, time) =>
           val reason = s"${e.message}\n${Pretty.prettyArgs(args)(Pretty.defaultParams)}"

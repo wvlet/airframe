@@ -54,7 +54,7 @@ class ParamTest extends SurfaceSpec {
   }
 
   test("private field access") {
-    if (isScalaJS || Surface.scalaMajorVersion == 3) {
+    if isScalaJS || Surface.scalaMajorVersion == 3 then {
       pendingUntil("Find a way to access private fields in Scala.js and Scala 3")
     }
     val s  = Surface.of[ParamTest.B]

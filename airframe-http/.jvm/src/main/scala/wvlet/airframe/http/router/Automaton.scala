@@ -80,7 +80,7 @@ object Automaton {
 
       // Traverse all possible states from the initState
       var remaining: List[NodeSet] = initState :: Nil
-      while (remaining.nonEmpty) {
+      while remaining.nonEmpty do {
         val currentNodeSet = remaining.head
         remaining = remaining.tail
         val tokenToNextNodes = for (node <- currentNodeSet; edge <- outEdgesFrom(node)) yield {
@@ -89,9 +89,9 @@ object Automaton {
         }
 
         // Grouping next nodes by label
-        for ((token, nextNodeSets) <- tokenToNextNodes.groupBy(_._1)) {
+        for (token, nextNodeSets) <- tokenToNextNodes.groupBy(_._1) do {
           val nextNodeSet = nextNodeSets.map(_._2).flatten
-          if (!knownNodeSets.contains(nextNodeSet)) {
+          if !knownNodeSets.contains(nextNodeSet) then {
             remaining = nextNodeSet :: remaining
             knownNodeSets = nextNodeSet :: knownNodeSets
           }

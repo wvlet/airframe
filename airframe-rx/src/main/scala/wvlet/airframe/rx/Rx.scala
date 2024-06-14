@@ -473,7 +473,7 @@ object Rx extends LogSupport {
     * @return
     */
   def zip[A](seq: Seq[Rx[A]]): Rx[Seq[A]] = {
-    if (seq.isEmpty) {
+    if seq.isEmpty then {
       Rx.single(Seq.empty[A])
     } else {
       seq.head.zip(zip(seq.tail)).map { case (head, tail) => head +: tail }

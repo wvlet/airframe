@@ -37,7 +37,7 @@ class JSONToMessagePackConverterTest extends AirSpec {
       case (JSONNull, JSONNull) =>
       // ok
       case (a: JSONString, b: JSONString) =>
-        if (a.v != b.v) {
+        if a.v != b.v then {
           warn(s"match failure:\n${a}\n-----\n${b}")
         }
         a shouldBe b
@@ -47,12 +47,12 @@ class JSONToMessagePackConverterTest extends AirSpec {
         a shouldBe b
       case (a: JSONArray, b: JSONArray) =>
         a.size shouldBe b.size
-        for (i <- 0 until a.size) {
+        for i <- 0 until a.size do {
           deepEqual(a(i), b(i))
         }
       case (a: JSONObject, b: JSONObject) =>
         a.size shouldBe b.size
-        for (i <- 0 until a.size) {
+        for i <- 0 until a.size do {
           val ai = a.v(i)
           val bi = b.v(i)
           ai._1 shouldBe bi._1

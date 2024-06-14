@@ -80,7 +80,7 @@ class GrpcJava extends LogSupport {
         executor
       )
     }
-    while (counter.get() != asyncIteration) {
+    while counter.get() != asyncIteration do {
       Thread.sleep(0)
     }
   }
@@ -103,7 +103,7 @@ class GrpcJava extends LogSupport {
         }
       )
     }
-    while (counter.get() != asyncIteration) {
+    while counter.get() != asyncIteration do {
       Thread.sleep(0)
     }
   }

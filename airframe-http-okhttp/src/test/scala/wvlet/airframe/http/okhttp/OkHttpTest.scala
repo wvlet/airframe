@@ -26,7 +26,7 @@ class OkHttpTest extends AirSpec {
       r.method shouldBe toHttpMethod(req.method())
       r.path shouldBe "/hello"
       r.query shouldBe HttpMultiMap.empty
-      if (HttpMethod.permitsRequestBody(req.method())) {
+      if HttpMethod.permitsRequestBody(req.method()) then {
         r.contentString shouldBe "hello okhttp"
         r.contentBytes shouldBe "hello okhttp".getBytes(StandardCharsets.UTF_8)
         r.contentType shouldBe Some("application/json;charset=utf-8")

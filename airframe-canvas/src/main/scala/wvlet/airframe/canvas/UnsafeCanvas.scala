@@ -113,17 +113,17 @@ final class UnsafeCanvas(
   }
 
   override def slice(offset: Long, length: Long): Canvas = {
-    if (offset == 0 && length == size) {
+    if offset == 0 && length == size then {
       this
     } else {
-      if (offset + length > size) {
+      if offset + length > size then {
         throw new IllegalArgumentException(s"${length} is longer than the Canvas size ${size}")
       }
       new UnsafeCanvas(base, address + offset, length, reference);
     }
   }
   override def toByteArray: Array[Byte] = {
-    if (!size.isValidInt) {
+    if !size.isValidInt then {
       throw new IllegalArgumentException(s"Canvas size ${size} exceeds Array[Byte] size limit")
     }
     val b = new Array[Byte](size.toInt)
@@ -132,7 +132,7 @@ final class UnsafeCanvas(
   }
 
   override def release: Unit = {
-    if (this.base == null) {
+    if this.base == null then {
       this.reference match {
         case m: Memory =>
           m.release
@@ -148,11 +148,11 @@ object UnsafeCanvas {
     new UnsafeCanvas(arr, UnsafeUtil.arrayByteBaseOffset + offset, length, null)
   }
   def wrap(buf: ByteBuffer): Canvas = {
-    if (buf.isDirect) {
+    if buf.isDirect then {
       throw new UnsupportedOperationException(
         "DirectByteBuffer access is deprecated as it will not be avilable in JDK16"
       )
-    } else if (buf.hasArray) {
+    } else if buf.hasArray then {
       new UnsafeCanvas(
         base = buf.array(),
         address = UnsafeUtil.arrayByteBaseOffset + buf.arrayOffset() + buf.position(),

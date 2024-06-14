@@ -112,7 +112,7 @@ class MethodSurfaceTest extends SurfaceSpec {
 
     val d = new D
     val v = h.getMethodArgDefaultValue(d)
-    if (!isScalaJS) {
+    if !isScalaJS then {
       // Scala.js doesn't support reading default method arguments
       v shouldBe Some("hello")
     }
@@ -127,7 +127,7 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(m.args.headOption.isDefined)
     val h = m.args.head
     // FIXME: Fix StaticMethodParameter in CompileTimeSurfaceFactory for Scala 3
-    if (!isScalaJS && !isScalaNative && !(isScala3 && isScalaJVM)) {
+    if !isScalaJS && !isScalaNative && !(isScala3 && isScalaJVM) then {
       h.getDefaultValue shouldBe Some("default")
 
       val d = new E {

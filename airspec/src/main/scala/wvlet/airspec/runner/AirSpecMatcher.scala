@@ -50,7 +50,7 @@ class AirSpecMatcher(pattern: String) extends LogSupport {
     */
   def matchWith(taskName: Seq[String]): Boolean = {
     taskName.zipAll(regexPatterns, "", "(?i).*".r).forall { case (part, regex) =>
-      if (part.isEmpty) {
+      if part.isEmpty then {
         true
       } else {
         val hasMatch = regex.findFirstIn(part).isDefined

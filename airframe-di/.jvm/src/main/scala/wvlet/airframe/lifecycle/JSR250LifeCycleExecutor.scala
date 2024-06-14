@@ -44,12 +44,12 @@ object JSR250LifeCycleExecutor extends LifeCycleEventHandler with LogSupport {
   }
 
   override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-    for (m <- t.rawType.getMethods; a <- findAnnotation[PostConstruct](m.getDeclaredAnnotations)) {
+    for m <- t.rawType.getMethods; a <- findAnnotation[PostConstruct](m.getDeclaredAnnotations) do {
       trace(s"[${t}] Found @PostConstruct annotation")
       lifeCycleManager.addInitHook(new MethodCallHook(new Injectee(t, injectee), m))
     }
 
-    for (m <- t.rawType.getMethods; a <- findAnnotation[PreDestroy](m.getDeclaredAnnotations)) {
+    for m <- t.rawType.getMethods; a <- findAnnotation[PreDestroy](m.getDeclaredAnnotations) do {
       trace(s"[${t}] Found @PreDestroy annotation")
       lifeCycleManager.addShutdownHook(new MethodCallHook(new Injectee(t, injectee), m))
     }

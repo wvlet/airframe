@@ -204,10 +204,10 @@ object DOMRenderer extends LogSupport {
           val domNode = dom.document.createElement("span");
           val entity = {
             var x = entityName.trim
-            if (!x.startsWith("&")) {
+            if !x.startsWith("&") then {
               x = s"&${x}"
             }
-            if (!x.endsWith(";")) {
+            if !x.endsWith(";") then {
               x = s"${x};"
             }
             x
@@ -260,7 +260,7 @@ object DOMRenderer extends LogSupport {
       attrValue: String,
       toRemove: String
   ): String = {
-    if (attrValue == null) {
+    if attrValue == null then {
       ""
     } else {
       attrValue
@@ -274,7 +274,7 @@ object DOMRenderer extends LogSupport {
       styleValue: String,
       toRemove: String
   ): String = {
-    if (styleValue == null) {
+    if styleValue == null then {
       ""
     } else {
       val targetValueToRemove = toRemove.trim
@@ -286,7 +286,7 @@ object DOMRenderer extends LogSupport {
         .filter(x => x != targetValueToRemove)
         .mkString("; ")
         .pipe { x =>
-          if (x.nonEmpty) s"${x};" else x
+          if x.nonEmpty then s"${x};" else x
         }
     }
   }
@@ -329,13 +329,13 @@ object DOMRenderer extends LogSupport {
           a.name match {
             case "style" =>
               val prev = htmlNode.style.cssText
-              if (prev.nonEmpty && a.append && value.nonEmpty) {
+              if prev.nonEmpty && a.append && value.nonEmpty then {
                 htmlNode.style.cssText = s"${prev} ${value}"
               } else {
                 htmlNode.style.cssText = value
               }
               Cancelable { () =>
-                if (htmlNode != null && a.append && value.nonEmpty) {
+                if htmlNode != null && a.append && value.nonEmpty then {
                   val newAttributeValue = removeStyleValue(htmlNode.style.cssText, value)
                   htmlNode.style.cssText = newAttributeValue
                 }
@@ -360,22 +360,22 @@ object DOMRenderer extends LogSupport {
                 }
               }
 
-              val newAttrValue = if (a.append && htmlNode.hasAttribute(a.name)) {
+              val newAttrValue = if a.append && htmlNode.hasAttribute(a.name) then {
                 s"${htmlNode.getAttribute(a.name)} ${value}"
               } else {
                 value
               }
               setAttribute(newAttrValue)
               Cancelable { () =>
-                if (htmlNode != null && a.append && htmlNode.hasAttribute(a.name)) {
+                if htmlNode != null && a.append && htmlNode.hasAttribute(a.name) then {
                   val v = htmlNode.getAttribute(a.name)
-                  if (v != null) {
+                  if v != null then {
                     // remove the appended value
                     val newAttrValue = removeStringFromAttributeValue(v, value)
 
                     // Replace the attribute value with the new one
                     removeAttribute()
-                    if (newAttrValue.nonEmpty) {
+                    if newAttrValue.nonEmpty then {
                       setAttribute(newAttrValue)
                     }
                   }
@@ -442,7 +442,7 @@ object DOMRenderer extends LogSupport {
 
     def clearMountSection(start: dom.Node, end: dom.Node): Unit = {
       val next = start.previousSibling
-      if (next != end) {
+      if next != end then {
         node.removeChild(next)
         clearMountSection(start, end)
       }

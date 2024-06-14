@@ -27,7 +27,7 @@ object HttpRequestMapperTest extends AirSpec {
   case class NestedRequest2(id: Int)
 
   case class RequestValidator(message: String) {
-    if (message != "ok") {
+    if message != "ok" then {
       throw RPCStatus.INVALID_REQUEST_U1.newException(s"Unexpected message: ${message}")
     }
   }

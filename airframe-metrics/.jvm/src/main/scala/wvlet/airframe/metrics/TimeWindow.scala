@@ -57,7 +57,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   private def splitInto(unit: ChronoUnit): Seq[TimeWindow] = {
     val b      = Seq.newBuilder[TimeWindow]
     var cursor = start
-    while (cursor.compareTo(end) < 0) {
+    while cursor.compareTo(end) < 0 do {
       val e = unit match {
         case ChronoUnit.DAYS | ChronoUnit.HOURS | ChronoUnit.MINUTES =>
           cursor.plus(1, unit).truncatedTo(unit)
@@ -70,7 +70,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
         case other =>
           throw new IllegalStateException(s"Invalid split unit ${unit} for range ${toString}")
       }
-      if (e.compareTo(end) <= 0) {
+      if e.compareTo(end) <= 0 then {
         b += TimeWindow(cursor, e)
       } else {
         b += TimeWindow(cursor, end)
@@ -86,7 +86,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   def splitIntoWeeks: Seq[TimeWindow]  = splitInto(ChronoUnit.WEEKS)
 
   def splitAt(date: ZonedDateTime): Seq[TimeWindow] = {
-    if (date.compareTo(start) <= 0 || date.compareTo(end) > 0) {
+    if date.compareTo(start) <= 0 || date.compareTo(end) > 0 then {
       // date is out of range
       Seq(this)
     } else {
@@ -208,14 +208,14 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
             Try(TimeVector(o)) match {
               case Success(x) =>
                 // When the offset string is time duration patterns (e.g., 0M, 0d, etc.)
-                if (x.x <= 0) {
+                if x.x <= 0 then {
                   x.timeWindowFrom(adjustOffset(now, adjustments)).start
                 } else {
                   x.timeWindowFrom(adjustOffset(now, adjustments)).end
                 }
               case Failure(e) =>
                 // When the offset string is the exact date
-                val (timeString, truncate) = if (o.endsWith(")")) {
+                val (timeString, truncate) = if o.endsWith(")") then {
                   (o.substring(0, o.length - 1), false)
                 } else {
                   (o, true)
@@ -224,7 +224,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
                   .parse(timeString, zone)
                   .map(offset => adjustOffset(offset, adjustments))
                   // Truncate the exact date time to the time window unit
-                  .map(offset => if (truncate) windowUnit.truncate(offset) else offset)
+                  .map(offset => if truncate then windowUnit.truncate(offset) else offset)
                   .getOrElse {
                     throw new IllegalArgumentException(s"Invalid offset string: ${o}")
                   }

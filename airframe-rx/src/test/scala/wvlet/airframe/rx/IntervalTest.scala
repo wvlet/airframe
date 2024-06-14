@@ -21,9 +21,9 @@ import wvlet.airspec.AirSpec
 /**
   */
 class IntervalTest extends AirSpec {
-  private def pendingInScalaJSAndScalaNative = if (isScalaJS) {
+  private def pendingInScalaJSAndScalaNative = if isScalaJS then {
     pending("Async test is required")
-  } else if (isScalaNative) {
+  } else if isScalaNative then {
     pending("Timer is not yet supported in Scala Native")
   }
 
@@ -93,7 +93,7 @@ class IntervalTest extends AirSpec {
       s += x
     }
 
-    while (counter.get() != 1) {}
+    while counter.get() != 1 do {}
     c.cancel
     s shouldBe Seq(1)
   }
@@ -111,7 +111,7 @@ class IntervalTest extends AirSpec {
         counter.incrementAndGet()
         s += x
       }
-      while (counter.get() != 1) {}
+      while counter.get() != 1 do {}
       c.cancel
       s shouldBe Seq(3)
     }

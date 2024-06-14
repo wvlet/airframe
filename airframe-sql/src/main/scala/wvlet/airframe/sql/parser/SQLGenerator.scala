@@ -24,7 +24,7 @@ object SQLGenerator extends LogSupport {
   import Expression.*
 
   private def unknown(e: Any): String = {
-    if (e != null) {
+    if e != null then {
       warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")
       e.toString
     } else {
@@ -77,11 +77,11 @@ object SQLGenerator extends LogSupport {
     val isDistinct = containsDistinctPlan(context)
     val op = s match {
       case Union(relations, _) =>
-        if (isDistinct) "UNION" else "UNION ALL"
+        if isDistinct then "UNION" else "UNION ALL"
       case Except(left, right, _) =>
-        if (isDistinct) "EXCEPT" else "EXCEPT ALL"
+        if isDistinct then "EXCEPT" else "EXCEPT ALL"
       case Intersect(relations, _) =>
-        if (isDistinct) "INTERSECT" else "INTERSECT ALL"
+        if isDistinct then "INTERSECT" else "INTERSECT ALL"
     }
     s.children.map(printRelation).mkString(s" ${op} ")
   }
@@ -107,7 +107,7 @@ object SQLGenerator extends LogSupport {
     // e.g., Selection(in:Filter(Filter( ...)), ...)
 
     val childFilters: List[Filter] = collectChildFilters(s.child)
-    val nonFilterChild = if (childFilters.nonEmpty) {
+    val nonFilterChild = if childFilters.nonEmpty then {
       childFilters.last.child
     } else {
       s.child
@@ -115,7 +115,7 @@ object SQLGenerator extends LogSupport {
 
     val b = Seq.newBuilder[String]
     b += "SELECT"
-    if (containsDistinctPlan(context)) {
+    if containsDistinctPlan(context) then {
       b += "DISTINCT"
     }
     b += (s.selectItems.map(printSelectItem).mkString(", "))
@@ -133,7 +133,7 @@ object SQLGenerator extends LogSupport {
         // We cannot push down parent Filters
         collectFilterExpression(childFilters)
     }
-    if (filterSet.nonEmpty) {
+    if filterSet.nonEmpty then {
       b += "WHERE"
       val cond = filterSet.reduce((f1, f2) => And(f1, f2, None))
       b += printExpression(cond)
@@ -141,7 +141,7 @@ object SQLGenerator extends LogSupport {
 
     s match {
       case Aggregate(_, _, groupingKeys, having, _) =>
-        if (groupingKeys.nonEmpty) {
+        if groupingKeys.nonEmpty then {
           b += s"GROUP BY ${groupingKeys.map(printExpression).mkString(", ")}"
         }
         having.map { h =>
@@ -171,7 +171,7 @@ object SQLGenerator extends LogSupport {
       case Query(withQuery, body, _) =>
         val s = seqBuilder
         s += "WITH"
-        if (withQuery.recursive) {
+        if withQuery.recursive then {
           s += "RECURSIVE"
         }
         s += withQuery.queries
@@ -234,7 +234,7 @@ object SQLGenerator extends LogSupport {
       case Unnest(cols, ord, _) =>
         val b = seqBuilder
         b += s"UNNEST (${cols.map(printExpression).mkString(", ")})"
-        if (ord) {
+        if ord then {
           b += "WITH ORDINALITY"
         }
         b.result().mkString(" ")
@@ -272,28 +272,28 @@ object SQLGenerator extends LogSupport {
   def printDDL(e: DDL): String = {
     e match {
       case CreateSchema(name, ifNotExists, propsOpt, _) =>
-        val e = if (ifNotExists) "IF NOT EXISTS " else ""
+        val e = if ifNotExists then "IF NOT EXISTS " else ""
         val w = propsOpt.map(props => s" WITH (${props.map(printExpression).mkString(", ")})").getOrElse("")
         s"CREATE SCHEMA ${e}${name.sqlExpr}${w}"
       case DropSchema(name, ifExists, cascade, _) =>
         val s = Seq.newBuilder[String]
         s += "DROP SCHEMA"
-        if (ifExists) {
+        if ifExists then {
           s += "IF EXISTS"
         }
         s += name.sqlExpr
-        if (cascade) {
+        if cascade then {
           s += "CASCADE"
         }
         s.result().mkString(" ")
       case RenameSchema(from, to, _) =>
         s"ALTER SCHEMA ${from.sqlExpr} RENAME TO ${to.sqlExpr}"
       case CreateTable(name, ifNotExists, tableElements, _) =>
-        val e     = if (ifNotExists) "IF NOT EXISTS " else ""
+        val e     = if ifNotExists then "IF NOT EXISTS " else ""
         val elems = tableElements.map(printExpression).mkString(", ")
         s"CREATE TABLE ${e}${name} (${elems})"
       case CreateTableAs(name, ifNotExists, columnAliases, query, _) =>
-        val e = if (ifNotExists) "IF NOT EXISTS " else ""
+        val e = if ifNotExists then "IF NOT EXISTS " else ""
         val aliases =
           columnAliases
             .map { x => s"(${x.map(printExpression).mkString(", ")})" }.getOrElse("")
@@ -301,7 +301,7 @@ object SQLGenerator extends LogSupport {
       case DropTable(table, ifExists, _) =>
         val b = Seq.newBuilder[String]
         b += "DROP TABLE"
-        if (ifExists) {
+        if ifExists then {
           b += "IF EXISTS"
         }
         b += printExpression(table)
@@ -339,7 +339,7 @@ object SQLGenerator extends LogSupport {
       case CreateView(name, replace, query, _) =>
         val b = seqBuilder
         b += "CREATE"
-        if (replace) {
+        if replace then {
           b += "OR REPLACE"
         }
         b += "VIEW"
@@ -350,7 +350,7 @@ object SQLGenerator extends LogSupport {
       case DropView(name, ifExists, _) =>
         val b = seqBuilder
         b += "DROP VIEW"
-        if (ifExists) {
+        if ifExists then {
           b += "IF EXISTS"
         }
         b += printExpression(name)
@@ -395,15 +395,15 @@ object SQLGenerator extends LogSupport {
         s"${k}${o}${no}"
       case FunctionCall(name, args, distinct, filter, window, _) =>
         val argList = args.map(printExpression(_)).mkString(", ")
-        val d       = if (distinct) "DISTINCT " else ""
+        val d       = if distinct then "DISTINCT " else ""
         val wd = window
           .map { w =>
             val s = Seq.newBuilder[String]
-            if (w.partitionBy.nonEmpty) {
+            if w.partitionBy.nonEmpty then {
               s += "PARTITION BY"
               s += w.partitionBy.map(x => printExpression(x)).mkString(", ")
             }
-            if (w.orderBy.nonEmpty) {
+            if w.orderBy.nonEmpty then {
               s += "ORDER BY"
               s += w.orderBy.map(x => printExpression(x)).mkString(", ")
             }
@@ -418,7 +418,7 @@ object SQLGenerator extends LogSupport {
       case QName(parts, _) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast, _) =>
-        val cmd = if (tryCast) "TRY_CAST" else "CAST"
+        val cmd = if tryCast then "TRY_CAST" else "CAST"
         s"${cmd}(${printExpression(expr)} AS ${tpe})"
       case c: ConditionalExpression =>
         printConditionalExpression(c)
@@ -455,7 +455,7 @@ object SQLGenerator extends LogSupport {
       case ColumnType(tpe, _) =>
         tpe
       case ColumnDefLike(table, includeProperties, _) =>
-        val inc = if (includeProperties) "INCLUDING" else "EXCLUDING"
+        val inc = if includeProperties then "INCLUDING" else "EXCLUDING"
         s"LIKE ${printExpression(table)} ${inc} PROPERTIES"
       case ArrayConstructor(values, _) =>
         s"ARRAY[${values.map(printExpression).mkString(", ")}]"

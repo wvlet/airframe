@@ -33,7 +33,7 @@ class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
 
     config.`type` match {
       case "postgresql" =>
-        if (config.postgres.useSSL) {
+        if config.postgres.useSSL then {
           connectionPoolConfig.addDataSourceProperty("ssl", "true")
           connectionPoolConfig.addDataSourceProperty("sslfactory", config.postgres.sslFactory)
           connectionPoolConfig.addDataSourceProperty("sslmode", config.postgres.sslmode)
@@ -41,7 +41,7 @@ class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
       case _ =>
     }
 
-    if (config.host.isEmpty) {
+    if config.host.isEmpty then {
       throw new IllegalArgumentException(s"missing jdbc host: ${config}")
     }
 

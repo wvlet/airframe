@@ -74,41 +74,41 @@ object HelpMessagePrinter extends LogSupport with AnsiColorPalette {
       s.print(s"${withColor(CYAN, "usage")}: ")
       s.println(oneLineUsage.getOrElse {
         val b = Seq.newBuilder[String]
-        if (globalOptions.nonEmpty) {
+        if globalOptions.nonEmpty then {
           b += s"[global options]"
         }
         b += commandName
-        if (options.nonEmpty) {
+        if options.nonEmpty then {
           b += s"[${withColor(CYAN, "options")}]"
         }
-        if (arguments.nonEmpty) {
+        if arguments.nonEmpty then {
           b += arguments.map(x => s" [${x.name}]").mkString
         }
-        if (subCommands.nonEmpty) {
+        if subCommands.nonEmpty then {
           b += s"<${withColor(CYAN, "command name")}>"
         }
         b.result().mkString(" ")
       })
       // Print description
-      if (description.nonEmpty) {
+      if description.nonEmpty then {
         s.println(s"  ${description}")
       }
-      if (hasAnyOption) {
+      if hasAnyOption then {
         s.println()
       }
 
       // Print options
-      if (globalOptions.nonEmpty) {
+      if globalOptions.nonEmpty then {
         s.println(s"[${withColor(CYAN, "global options")}]")
         s.println(renderOptionList(globalOptions))
       }
 
-      if (options.nonEmpty) {
+      if options.nonEmpty then {
         s.println(s"[${withColor(CYAN, "options")}]")
         s.println(renderOptionList(options))
       }
 
-      if (subCommands.nonEmpty) {
+      if subCommands.nonEmpty then {
         s.println("")
         s.println(s"[${withColor(CYAN, "commands")}]")
         s.println(renderCommandList(subCommands))
@@ -136,10 +136,10 @@ object HelpMessagePrinter extends LogSupport with AnsiColorPalette {
       val l        = new StringBuilder
       l.append(prefixes.mkString(", "))
 
-      if (o.takesArgument) {
-        if (hasAlias) {
+      if o.takesArgument then {
+        if hasAlias then {
           l append ":"
-        } else if (hasShort) {
+        } else if hasShort then {
           l append " "
         }
         l append "[%s]".format(o.param.name.toUpperCase)
@@ -148,7 +148,7 @@ object HelpMessagePrinter extends LogSupport with AnsiColorPalette {
     }
 
     val optDscrLenMax =
-      if (optDscr.isEmpty) {
+      if optDscr.isEmpty then {
         0
       } else {
         optDscr.map(_._2.length).max

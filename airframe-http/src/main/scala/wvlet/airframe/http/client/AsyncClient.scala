@@ -141,7 +141,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
         )
         sendSafe(request, context).toRx
           .map { (response: Response) =>
-            if (response.status.isSuccessful) {
+            if response.status.isSuccessful then {
               val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
               ret.asInstanceOf[Resp]
             } else {

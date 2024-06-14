@@ -81,15 +81,15 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
       // Read request body
       var bodyBuf: ByteArrayOutputStream = null
       val requestBody                    = msg.content()
-      while (requestBody.isReadable) {
+      while requestBody.isReadable do {
         // the returned size is greater than 0 when isReadable = true
         val size = requestBody.readableBytes()
-        if (bodyBuf == null) {
+        if bodyBuf == null then {
           bodyBuf = new ByteArrayOutputStream(size)
         }
         requestBody.readBytes(bodyBuf, size)
       }
-      if (bodyBuf != null && bodyBuf.size() > 0) {
+      if bodyBuf != null && bodyBuf.size() > 0 then {
         req = req.withContent(bodyBuf.toByteArray)
       }
 
@@ -120,15 +120,15 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
   private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
     val keepAlive = HttpStatus.ofCode(resp.status().code()).isSuccessful && HttpUtil.isKeepAlive(req)
-    if (keepAlive) {
-      if (!req.protocolVersion().isKeepAliveDefault) {
+    if keepAlive then {
+      if !req.protocolVersion().isKeepAliveDefault then {
         resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
       }
     } else {
       resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
     }
     val f = ctx.write(resp)
-    if (!keepAlive) {
+    if !keepAlive then {
       f.addListener(ChannelFutureListener.CLOSE)
     }
   }
@@ -137,7 +137,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
 object NettyRequestHandler {
   def toNettyResponse(response: Response): DefaultFullHttpResponse = {
-    val r = if (response.message.isEmpty) {
+    val r = if response.message.isEmpty then {
       val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
       // Need to set the content length properly to return the response in Netty
       HttpUtil.setContentLength(res, 0)

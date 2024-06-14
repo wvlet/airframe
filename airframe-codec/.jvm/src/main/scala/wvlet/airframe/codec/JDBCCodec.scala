@@ -65,7 +65,7 @@ object JDBCCodec extends LogSupport {
       * Pack the all ResultSet rows as MsgPack array values
       */
     def packAllRowsAsArray(p: Packer): Unit = {
-      while (rs.next()) {
+      while rs.next() do {
         packRowAsArray(p)
       }
     }
@@ -77,7 +77,7 @@ object JDBCCodec extends LogSupport {
       */
     def packAllRowsAsMap(p: Packer): Int = {
       var rowCount = 0;
-      while (rs.next()) {
+      while rs.next() do {
         packRowAsMap(p)
         rowCount += 1
       }
@@ -125,7 +125,7 @@ object JDBCCodec extends LogSupport {
     def packRowAsArray(p: Packer): Unit = {
       p.packArrayHeader(columnCount)
       var col = 1
-      while (col <= columnCount) {
+      while col <= columnCount do {
         columnCodecs(col - 1).pack(p, rs, col)
         col += 1
       }
@@ -137,7 +137,7 @@ object JDBCCodec extends LogSupport {
     def packRowAsMap(p: Packer): Unit = {
       p.packMapHeader(columnCount)
       var col = 1
-      while (col <= columnCount) {
+      while col <= columnCount do {
         p.packString(columnNames(col - 1))
         columnCodecs(col - 1).pack(p, rs, col)
         col += 1
@@ -187,7 +187,7 @@ object JDBCCodec extends LogSupport {
   object JDBCBooleanCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getBoolean(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         BooleanCodec.pack(p, v)
@@ -198,7 +198,7 @@ object JDBCCodec extends LogSupport {
   object JDBCShortCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getShort(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         ShortCodec.pack(p, v)
@@ -209,7 +209,7 @@ object JDBCCodec extends LogSupport {
   object JDBCIntCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getInt(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         IntCodec.pack(p, v)
@@ -220,7 +220,7 @@ object JDBCCodec extends LogSupport {
   object JDBCLongCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getLong(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         LongCodec.pack(p, v)
@@ -231,7 +231,7 @@ object JDBCCodec extends LogSupport {
   object JDBCFloatCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getFloat(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         FloatCodec.pack(p, v)
@@ -242,7 +242,7 @@ object JDBCCodec extends LogSupport {
   object JDBCDoubleCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getDouble(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         DoubleCodec.pack(p, v)
@@ -253,7 +253,7 @@ object JDBCCodec extends LogSupport {
   object JDBCDecimalCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getBigDecimal(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         BigDecimalCodec.pack(p, v)
@@ -264,7 +264,7 @@ object JDBCCodec extends LogSupport {
   object JDBCStringCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getString(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         StringCodec.pack(p, v)
@@ -275,7 +275,7 @@ object JDBCCodec extends LogSupport {
   object JDBCBinaryCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getBytes(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         ByteArrayCodec.pack(p, v)
@@ -286,7 +286,7 @@ object JDBCCodec extends LogSupport {
   object JDBCDateCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getDate(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         JavaSqlDateCodec.pack(p, v)
@@ -298,7 +298,7 @@ object JDBCCodec extends LogSupport {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       // Use the string representation of java.sql.Time
       val v = rs.getTime(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         JavaSqlTimeCodec.pack(p, v)
@@ -309,7 +309,7 @@ object JDBCCodec extends LogSupport {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       // Use the string representation of java.sql.Timestamp
       val v = rs.getTimestamp(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         JavaSqlTimestampCodec.pack(p, v)
@@ -320,7 +320,7 @@ object JDBCCodec extends LogSupport {
   object JDBCArrayCodec extends JDBCColumnCodec with LogSupport {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getArray(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         JavaSqlArrayCodec.pack(p, v)
@@ -331,7 +331,7 @@ object JDBCCodec extends LogSupport {
   object JDBCJavaObjectCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val obj = rs.getObject(colIndex)
-      if (rs.wasNull()) {
+      if rs.wasNull() then {
         p.packNil
       } else {
         // Just store the string representation of the object

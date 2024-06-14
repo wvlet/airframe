@@ -46,11 +46,11 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
         }
 
         // Return application/x-msgpack content type
-        if (request.acceptsMsgPack) {
+        if request.acceptsMsgPack then {
           newResponse(route, request, responseSurface).withContentTypeMsgPack
             .withContent(msgpack)
         } else {
-          if (msgpack.length == 0) {
+          if msgpack.length == 0 then {
             newResponse(route, request, responseSurface)
           } else {
             val json = JSONCodec.unpackMsgPack(msgpack)
@@ -67,7 +67,7 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
   }
 
   private def newResponse(route: Route, request: Request, responseSurface: Surface): Response = {
-    if (responseSurface == Primitive.Unit) {
+    if responseSurface == Primitive.Unit then {
       request.method match {
         case wvlet.airframe.http.HttpMethod.POST if route.isRPC =>
           // For RPC, return 200 even for POST

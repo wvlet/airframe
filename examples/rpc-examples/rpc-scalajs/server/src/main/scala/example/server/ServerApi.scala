@@ -31,7 +31,7 @@ class ServerApi {
 
   @Endpoint(path = "/ui/*path")
   def pages(path: String) = {
-    staticContent(if (path.isEmpty) {
+    staticContent(if path.isEmpty then {
       "index.html"
     } else {
       path

@@ -17,7 +17,7 @@ private[log] object LogEnv extends LogEnvBase {
     val managerKey = "java.util.logging.manager"
     sys.props.put(managerKey, "wvlet.log.AirframeLogManager")
 
-    if (initialized.compareAndSet(false, true)) {
+    if initialized.compareAndSet(false, true) then {
       // For unregistering log manager https://github.com/wvlet/airframe/issues/2914
       sys.addShutdownHook {
         sys.props.get(managerKey) match {
@@ -53,15 +53,15 @@ private[log] object LogEnv extends LogEnvBase {
   override def getLoggerName(cl: Class[_]): String = {
     var name = cl.getName
 
-    if (name.endsWith("$")) {
+    if name.endsWith("$") then {
       // Remove trailing $ of Scala Object name
       name = name.substring(0, name.length - 1)
     }
 
     // When class is an anonymous trait
-    if (name.contains("$anon$")) {
+    if name.contains("$anon$") then {
       val interfaces = cl.getInterfaces
-      if (interfaces != null && interfaces.length > 0) {
+      if interfaces != null && interfaces.length > 0 then {
         // Use the first interface name instead of the anonymous name
         name = interfaces(0).getName
       }
@@ -106,10 +106,10 @@ private[log] object LogEnv extends LogEnvBase {
   }
 
   override def registerJMX: Unit = {
-    if (!onGraalVM) {
+    if !onGraalVM then {
       // Register the log level configuration interface to JMX
       getMBeanServer.foreach { mbeanServer =>
-        if (!mbeanServer.isRegistered(mBeanName)) {
+        if !mbeanServer.isRegistered(mBeanName) then {
           try {
             mbeanServer.registerMBean(LoggerJMX, mBeanName)
           } catch {
@@ -122,9 +122,9 @@ private[log] object LogEnv extends LogEnvBase {
   }
 
   override def unregisterJMX: Unit = {
-    if (!onGraalVM) {
+    if !onGraalVM then {
       getMBeanServer.foreach { mbeanServer =>
-        if (mbeanServer.isRegistered(mBeanName)) {
+        if mbeanServer.isRegistered(mBeanName) then {
           mbeanServer.unregisterMBean(mBeanName)
         }
       }

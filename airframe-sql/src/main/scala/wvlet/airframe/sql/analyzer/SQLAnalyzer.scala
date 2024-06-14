@@ -60,8 +60,7 @@ object SQLAnalyzer extends LogSupport {
   }
 
   def analyze(plan: LogicalPlan, database: String, catalog: Catalog): LogicalPlan = {
-    if (plan.resolved)
-      plan
+    if plan.resolved then plan
     else {
       val analyzerContext =
         AnalyzerContext(database = database, catalog = catalog, parentAttributes = Some(plan.outputAttributes))

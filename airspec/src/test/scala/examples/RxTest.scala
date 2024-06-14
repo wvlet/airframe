@@ -22,13 +22,13 @@ class RxTest extends AirSpec {
   private val v = new AtomicBoolean(false)
 
   override def afterAll: Unit = {
-    if (!isScalaNative) {
+    if !isScalaNative then {
       v.get() shouldBe true
     }
   }
 
   test("return Rx") {
-    if (isScalaNative) {
+    if isScalaNative then {
       skip("Skip Rx timer test for Scala Native")
     }
     Rx.intervalMillis(10).map(_ => v.set(true))

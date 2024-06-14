@@ -32,18 +32,18 @@ case class ServerAddress(
 
   // Returns host:port string without the protocol scheme like http://, https://
   def hostAndPort: String = {
-    val p = if (port == -1) "" else s":${port}"
+    val p = if port == -1 then "" else s":${port}"
     s"${host}${p}"
   }
 
   // Returns URI with the protocol scheme (if specified)
   def uri: String = {
-    if (host.isEmpty) {
+    if host.isEmpty then {
       // Return empty address
       ""
     } else {
       val prefix = s"${scheme}://${host}"
-      if (port != -1) {
+      if port != -1 then {
         s"${prefix}:${port}"
       } else {
         prefix
@@ -60,9 +60,9 @@ object ServerAddress extends LogSupport {
   val empty: ServerAddress = ServerAddress("", -1)
 
   def apply(address: String): ServerAddress = {
-    if (address == null || address.isEmpty) {
+    if address == null || address.isEmpty then {
       ServerAddress.empty
-    } else if (address.matches("""\w+:\/\/.*""")) {
+    } else if address.matches("""\w+:\/\/.*""") then {
       val uri         = URI.create(address)
       val givenScheme = Option(uri.getScheme)
       val (port, scheme) = uri.getPort match {
@@ -83,7 +83,7 @@ object ServerAddress extends LogSupport {
     } else {
       // Take the last section separated by colon because the address might be IPv6
       val pos = address.lastIndexOf(":")
-      if (pos > 0) {
+      if pos > 0 then {
         val port = address.substring(pos + 1, address.length).toInt
         val scheme = port match {
           case 443 => "https"

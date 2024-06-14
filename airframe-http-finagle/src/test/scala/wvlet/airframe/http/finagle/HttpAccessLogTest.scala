@@ -45,7 +45,7 @@ object HttpAccessLogTest extends AirSpec {
 
     @Endpoint(path = "/user/:id/profile")
     def profile(id: Int): String = {
-      if (id == 0) {
+      if id == 0 then {
         throw Http.serverException(HttpStatus.Forbidden_403)
       } else {
         throw Http.serverException(HttpStatus.Unauthorized_401, new IllegalStateException("failed to read profile"))

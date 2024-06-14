@@ -47,7 +47,7 @@ case class OpenAPIGeneratorConfig(
       )
     )
 ) {
-  val packagePrefixes: Seq[String] = basePackages.map(prefix => if (prefix.endsWith(".")) prefix else s"${prefix}.")
+  val packagePrefixes: Seq[String] = basePackages.map(prefix => if prefix.endsWith(".") then prefix else s"${prefix}.")
 }
 
 /**
@@ -131,9 +131,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     */
   private def mergePaths(paths: Seq[(String, Map[String, PathItem])]): Seq[(String, Map[String, PathItem])] = {
     val b = Seq.newBuilder[(String, Map[String, PathItem])]
-    for ((path, lst) <- paths.groupBy(_._1)) {
+    for (path, lst) <- paths.groupBy(_._1) do {
       val pathItems = lst.map(_._2)
-      if (pathItems.size == 0) {
+      if pathItems.size == 0 then {
         b += path -> pathItems.head
       } else {
         b += path -> pathItems.reduce(_ ++ _)
@@ -148,11 +148,11 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
   ): Option[Seq[String]] = {
     val required = params
       .filter { p =>
-        if (p.isRequired) {
+        if p.isRequired then {
           true
-        } else if (p.surface.isOption) {
+        } else if p.surface.isOption then {
           false
-        } else if (p.getDefaultValue.nonEmpty) {
+        } else if p.getDefaultValue.nonEmpty then {
           // If there is default value, the parameter can be optional
           false
         } else {
@@ -172,7 +172,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         }
       }
       .map(_.name)
-    if (required.isEmpty) None
+    if required.isEmpty then None
     else Some(required)
   }
 }
@@ -193,7 +193,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
 
   private def suppressPackagePrefix(name: String): String = {
     val candidates = config.packagePrefixes.map(name.stripPrefix(_))
-    if (candidates.isEmpty) {
+    if candidates.isEmpty then {
       name
     } else {
       // Take the smallest name
@@ -272,11 +272,11 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         )
       )
       val requestBodyContent: Map[String, MediaType] = {
-        if (route.httpMethod == HttpMethod.GET) {
+        if route.httpMethod == HttpMethod.GET then {
           // GET should have no request body
           Map.empty
         } else {
-          if (routeAnalysis.userInputParameters.isEmpty) {
+          if routeAnalysis.userInputParameters.isEmpty then {
             Map.empty
           } else {
             Map(
@@ -289,14 +289,14 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
 
       // Http response type
       def toParameter(p: MethodParameter, in: In): ParameterOrRef = {
-        if (p.surface.isPrimitive) {
+        if p.surface.isPrimitive then {
           val optDefaultValue = p.getDefaultValue
           Parameter(
             name = p.name,
             in = in,
             description = p.findAnnotationOf[description].map(_.value()),
             required = optDefaultValue.isEmpty,
-            schema = if (isPrimitiveTypeFamily(p.surface)) {
+            schema = if isPrimitiveTypeFamily(p.surface) then {
               Some(getOpenAPISchemaOfParameter(p, componentTypes))
             } else {
               registerComponent(p.surface)
@@ -316,7 +316,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         }
       // URL query string parameters
       val queryParameters: Seq[ParameterOrRef] =
-        if (route.httpMethod == HttpMethod.GET) {
+        if route.httpMethod == HttpMethod.GET then {
           routeAnalysis.httpClientCallInputs.map { p =>
             toParameter(p, In.query)
           }
@@ -328,7 +328,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       val httpMethod = route.httpMethod.toLowerCase(Locale.ENGLISH)
 
       val content: Map[String, MediaType] =
-        if (route.returnTypeSurface == Primitive.Unit) {
+        if route.returnTypeSurface == Primitive.Unit then {
           Map.empty
         } else {
           val responseSchema =
@@ -352,9 +352,9 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
           ),
         operationId = route.methodSurface.name,
         parameters =
-          if (pathAndQueryParameters.isEmpty) None
+          if pathAndQueryParameters.isEmpty then None
           else Some(pathAndQueryParameters),
-        requestBody = if (requestBodyContent.isEmpty) {
+        requestBody = if requestBodyContent.isEmpty then {
           None
         } else {
           Some(
@@ -391,9 +391,9 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       paths = ListMap.newBuilder.++=(mergedPaths).result(),
       components = Some(
         Components(
-          schemas = if (schemas.isEmpty) None else Some(schemas),
+          schemas = if schemas.isEmpty then None else Some(schemas),
           responses =
-            if (config.commonErrorResponses.isEmpty) None
+            if config.commonErrorResponses.isEmpty then None
             else Some(config.commonErrorResponses)
         )
       )
@@ -427,7 +427,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   }
 
   def getOpenAPISchemaOfSurface(s: Surface, seen: Set[Surface]): SchemaOrRef = {
-    if (seen.contains(s)) {
+    if seen.contains(s) then {
       SchemaRef(`$ref` = s"#/components/schemas/${schemaName(s)}")
     } else {
       getOrUpdateSchema(
@@ -539,7 +539,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
                 `type` = "object",
                 description = g.findAnnotationOf[description].map(_.value()),
                 required = requiredParams(None, g.params),
-                properties = if (properties.isEmpty) None else Some(properties)
+                properties = if properties.isEmpty then None else Some(properties)
               )
             case s if s.isAlias =>
               getOpenAPISchemaOfSurface(s.dealias, seen + s)

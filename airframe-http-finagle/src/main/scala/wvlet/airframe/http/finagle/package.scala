@@ -149,7 +149,7 @@ package object finagle {
 
   private def toHttpMultiMap(headerMap: HeaderMap): HttpMultiMap = {
     val m = HttpMultiMap.newBuilder
-    for (k <- headerMap.keys) {
+    for k <- headerMap.keys do {
       headerMap.getAll(k).map { v =>
         m += k -> v
       }
@@ -179,13 +179,13 @@ package object finagle {
   }
 
   def convertToFinagleRequest(request: HttpMessage.Request): Request = {
-    val req = if (request.method == "GET") {
+    val req = if request.method == "GET" then {
       val params = request.query.toSeq.map(e => (e.key, e.value))
       http.Request(s"${request.path}", params: _*)
     } else {
       http.Request(http.Method(request.method), s"${request.path}")
     }
-    for (h <- request.header.entries) {
+    for h <- request.header.entries do {
       req.headerMap.add(h.key, h.value)
     }
     request.message match {
@@ -202,7 +202,7 @@ package object finagle {
   def convertToFinagleResponse(response: HttpMessage.Response): Response = {
     val resp = http.Response()
     resp.statusCode = response.statusCode
-    for (h <- response.header.entries) {
+    for h <- response.header.entries do {
       resp.headerMap.add(h.key, h.value)
     }
     response.message match {

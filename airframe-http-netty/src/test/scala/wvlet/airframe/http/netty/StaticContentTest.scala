@@ -23,7 +23,7 @@ object StaticContentTest extends AirSpec {
 
     @Endpoint(path = "/*path")
     def staticContent(path: String): HttpMessage.Response = {
-      if (path.isEmpty) {
+      if path.isEmpty then {
         content("index.html")
       } else
         content(path)

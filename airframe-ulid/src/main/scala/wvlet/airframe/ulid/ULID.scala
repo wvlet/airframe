@@ -58,10 +58,10 @@ final class ULID(private val ulid: String) extends Ordered[ULID] {
   def toBytes: Array[Byte] = {
     val (hi, low) = CrockfordBase32.decode128bits(ulid)
     val b         = new Array[Byte](16)
-    for (i <- 0 until 8) {
+    for i <- 0 until 8 do {
       b(i) = ((hi >>> (64 - (i + 1) * 8)) & 0xffL).toByte
     }
-    for (i <- 0 until 8) {
+    for i <- 0 until 8 do {
       b(i + 8) = ((low >>> (64 - (i + 1) * 8)) & 0xffL).toByte
     }
     b
@@ -186,7 +186,7 @@ object ULID {
     * @return
     */
   def of(unixTimeMillis: Long, randHi: Long, randLow: Long): ULID = {
-    if (unixTimeMillis < 0L || unixTimeMillis > MaxTime) {
+    if unixTimeMillis < 0L || unixTimeMillis > MaxTime then {
       throw new IllegalArgumentException(f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
     }
     val hi: Long  = (unixTimeMillis << (64 - 48)) | (randHi & 0xffff)
@@ -206,13 +206,13 @@ object ULID {
     require(offset + 16 <= bytes.length, s"ULID needs 16 bytes. offset:${offset}, size:${bytes.length}")
     var i  = 0
     var hi = 0L
-    while (i < 8) {
+    while i < 8 do {
       hi <<= 8
       hi |= bytes(offset + i) & 0xffL
       i += 1
     }
     var low = 0L
-    while (i < 16) {
+    while i < 16 do {
       low <<= 8
       low |= bytes(offset + i) & 0xffL
       i += 1
@@ -221,7 +221,7 @@ object ULID {
   }
 
   def unapply(ulidString: String): Option[ULID] = {
-    if (isValid(ulidString)) {
+    if isValid(ulidString) then {
       Some(new ULID(ulidString))
     } else {
       None
@@ -276,20 +276,20 @@ object ULID {
     }
 
     def newULIDFromMillis(unixTimeMillis: Long): String = {
-      if (unixTimeMillis > MaxTime) {
+      if unixTimeMillis > MaxTime then {
         throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
       }
       // Add a guard so that only a single-thread can generate ULID based on the previous value
       synchronized {
         val (hi, low)    = lastValue.get()
         val lastUnixTime = (hi >>> 16) & 0xffffffffffffL
-        if (lastUnixTime == unixTimeMillis) {
+        if lastUnixTime == unixTimeMillis then {
           // do increment
-          if (low != ~0L) {
+          if low != ~0L then {
             generateFrom(hi, low + 1L)
           } else {
             var nextHi = (hi & ~(~0L << 16)) + 1
-            if ((nextHi & (~0L << 16)) != 0) {
+            if (nextHi & (~0L << 16)) != 0 then {
               // Random number overflow. Wait for one millisecond and retry
               compat.sleep(1)
               newULIDString

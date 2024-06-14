@@ -122,7 +122,7 @@ class CountTest extends AirSpec {
   }
 
   test("parse count units") {
-    for (u <- Count.units) {
+    for u <- Count.units do {
       CountUnit.unapply(u.unitString) shouldBe Some(u)
     }
     CountUnit.unapply("X") shouldBe None

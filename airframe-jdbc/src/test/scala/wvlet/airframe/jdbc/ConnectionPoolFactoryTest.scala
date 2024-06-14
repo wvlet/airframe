@@ -39,7 +39,7 @@ class TestConnection(connectionPoolFactory: ConnectionPoolFactory, c1: MyDbConfi
     pool.executeUpdate("create table if not exists test(id int, name text)")
     pool.executeUpdate("insert into test values(1, 'leo')")
     pool.executeQuery("select * from test") { rs =>
-      while (rs.next()) {
+      while rs.next() do {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
         logger.debug(s"read (${id}, ${name})")
@@ -51,7 +51,7 @@ class TestConnection(connectionPoolFactory: ConnectionPoolFactory, c1: MyDbConfi
       ps.setString(2, "yui")
     }
     pool.queryWith("select * from test where id = ?") { ps => ps.setInt(1, 2) } { rs =>
-      while (rs.next()) {
+      while rs.next() do {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
         logger.debug(s"read with prepared statement: (${id}, ${name})")
@@ -100,7 +100,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
   }
 
   test("use PostgreSQL connection pool") { (t: TestConnection) =>
-    if (!inTravisCI) pending("TravisCI cannot use PostgreSQL")
+    if !inTravisCI then pending("TravisCI cannot use PostgreSQL")
 
     t.test(t.pgPool)
   }

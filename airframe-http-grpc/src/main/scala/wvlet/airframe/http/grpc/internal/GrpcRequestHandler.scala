@@ -62,7 +62,7 @@ class GrpcRequestHandler(
     */
   private def readRequestAsValue(grpcContext: Option[GrpcContext], request: MsgPack): MapValue = {
     try {
-      val value = if (RPCEncoding.isJsonObjectMessage(request)) {
+      val value = if RPCEncoding.isJsonObjectMessage(request) then {
         // The input is a JSON message
         RPCEncoding.JSON.unpackValue(request)
       } else {
@@ -135,7 +135,7 @@ class GrpcRequestHandler(
             arg.getMethodArgDefaultValue(controller)
         }
         argOpt.getOrElse {
-          if (arg.surface.isOption) {
+          if arg.surface.isOption then {
             // If the argument is an option type, we can use None for the missing value
             None
           } else {
@@ -176,7 +176,7 @@ class GrpcRequestHandler(
 
       private def invokeServerMethod: Unit = {
         // Avoid duplicated execution
-        if (isStarted.compareAndSet(false, true)) {
+        if isStarted.compareAndSet(false, true) then {
           // We need to run the server RPC method in another thread as rx implementation is blocking
           executorService.submit(new Callable[Unit] {
             override def call(): Unit = {
@@ -241,7 +241,7 @@ class GrpcRequestHandler(
 
       private def invokeServerMethod: Unit = {
         // Avoid duplicated execution
-        if (isStarted.compareAndSet(false, true)) {
+        if isStarted.compareAndSet(false, true) then {
           // We need to run the server RPC method in another thread as rx implementation is blocking
           executorService.submit(new Callable[Unit] {
             override def call(): Unit = {
@@ -288,7 +288,7 @@ class GrpcRequestHandler(
                     responseObserver.onError(GrpcException.wrap(e))
                   case OnCompletion =>
                     requestLogger.logRPC(grpcContext, rpcContext)
-                    if (isReady(responseObserver)) {
+                    if isReady(responseObserver) then {
                       responseObserver.onCompleted()
                     }
                 }

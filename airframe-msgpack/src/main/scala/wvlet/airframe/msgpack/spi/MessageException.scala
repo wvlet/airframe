@@ -23,10 +23,10 @@ class MessageException(val errorCode: ErrorCode, message: String = null, cause: 
   override def getMessage: String = {
     val s = new StringBuilder
     s.append(s"[${errorCode}]")
-    if (message != null) {
+    if message != null then {
       s.append(s" ${message}")
     }
-    if (cause != null) {
+    if cause != null then {
       s.append(s", cause: ${cause.getMessage}")
     }
     s.result()

@@ -62,7 +62,7 @@ object OffsetPacker {
   }
 
   def packBoolean(cursor: WriteCursor, v: Boolean): Unit = {
-    cursor.writeByte(if (v) TRUE else FALSE)
+    cursor.writeByte(if v then TRUE else FALSE)
   }
 
   private[msgpack] def packFIXNUM(cursor: WriteCursor, v: Byte): Unit = {
@@ -100,7 +100,7 @@ object OffsetPacker {
   }
 
   def packByte(cursor: WriteCursor, v: Byte): Unit = {
-    if (v < -(1 << 5)) {
+    if v < -(1 << 5) then {
       packINT8(cursor, v)
     } else {
       packFIXNUM(cursor, v)
@@ -108,15 +108,15 @@ object OffsetPacker {
   }
 
   def packShort(cursor: WriteCursor, v: Short): Unit = {
-    if (v < -(1 << 5)) {
-      if (v < -(1 << 7)) {
+    if v < -(1 << 5) then {
+      if v < -(1 << 7) then {
         packINT16(cursor, v)
       } else {
         packINT8(cursor, v.toByte)
       }
-    } else if (v < (1 << 7)) {
+    } else if v < (1 << 7) then {
       cursor.writeByte(v.toByte)
-    } else if (v < (1 << 8)) {
+    } else if v < (1 << 8) then {
       packUINT8(cursor, v.toByte)
     } else {
       packUINT16(cursor, v)
@@ -124,19 +124,19 @@ object OffsetPacker {
   }
 
   def packInt(cursor: WriteCursor, r: Int): Unit = {
-    if (r < -(1 << 5)) {
-      if (r < -(1 << 15)) {
+    if r < -(1 << 5) then {
+      if r < -(1 << 15) then {
         packINT32(cursor, r)
-      } else if (r < -(1 << 7)) {
+      } else if r < -(1 << 7) then {
         packINT16(cursor, r.toShort)
       } else {
         packINT8(cursor, r.toByte)
       }
-    } else if (r < (1 << 7)) {
+    } else if r < (1 << 7) then {
       packFIXNUM(cursor, r.toByte)
-    } else if (r < (1 << 8)) {
+    } else if r < (1 << 8) then {
       packUINT8(cursor, r.toByte)
-    } else if (r < (1 << 16)) {
+    } else if r < (1 << 16) then {
       packUINT16(cursor, r.toShort)
     } else { // unsigned 32
       packUINT32(cursor, r)
@@ -144,34 +144,31 @@ object OffsetPacker {
   }
 
   def packLong(cursor: WriteCursor, v: Long): Unit = {
-    if (v < -(1L << 5)) {
-      if (v < -(1L << 15)) {
-        if (v < -(1L << 31))
-          packINT64(cursor, v)
+    if v < -(1L << 5) then {
+      if v < -(1L << 15) then {
+        if v < -(1L << 31) then packINT64(cursor, v)
         else
           packINT32(cursor, v.toInt)
-      } else if (v < -(1 << 7)) {
+      } else if v < -(1 << 7) then {
         packINT16(cursor, v.toShort)
       } else {
         packINT8(cursor, v.toByte)
       }
-    } else if (v < (1 << 7)) { // fixnum
+    } else if v < (1 << 7) then { // fixnum
       packFIXNUM(cursor, v.toByte)
-    } else if (v < (1L << 16)) {
-      if (v < (1 << 8))
-        packUINT8(cursor, v.toByte)
+    } else if v < (1L << 16) then {
+      if v < (1 << 8) then packUINT8(cursor, v.toByte)
       else
         packUINT16(cursor, v.toShort)
-    } else if (v < (1L << 32))
-      packUINT32(cursor, v.toInt)
+    } else if v < (1L << 32) then packUINT32(cursor, v.toInt)
     else
       packUINT64(cursor, v)
   }
 
   def packBigInteger(cursor: WriteCursor, bi: BigInteger): Unit = {
-    if (bi.bitLength <= 63) {
+    if bi.bitLength <= 63 then {
       packLong(cursor, bi.longValue)
-    } else if (bi.bitLength == 64 && bi.signum == 1) {
+    } else if bi.bitLength == 64 && bi.signum == 1 then {
       packUINT64(cursor, bi.longValue)
     } else {
       throw new IllegalArgumentException(s"MessagePack cannot serialize BigInteger larger than 2^64-1: ${bi}")
@@ -202,9 +199,9 @@ object OffsetPacker {
     val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, NANOS_PER_SECOND))
     val nsec = Math.floorMod(nanoAdjustment.toLong, NANOS_PER_SECOND)
 
-    if ((sec >>> 34) == 0L) { // sec can be serialized in 34 bits.
+    if (sec >>> 34) == 0L then { // sec can be serialized in 34 bits.
       val data64: Long = (nsec << 34) | sec
-      if ((data64 & 0xffffffff00000000L) == 0L) { // sec can be serialized in 32 bits and nsec is 0.
+      if (data64 & 0xffffffff00000000L) == 0L then { // sec can be serialized in 32 bits and nsec is 0.
         // use timestamp 32
         packTimestamp32(cursor, sec.toInt)
       } else { // sec exceeded 32 bits or nsec is not 0.
@@ -243,11 +240,11 @@ object OffsetPacker {
   }
 
   def packRawStringHeader(cursor: WriteCursor, len: Int): Unit = {
-    if (len < (1 << 5)) {
+    if len < (1 << 5) then {
       cursor.writeByte((FIXSTR_PREFIX | len).toByte)
-    } else if (len < (1 << 8)) {
+    } else if len < (1 << 8) then {
       cursor.writeByteAndByte(STR8, len.toByte)
-    } else if (len < (1 << 16)) {
+    } else if len < (1 << 16) then {
       cursor.writeByteAndShort(STR16, len.toShort)
     } else {
       cursor.writeByteAndInt(STR32, len)
@@ -255,13 +252,10 @@ object OffsetPacker {
   }
 
   def packArrayHeader(cursor: WriteCursor, arraySize: Int): Unit = {
-    if (arraySize < 0)
-      throw new IllegalArgumentException("array size must be >= 0")
+    if arraySize < 0 then throw new IllegalArgumentException("array size must be >= 0")
 
-    if (arraySize < (1 << 4))
-      cursor.writeByte((FIXARRAY_PREFIX | arraySize).toByte)
-    else if (arraySize < (1 << 16))
-      cursor.writeByteAndShort(ARRAY16, arraySize.toShort)
+    if arraySize < (1 << 4) then cursor.writeByte((FIXARRAY_PREFIX | arraySize).toByte)
+    else if arraySize < (1 << 16) then cursor.writeByteAndShort(ARRAY16, arraySize.toShort)
     else
       cursor.writeByteAndInt(ARRAY32, arraySize)
   }
@@ -271,12 +265,11 @@ object OffsetPacker {
   }
 
   def packMapHeader(cursor: WriteCursor, mapSize: Int): Unit = {
-    if (mapSize < 0)
-      throw new IllegalArgumentException("map size must be >= 0")
+    if mapSize < 0 then throw new IllegalArgumentException("map size must be >= 0")
 
-    if (mapSize < (1 << 4)) {
+    if mapSize < (1 << 4) then {
       cursor.writeByte((FIXMAP_PREFIX | mapSize).toByte)
-    } else if (mapSize < (1 << 16)) {
+    } else if mapSize < (1 << 16) then {
       cursor.writeByteAndShort(MAP16, mapSize.toShort)
     } else {
       cursor.writeByteAndInt(MAP32, mapSize)
@@ -292,18 +285,13 @@ object OffsetPacker {
   }
 
   def packExtTypeHeader(cursor: WriteCursor, extType: Byte, payloadLen: Int): Unit = {
-    if (payloadLen < (1 << 8)) {
-      if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
-        if (payloadLen == 1)
-          cursor.writeByteAndByte(FIXEXT1, extType)
-        else if (payloadLen == 2)
-          cursor.writeByteAndByte(FIXEXT2, extType)
-        else if (payloadLen == 4)
-          cursor.writeByteAndByte(FIXEXT4, extType)
-        else if (payloadLen == 8)
-          cursor.writeByteAndByte(FIXEXT8, extType)
-        else if (payloadLen == 16)
-          cursor.writeByteAndByte(FIXEXT16, extType)
+    if payloadLen < (1 << 8) then {
+      if payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0 then { // check whether dataLen == 2^x
+        if payloadLen == 1 then cursor.writeByteAndByte(FIXEXT1, extType)
+        else if payloadLen == 2 then cursor.writeByteAndByte(FIXEXT2, extType)
+        else if payloadLen == 4 then cursor.writeByteAndByte(FIXEXT4, extType)
+        else if payloadLen == 8 then cursor.writeByteAndByte(FIXEXT8, extType)
+        else if payloadLen == 16 then cursor.writeByteAndByte(FIXEXT16, extType)
         else {
           cursor.writeByteAndByte(EXT8, payloadLen.toByte)
           cursor.writeByte(extType)
@@ -312,7 +300,7 @@ object OffsetPacker {
         cursor.writeByteAndByte(EXT8, payloadLen.toByte)
         cursor.writeByte(extType)
       }
-    } else if (payloadLen < (1 << 16)) {
+    } else if payloadLen < (1 << 16) then {
       cursor.writeByteAndShort(EXT16, payloadLen.toShort)
       cursor.writeByte(extType)
     } else {
@@ -323,9 +311,9 @@ object OffsetPacker {
   }
 
   def packBinaryHeader(cursor: WriteCursor, len: Int): Unit = {
-    if (len < (1 << 8)) {
+    if len < (1 << 8) then {
       cursor.writeByteAndByte(BIN8, len.toByte)
-    } else if (len < (1 << 16)) {
+    } else if len < (1 << 16) then {
       cursor.writeByteAndShort(BIN16, len.toShort)
     } else {
       cursor.writeByteAndInt(BIN32, len)

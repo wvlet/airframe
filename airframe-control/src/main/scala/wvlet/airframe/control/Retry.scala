@@ -53,7 +53,7 @@ object Retry extends LogSupport {
     def total(n: Int) = initialIntervalMillis * (1 - math.pow(multiplier, n)) / (1 - multiplier)
 
     var maxRetry = N.ceil.toInt
-    while (maxRetry > 0 && total(maxRetry) > maxTotalWaitMillis) {
+    while maxRetry > 0 && total(maxRetry) > maxTotalWaitMillis do {
       maxRetry -= 1
     }
     var maxIntervalMillis = initialIntervalMillis * math.pow(multiplier, N).toInt
@@ -119,14 +119,14 @@ object Retry extends LogSupport {
 
     // Compute the extra wait millis based on the next wait millis
     def extraWaitMillis(nextWaitMillis: Int): Int = {
-      if (maxExtraWaitMillis == 0) {
-        if (factor == 0.0) {
+      if maxExtraWaitMillis == 0 then {
+        if factor == 0.0 then {
           0
         } else {
           (nextWaitMillis * factor).toInt
         }
       } else {
-        if (factor == 0.0) {
+        if factor == 0.0 then {
           maxExtraWaitMillis
         } else {
           (nextWaitMillis * factor).toInt.min(maxExtraWaitMillis)
@@ -183,7 +183,7 @@ object Retry extends LogSupport {
     }
 
     def withExtraWait(extraWait: ExtraWait): RetryContext = {
-      if (extraWait.hasNoWait && this.extraWaitMillis == 0) {
+      if extraWait.hasNoWait && this.extraWaitMillis == 0 then {
         this
       } else {
         this.copy(extraWaitMillis = extraWait.extraWaitMillis(nextWaitMillis))
@@ -282,7 +282,7 @@ object Retry extends LogSupport {
 
       var isFirst: Boolean = true
 
-      while (isFirst || (result.isEmpty && retryContext.canContinue)) {
+      while isFirst || (result.isEmpty && retryContext.canContinue) do {
         isFirst = false
 
         val ret = Try {
@@ -321,7 +321,7 @@ object Retry extends LogSupport {
         body: => Rx[A]
     ): Rx[A] = {
       def loop(retryContext: RetryContext, isFirst: Boolean): Rx[A] = {
-        if (!isFirst && !retryContext.canContinue) {
+        if !isFirst && !retryContext.canContinue then {
           Rx.exception(MaxRetryException(retryContext))
         } else {
           Rx.fromTry(Try(circuitBreaker.verifyConnection))

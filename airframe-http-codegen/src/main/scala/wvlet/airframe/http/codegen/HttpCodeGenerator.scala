@@ -49,9 +49,9 @@ object HttpClientGeneratorConfig {
       case Array(p, tpe, pkgName) =>
         val lst = pkgName.split("\\.")
         // Assume that it's a client class name if the first letter is capital
-        if (lst.last.matches("^[A-Z].*")) {
+        if lst.last.matches("^[A-Z].*") then {
           val clsName = lst.lastOption
-          if (lst.length == 1) {
+          if lst.length == 1 then {
             // If only a class name is given, use the same package with API
             (p, tpe, p, clsName)
           } else {
@@ -200,7 +200,7 @@ class HttpCodeGenerator(
   private def buildRouter(apiPackageNames: Seq[String], classLoader: URLClassLoader): Router = {
     debug(s"Target API packages: ${apiPackageNames.mkString(", ")}")
     val rxRouter = RouteScanner.buildRxRouter(apiPackageNames, classLoader)
-    if (rxRouter.routes.isEmpty) {
+    if rxRouter.routes.isEmpty then {
       warn(s"No router definition is found. Forgot to implement RxRouterProvider interface?")
     }
     Router.fromRxRouter(rxRouter)
@@ -223,7 +223,7 @@ class HttpCodeGenerator(
       val artifacts = for (x <- option.targets) yield {
         val config = HttpClientGeneratorConfig(x)
         debug(config)
-        if (!option.targetDir.exists()) {
+        if !option.targetDir.exists() then {
           option.targetDir.mkdirs()
         }
         val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.clientFileName}"
@@ -233,8 +233,8 @@ class HttpCodeGenerator(
         val routerStr      = router.toString
         val routerCode     = HttpCodeGenerator.generate(router, config)
         val routerHash     = routerCode.hashCode
-        val outputFileHash = if (outputFile.exists()) IOUtil.readAsString(outputFile).hashCode else 0
-        if (!outputFile.exists() || routerHash != outputFileHash) {
+        val outputFileHash = if outputFile.exists() then IOUtil.readAsString(outputFile).hashCode else 0
+        if !outputFile.exists() || routerHash != outputFileHash then {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
           info(s"Generating ${config.clientType.name} client code: ${path}")
           writeFile(outputFile, routerCode)

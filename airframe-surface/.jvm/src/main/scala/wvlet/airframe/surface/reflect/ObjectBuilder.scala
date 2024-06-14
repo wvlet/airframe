@@ -39,7 +39,7 @@ object ObjectBuilder extends LogSupport {
 
   def fromObject[A](surface: Surface, obj: A): ObjectBuilder = {
     val b = new SimpleObjectBuilder(surface)
-    for (p <- surface.params) {
+    for p <- surface.params do {
       b.set(p.name, p.get(obj))
     }
     b
@@ -82,7 +82,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   protected def defaultValues: collection.immutable.Map[String, Any]
 
   // set the default values of the object
-  for ((name, value) <- defaultValues) {
+  for (name, value) <- defaultValues do {
     val v: BuilderElement = findParameter(name).map {
       case p if canBuildFromBuffer(p.surface)      => Value(value)
       case p if canBuildFromStringValue(p.surface) => Value(value)
@@ -92,7 +92,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       case p => {
         // nested object
         val b = new SimpleObjectBuilder(p.surface)
-        for (x <- p.surface.params) {
+        for x <- p.surface.params do {
           b.set(x.name.canonicalName, x.get(value))
         }
         Holder(b)
@@ -124,21 +124,21 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   }
 
   def set(path: Path, value: Any): Unit = {
-    if (path.isEmpty) {
+    if path.isEmpty then {
       // do nothing
     } else {
       val name = path.head.canonicalName
       val p    = findParameter(name)
-      if (p.isEmpty) {
+      if p.isEmpty then {
         error(s"no parameter is found for path $path")
       } else {
         trace(s"set path $path : $value")
-        if (path.isLeaf) {
+        if path.isLeaf then {
           val targetType = p.get.surface
           trace(
             s"update value holder name:$name, valueType:$targetType (isArray:${isArray(targetType)}) with value:$value (${value.getClass})"
           )
-          if (canBuildFromBuffer(targetType)) {
+          if canBuildFromBuffer(targetType) then {
             val arr = getArrayHolder(name)
             targetType.typeArgs.length match {
               case 1 =>
@@ -178,7 +178,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
               case other =>
                 error(s"Cannot convert ${value} to ${targetType}")
             }
-          } else if (canBuildFromStringValue(targetType)) {
+          } else if canBuildFromStringValue(targetType) then {
             TypeConverter.convert(value, targetType).map { v =>
               holder += name -> Value(v)
             }
@@ -231,7 +231,7 @@ class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardB
     val prop = Map.newBuilder[String, Any]
 
     // get the default values of the constructor
-    for (p <- surface.params; v <- p.getDefaultValue) {
+    for p <- surface.params; v <- p.getDefaultValue do {
       trace(s"set default parameter $p to $v")
       prop += p.name.canonicalName -> v
     }

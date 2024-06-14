@@ -32,7 +32,7 @@ class ParallelTest extends AirSpec {
       // Record the current time
       startTime(i - 1) = System.currentTimeMillis()
       counter.incrementAndGet()
-      while (counter.get() < 3) {
+      while counter.get() < 3 do {
         Thread.sleep(0)
       }
       i * 2
@@ -78,7 +78,7 @@ class ParallelTest extends AirSpec {
     val result = Parallel
       .run(source, parallelism = 3) { i =>
         Try {
-          if (i == 2) {
+          if i == 2 then {
             throw exception
           }
           i * 2
@@ -101,7 +101,7 @@ class ParallelTest extends AirSpec {
     val result = Parallel
       .iterate(source.iterator, parallelism = 3) { i =>
         Try {
-          if (i == 2) {
+          if i == 2 then {
             throw exception
           }
           i * 2
@@ -150,7 +150,7 @@ class ParallelTest extends AirSpec {
     Parallel.stats.finishedTasks.set(0)
 
     val result = Parallel.run(Seq(1, 2, 3), parallelism = 1) { i =>
-      if (i == 2) {
+      if i == 2 then {
         Parallel.break
       }
       i
@@ -166,7 +166,7 @@ class ParallelTest extends AirSpec {
     Parallel.stats.finishedTasks.set(0)
 
     val result = Parallel.iterate(Seq(1, 2, 3).iterator, parallelism = 1) { i =>
-      if (i == 2) {
+      if i == 2 then {
         Parallel.break
       }
       i

@@ -136,7 +136,7 @@ object HttpAccessLogWriter {
       // no-op
       case se: HttpServerException =>
         // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
-        if (se.getCause != null) {
+        if se.getCause != null then {
           val rootCause = findCause(se.getCause)
           m += "exception"         -> rootCause
           m += "exception_message" -> rootCause.getMessage
@@ -155,7 +155,7 @@ object HttpAccessLogWriter {
     m += "rpc_method"    -> rpcContext.rpcMethodSurface.name
 
     val rpcArgs = extractRpcArgLog(rpcContext)
-    if (rpcArgs.nonEmpty) {
+    if rpcArgs.nonEmpty then {
       m += "rpc_args" -> rpcArgs
     }
     m.result()
@@ -194,7 +194,7 @@ object HttpAccessLogWriter {
 
     val rpcArgsBuilder = ListMap.newBuilder[String, Any]
     // Exclude request context objects, which will be duplicates of request parameter logs
-    for ((p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs)) {
+    for (p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs) do {
       rpcArgsBuilder ++= traverseParam(p, arg)
     }
     rpcArgsBuilder.result()

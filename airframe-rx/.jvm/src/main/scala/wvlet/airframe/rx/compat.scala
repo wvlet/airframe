@@ -83,7 +83,7 @@ object compat {
         c.cancel
         ready.set(true)
     }
-    while (!ready.get()) {}
+    while !ready.get() do {}
     s.result()
   }
 

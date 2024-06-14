@@ -35,12 +35,12 @@ case class GrpcService(
     trace(s"service:\n${serviceDefinitions.map(_.getServiceDescriptor).mkString("\n")}")
     // We need to use NettyServerBuilder explicitly when NettyServerBuilder cannot be found from the classpath (e.g., onejar)
     val serverBuilder = NettyServerBuilder.forPort(config.port)
-    for (service <- serviceDefinitions) {
+    for service <- serviceDefinitions do {
       serverBuilder.addService(service)
     }
 
     // Add user-provided interceptors
-    for (interceptor <- config.interceptors) {
+    for interceptor <- config.interceptors do {
       serverBuilder.intercept(interceptor)
     }
     // Add an interceptor for setting content-type response header

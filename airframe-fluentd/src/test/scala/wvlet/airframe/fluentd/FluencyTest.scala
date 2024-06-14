@@ -36,16 +36,16 @@ class MockFluentd(config: MockFluentdConfig) extends LogSupport {
       val out          = clientSocket.getOutputStream
       val in           = new BufferedInputStream(clientSocket.getInputStream)
 
-      while (!shutdown.get()) {
+      while !shutdown.get() do {
         var b            = new Array[Byte](8192)
         var totalReadLen = 0
         var readLen      = in.read(b)
-        while (readLen != -1) {
+        while readLen != -1 do {
           val nextReadLen = in.read(b, totalReadLen, readLen)
           totalReadLen += readLen
           readLen = nextReadLen
         }
-        if (totalReadLen > 0) {
+        if totalReadLen > 0 then {
           val v = ValueCodec.unpackMsgPack(b, 0, totalReadLen)
           logger.debug(s"Received event: ${v}")
         }

@@ -69,7 +69,7 @@ class LifeCycleManager(
   def sessionName: String = session.name
 
   def start: Unit = {
-    if (!state.compareAndSet(INIT, STARTING)) {
+    if !state.compareAndSet(INIT, STARTING) then {
       throw new IllegalStateException("LifeCycle is already starting")
     }
 
@@ -81,10 +81,9 @@ class LifeCycleManager(
   }
 
   def shutdown: Unit = {
-    if (
-      state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
-      || state.compareAndSet(STARTING, STOPPING)
-    ) {
+    if state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
+    || state.compareAndSet(STARTING, STOPPING)
+    then {
       tracer.beforeSessionShutdown(session)
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
@@ -152,7 +151,7 @@ class LifeCycleManager(
 
   def addInitHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
-      if (l.initHookHolder.registerOnlyOnce(h)) {
+      if l.initHookHolder.registerOnlyOnce(h) then {
         debug(s"[${l.sessionName}] Add an init hook: ${h.surface}")
         h.execute
       } else {
@@ -172,10 +171,10 @@ class LifeCycleManager(
   def addStartHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.startHookHolder.registerOnlyOnce(h)) {
+        if l.startHookHolder.registerOnlyOnce(h) then {
           debug(s"[${l.sessionName}] Add a start hook for ${h.surface}")
           val s = l.state.get
-          if (s == STARTED) {
+          if s == STARTED then {
             // If a session is already started, run the start hook immediately
             tracer.onStartInstance(session, h.injectee)
             h.execute
@@ -188,10 +187,10 @@ class LifeCycleManager(
   private def addAfterStartHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.afterStartHookHolder.registerOnlyOnce(h)) {
+        if l.afterStartHookHolder.registerOnlyOnce(h) then {
           debug(s"[${l.sessionName}] Add a afterStart hook for ${h.surface}")
           val s = l.state.get
-          if (s == STARTED) {
+          if s == STARTED then {
             // If a session is already started, run the start hook immediately
             tracer.afterStartInstance(session, h.injectee)
             h.execute
@@ -204,7 +203,7 @@ class LifeCycleManager(
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.preShutdownHookHolder.registerOnlyOnce(h)) {
+        if l.preShutdownHookHolder.registerOnlyOnce(h) then {
           debug(s"[${l.sessionName}] Add a pre-shutdown hook for ${h.surface}")
         }
       }
@@ -214,7 +213,7 @@ class LifeCycleManager(
   def addShutdownHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.shutdownHookHolder.registerOnlyOnce(h)) {
+        if l.shutdownHookHolder.registerOnlyOnce(h) then {
           debug(s"[${l.sessionName}] Add a shutdown hook for ${h.surface}")
         } else {
           // Override CloseHooks
@@ -225,7 +224,7 @@ class LifeCycleManager(
               // Any custom shutdown hooks precede CloseHook
               l.shutdownHookHolder.remove(c)
             }
-          if (l.shutdownHookHolder.registerOnlyOnce(h)) {
+          if l.shutdownHookHolder.registerOnlyOnce(h) then {
             debug(s"[${l.sessionName}] Override CloseHook of ${h.surface} with a shtudown hook")
           }
         }
@@ -261,7 +260,7 @@ object LifeCycleManager {
       */
     def registerOnlyOnce(x: LifeCycleHook): Boolean = {
       synchronized {
-        if (list.exists(_.injectee == x.injectee)) {
+        if list.exists(_.injectee == x.injectee) then {
           false
         } else {
           // Register this hook
@@ -342,7 +341,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     var exceptionList = List.empty[Throwable]
 
     // beforeShutdown
-    for (h <- lifeCycleManager.preShutdownHooks.reverse) {
+    for h <- lifeCycleManager.preShutdownHooks.reverse do {
       trace(s"Calling pre-shutdown hook: $h")
       lifeCycleManager.tracer.beforeShutdownInstance(lifeCycleManager.session, h.injectee)
       try {
@@ -355,7 +354,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
 
     // onShutdown
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
-    if (shutdownOrder.nonEmpty) {
+    if shutdownOrder.nonEmpty then {
       debug(s"[${lifeCycleManager.sessionName}] Shutdown order:\n${shutdownOrder.map(x => s"-> ${x}").mkString("\n")}")
     }
     shutdownOrder.map { h =>
@@ -370,8 +369,8 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     }
 
     // If there are any exceptions occurred during the shutdown, throw them here:
-    if (exceptionList.nonEmpty) {
-      if (exceptionList.size > 1) {
+    if exceptionList.nonEmpty then {
+      if exceptionList.size > 1 then {
         throw MULTIPLE_SHUTDOWN_FAILURES(exceptionList.toList)
       } else {
         throw SHUTDOWN_FAILURE(exceptionList.head)

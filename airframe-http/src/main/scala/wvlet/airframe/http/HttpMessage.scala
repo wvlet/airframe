@@ -147,7 +147,7 @@ object HttpMessage {
 
   object Message {
     def unapply(s: String): Option[Message] = {
-      if (s.isEmpty) {
+      if s.isEmpty then {
         Some(EmptyMessage)
       } else {
         Some(StringMessage(s))
@@ -191,15 +191,14 @@ object HttpMessage {
   }
 
   def stringMessage(content: String): Message = {
-    if (content == null || content.isEmpty) {
+    if content == null || content.isEmpty then {
       EmptyMessage
     } else {
       StringMessage(content)
     }
   }
   def byteArrayMessage(content: Array[Byte]): Message = {
-    if (content == null || content.isEmpty)
-      EmptyMessage
+    if content == null || content.isEmpty then EmptyMessage
     else
       ByteArrayMessage(content)
   }
@@ -255,7 +254,7 @@ object HttpMessage {
         HttpMultiMap.empty
       case pos =>
         var m = HttpMultiMap.newBuilder
-        if (pos + 1 < uri.length) {
+        if pos + 1 < uri.length then {
           val queryString = uri.substring(pos + 1)
           queryString
             .split("&").map { x =>

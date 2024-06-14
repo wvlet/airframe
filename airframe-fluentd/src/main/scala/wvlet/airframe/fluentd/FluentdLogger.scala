@@ -45,14 +45,14 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
   }
 
   override def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
-    if (useExtendedEventTime) {
+    if useExtendedEventTime then {
       fluency.emit(fullTag, getEventTime, toJavaMap(event))
     } else {
       fluency.emit(fullTag, toJavaMap(event))
     }
   }
   override def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
-    if (useExtendedEventTime) {
+    if useExtendedEventTime then {
       fluency.emit(tag, getEventTime, event, 0, event.length)
     } else {
       fluency.emit(tag, event, 0, event.length)

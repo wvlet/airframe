@@ -41,15 +41,15 @@ class MessageFormatTest extends AirSpec with Timer {
       checkF(b, f)
     }
 
-    for (i <- 0 until 0x7f) {
+    for i <- 0 until 0x7f do {
       check(i.toByte, ValueType.INTEGER, MessageFormat.POSFIXINT)
     }
 
-    for (i <- 0x80 until 0x8f) {
+    for i <- 0x80 until 0x8f do {
       check(i.toByte, ValueType.MAP, MessageFormat.FIXMAP)
     }
 
-    for (i <- 0x90 until 0x9f) {
+    for i <- 0x90 until 0x9f do {
       check(i.toByte, ValueType.ARRAY, MessageFormat.FIXARRAY)
     }
 
@@ -57,7 +57,7 @@ class MessageFormatTest extends AirSpec with Timer {
 
     MessageFormat.of(Code.NEVER_USED) shouldBe MessageFormat.NEVER_USED
 
-    for (i <- Seq(Code.TRUE, Code.FALSE)) {
+    for i <- Seq(Code.TRUE, Code.FALSE) do {
       check(i, ValueType.BOOLEAN, MessageFormat.BOOLEAN)
     }
 
@@ -93,7 +93,7 @@ class MessageFormatTest extends AirSpec with Timer {
     check(Code.ARRAY16, ValueType.ARRAY, MessageFormat.ARRAY16)
     check(Code.ARRAY32, ValueType.ARRAY, MessageFormat.ARRAY32)
 
-    for (i <- 0xe0 to 0xff) {
+    for i <- 0xe0 to 0xff do {
       check(i.toByte, ValueType.INTEGER, MessageFormat.NEGFIXINT)
     }
   }
@@ -108,7 +108,7 @@ class MessageFormatTest extends AirSpec with Timer {
     val t = time("lookup", repeat = 10, logLevel = LogLevel.DEBUG) {
       block("switch") {
         var i = 0
-        while (i < N) {
+        while i < N do {
           MessageFormat.toMessageFormat(idx(i))
           i += 1
         }
@@ -116,7 +116,7 @@ class MessageFormatTest extends AirSpec with Timer {
 
       block("table") {
         var i = 0
-        while (i < N) {
+        while i < N do {
           MessageFormat.of(idx(i))
           i += 1
         }

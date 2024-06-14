@@ -7,7 +7,7 @@ object RxRunnerTest extends AirSpec {
 
   private val ex = new IllegalArgumentException("dummy")
 
-  private def pendingScalaJS = if (isScalaJS) {
+  private def pendingScalaJS = if isScalaJS then {
     pending("Async test is required")
   }
 

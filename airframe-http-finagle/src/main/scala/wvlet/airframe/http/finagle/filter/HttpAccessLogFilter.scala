@@ -79,18 +79,18 @@ case class HttpAccessLogFilter(
 
       // Report response
       resp.foreach { response =>
-        for (l <- responseLoggers) {
+        for l <- responseLoggers do {
           m ++= l(response)
         }
       }
 
       // Report context
-      for (l <- contextLoggers) {
+      for l <- contextLoggers do {
         m ++= l(request)
       }
 
       def reportException(e: Throwable): Unit = {
-        for (l <- errorLoggers) {
+        for l <- errorLoggers do {
           m ++= l(request, e)
         }
       }
@@ -162,7 +162,7 @@ object HttpAccessLogFilter {
     m += "path"   -> request.path
     m += "uri"    -> HttpAccessLogWriter.sanitize(request.uri)
     val queryString = extractQueryString(request.uri)
-    if (queryString.nonEmpty) {
+    if queryString.nonEmpty then {
       m += "query_string" -> queryString
     }
     m += "request_size" -> request.length
@@ -177,7 +177,7 @@ object HttpAccessLogFilter {
 
   def headerLogger(headerMap: HeaderMap, prefix: Option[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    for ((key, value) <- headerMap) {
+    for (key, value) <- headerMap do {
       val v = headerMap.getAll(key).mkString(";")
       m += HttpAccessLogWriter.sanitizeHeader(s"${prefix.getOrElse("")}${key}") -> v
     }
@@ -189,7 +189,7 @@ object HttpAccessLogFilter {
     m += "status_code"      -> response.statusCode
     m += "status_code_name" -> HttpStatus.ofCode(response.statusCode).reason
 
-    if (response.isChunked) {
+    if response.isChunked then {
       m += "chunked" -> true
     } else {
       m += "response_size" -> response.content.length
@@ -214,7 +214,7 @@ object HttpAccessLogFilter {
 
   def extractQueryString(uri: String): String = {
     val qPos = uri.indexOf('?')
-    if (qPos < 0 || qPos == uri.length - 1) {
+    if qPos < 0 || qPos == uri.length - 1 then {
       ""
     } else {
       uri.substring(qPos + 1, uri.length)

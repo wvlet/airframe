@@ -34,7 +34,7 @@ object StaticContent extends LogSupport {
   case class FileResource(basePath: String) extends ResourceType {
     override def find(relativePath: String): Option[URL] = {
       val f = new File(s"${basePath}/${relativePath}")
-      if (f.exists()) {
+      if f.exists() then {
         Some(f.toURI.toURL)
       } else {
         None
@@ -50,12 +50,12 @@ object StaticContent extends LogSupport {
   private def isSafeRelativePath(path: String): Boolean = {
     @tailrec
     def loop(pos: Int, path: List[String]): Boolean = {
-      if (pos < 0) {
+      if pos < 0 then {
         false
-      } else if (path.isEmpty) {
+      } else if path.isEmpty then {
         true
       } else {
-        if (path.head == "..") {
+        if path.head == ".." then {
           loop(pos - 1, path.tail)
         } else {
           loop(pos + 1, path.tail)
@@ -70,7 +70,7 @@ object StaticContent extends LogSupport {
     val leaf = filePath.split("/").lastOption.getOrElse("")
     val ext = {
       val pos = leaf.lastIndexOf(".")
-      if (pos > 0) {
+      if pos > 0 then {
         leaf.substring(pos + 1)
       } else {
         ""
@@ -142,7 +142,7 @@ case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.
   }
 
   def apply(relativePath: String): Response = {
-    if (!isSafeRelativePath(relativePath)) {
+    if !isSafeRelativePath(relativePath) then {
       Http.response(HttpStatus.Forbidden_403)
     } else {
       find(relativePath)

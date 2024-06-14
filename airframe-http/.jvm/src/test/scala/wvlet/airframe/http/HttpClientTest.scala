@@ -34,11 +34,11 @@ class HttpClientTest extends AirSpec {
 
     def run: HttpMessage.Response = {
       retryer.run {
-        if (execCount > 0) {
+        if execCount > 0 then {
           retryCount += 1
         }
         execCount += 1
-        val ret = if (retryCount == 0) {
+        val ret = if retryCount == 0 then {
           body
         } else {
           Http.response(HttpStatus.Ok_200)

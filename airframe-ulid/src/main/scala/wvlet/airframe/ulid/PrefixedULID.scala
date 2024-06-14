@@ -30,7 +30,7 @@ object PrefixedULID {
     require(s != null, "The input PrefixedULID string was null")
     require(s.length >= 27, s"PrefixedULID must have 26 (ulid) + 1 (delimiter) characters: ${s} (length: ${s.length}) ")
     val pos = s.lastIndexOf(PrefixedULID.DELIMITER)
-    if (pos == -1) {
+    if pos == -1 then {
       throw new IllegalArgumentException(
         s"No delimiter ${PrefixedULID.DELIMITER} is found before the ULID string: ${s}"
       )

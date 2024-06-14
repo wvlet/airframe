@@ -105,7 +105,7 @@ trait MessageCodec[A] extends LogSupport {
     val v        = new MessageContext
     try {
       unpack(unpacker, v)
-      if (v.isNull) {
+      if v.isNull then {
         None
       } else {
         Some(v.getLastValue.asInstanceOf[A])
@@ -133,9 +133,9 @@ trait MessageCodec[A] extends LogSupport {
     val unpacker = am.MessagePack.newUnpacker(msgpack)
     val v        = new MessageContext
     unpack(unpacker, v)
-    if (v.hasError) {
+    if v.hasError then {
       throw unpackError(v.getError.get)
-    } else if (v.isNull) {
+    } else if v.isNull then {
       throw new IllegalArgumentException(s"Invalid JSON data for ${this}:\n${json}")
     } else {
       v.getLastValue.asInstanceOf[A]
@@ -147,9 +147,9 @@ trait MessageCodec[A] extends LogSupport {
     val unpacker = am.MessagePack.newUnpacker(msgpack)
     val v        = new MessageContext
     unpack(unpacker, v)
-    if (v.hasError) {
+    if v.hasError then {
       throw unpackError(v.getError.get)
-    } else if (v.isNull) {
+    } else if v.isNull then {
       throw new IllegalArgumentException(s"Invalid JSON data for ${this}:\n${json}")
     } else {
       v.getLastValue.asInstanceOf[A]

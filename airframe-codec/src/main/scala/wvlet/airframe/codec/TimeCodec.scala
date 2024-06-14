@@ -65,7 +65,7 @@ object JavaUtilDateCodec extends MessageCodec[Date] with LogSupport {
   }
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
     JavaInstantTimeCodec.unpack(u, v)
-    if (!v.isNull) {
+    if !v.isNull then {
       v.setObject(Date.from(v.getLastValue.asInstanceOf[Instant]))
     }
   }

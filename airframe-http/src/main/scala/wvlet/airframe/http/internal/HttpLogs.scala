@@ -107,7 +107,7 @@ object HttpLogs extends LogSupport {
     m += "path"   -> request.path
     m += "uri"    -> sanitize(request.uri)
     val queryString = extractQueryString(request.uri)
-    if (queryString.nonEmpty) {
+    if queryString.nonEmpty then {
       m += "query_string" -> queryString
     }
     request.dest.foreach { d =>
@@ -144,24 +144,22 @@ object HttpLogs extends LogSupport {
 
   def requestHeaderLogs(request: Request, excludeHeaders: HttpMultiMap): Map[String, Any] = {
     val m = headerLogs(request.header, excludeHeaders)
-    if (m.isEmpty)
-      Map.empty
+    if m.isEmpty then Map.empty
     else
       Map("request_header" -> m)
   }
 
   def responseHeaderLogs(response: Response, excludeHeaders: HttpMultiMap): Map[String, Any] = {
     val m = headerLogs(response.header, excludeHeaders)
-    if (m.isEmpty)
-      Map.empty
+    if m.isEmpty then Map.empty
     else
       Map("response_header" -> m)
   }
 
   def headerLogs(headerMap: HttpMultiMap, excludeHeaders: HttpMultiMap): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    for (e <- headerMap.entries) {
-      if (!excludeHeaders.contains(e.key.toLowerCase)) {
+    for e <- headerMap.entries do {
+      if !excludeHeaders.contains(e.key.toLowerCase) then {
         val v = headerMap.getAll(e.key).mkString(";")
         m += sanitizeHeader(e.key) -> v
       }
@@ -180,7 +178,7 @@ object HttpLogs extends LogSupport {
     m += "rpc_method"    -> rpcContext.rpcMethodName
 
     val rpcArgs = extractRpcArgLog(rpcContext)
-    if (rpcArgs.nonEmpty) {
+    if rpcArgs.nonEmpty then {
       m += "rpc_args" -> rpcArgs
     }
     m.result()
@@ -219,7 +217,7 @@ object HttpLogs extends LogSupport {
 
     val rpcArgsBuilder = ListMap.newBuilder[String, Any]
     // Exclude request context objects, which will be duplicates of request parameter logs
-    for ((p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs)) {
+    for (p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs) do {
       rpcArgsBuilder ++= traverseParam(p, arg)
     }
     rpcArgsBuilder.result()
@@ -250,7 +248,7 @@ object HttpLogs extends LogSupport {
       // no-op
       case se: HttpServerException =>
         // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
-        if (se.getCause != null) {
+        if se.getCause != null then {
           val rootCause = findCause(se.getCause)
           m += "exception_message" -> rootCause.getMessage
           m += "exception"         -> rootCause
@@ -259,7 +257,7 @@ object HttpLogs extends LogSupport {
         // Customize RPC error logs
         m ++= rpcStatusLogs(re.status)
         m += "exception_message" -> re.getMessage
-        if (re.shouldReportStackTrace) {
+        if re.shouldReportStackTrace then {
           m += "exception" -> re
         }
       case other =>
@@ -287,7 +285,7 @@ object HttpLogs extends LogSupport {
 
   def extractQueryString(uri: String): String = {
     val qPos = uri.indexOf('?')
-    if (qPos < 0 || qPos == uri.length - 1) {
+    if qPos < 0 || qPos == uri.length - 1 then {
       ""
     } else {
       uri.substring(qPos + 1, uri.length)

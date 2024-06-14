@@ -32,42 +32,42 @@ object TypeConverter extends LogSupport {
   import ReflectTypeUtil.*
 
   def convert[T](value: T, targetType: Surface): Option[Any] = {
-    if (value == null) {
+    if value == null then {
       Some(Zero.zeroOf(targetType))
     } else {
-      if (targetType.isPrimitive) {
+      if targetType.isPrimitive then {
         convertToPrimitive(value, targetType)
-      } else if (targetType.isOption) {
-        if (isOptionCls(cls(value))) {
+      } else if targetType.isOption then {
+        if isOptionCls(cls(value)) then {
           Option(value)
         } else {
           Option(convert(value, targetType.typeArgs(0)))
         }
-      } else if (isArray(targetType) && isArrayCls(cls(value))) {
+      } else if isArray(targetType) && isArrayCls(cls(value)) then {
         Option(value)
       } else {
         val t: Class[_] = targetType.rawType
         val s: Class[_] = cls(value)
-        if (t.isAssignableFrom(s)) {
+        if t.isAssignableFrom(s) then {
           Some(value)
-        } else if (isBuffer(s)) {
+        } else if isBuffer(s) then {
           trace(s"convert buffer $value into $targetType")
           val buf              = value.asInstanceOf[mutable.Buffer[_]]
           val gt: Seq[Surface] = targetType.typeArgs
           val e                = gt(0).rawType
-          if (isArray(targetType)) {
+          if isArray(targetType) then {
             val arr = ClassTag(e).newArray(buf.length).asInstanceOf[Array[Any]]
             buf.copyToArray(arr)
             Some(arr)
-          } else if (isList(t)) {
+          } else if isList(t) then {
             Some(buf.toList)
-          } else if (isIndexedSeq(t)) {
+          } else if isIndexedSeq(t) then {
             Some(buf.toIndexedSeq)
-          } else if (isSeq(t)) {
+          } else if isSeq(t) then {
             Some(buf.toSeq)
-          } else if (isSet(t)) {
+          } else if isSet(t) then {
             Some(buf.toSet)
-          } else if (isMap(t)) {
+          } else if isMap(t) then {
             Some(buf.asInstanceOf[mutable.Buffer[(_, _)]].toMap)
           } else {
             warn(s"cannot convert ${s.getSimpleName} to ${t.getSimpleName}")
@@ -85,9 +85,9 @@ object TypeConverter extends LogSupport {
     */
   def convertToCls[A](value: Any, targetType: Class[A]): Option[A] = {
     val cl: Class[_] = cls(value)
-    if (targetType.isAssignableFrom(cl)) {
+    if targetType.isAssignableFrom(cl) then {
       Some(value.asInstanceOf[A])
-    } else if (hasStringUnapplyConstructor(targetType)) {
+    } else if hasStringUnapplyConstructor(targetType) then {
       // call unapply
       companionObject(targetType) flatMap { co =>
         val m = cls(co).getDeclaredMethod("unapply", Array(classOf[String]): _*)
@@ -111,7 +111,7 @@ object TypeConverter extends LogSupport {
     * Convert the input value into the target type
     */
   def convertToPrimitive[A](value: Any, targetType: Surface): Option[A] = {
-    if (value == null) {
+    if value == null then {
       None
     } else {
       val s = value.toString

@@ -32,13 +32,13 @@ private object Compat extends CompatApi {
       val protocol = window.location.protocol.stripSuffix(":")
       val hostname = window.location.hostname
       // For localhost, no server address is required
-      if (hostname == "localhost" && protocol == "http") {
+      if hostname == "localhost" && protocol == "http" then {
         ServerAddress.empty
       } else {
         // For web servers, need to provide the server address
         val port = Option(window.location.port)
           .map(x =>
-            if (x.isEmpty) ""
+            if x.isEmpty then ""
             else s":${x}"
           ).getOrElse("")
         ServerAddress(s"${protocol}://${hostname}${port}")

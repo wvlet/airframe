@@ -81,7 +81,7 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
       var i                   = 0
       var logLevel: LogLevel  = Logger.getDefaultLogLevel
       val additionalLogLevels = Map.newBuilder[String, LogLevel]
-      while (i < args.length) {
+      while i < args.length do {
         args(i) match {
           case "-l" if i < args.length - 1 =>
             // Set the default log level for the test spec

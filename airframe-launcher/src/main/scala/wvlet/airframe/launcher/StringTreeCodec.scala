@@ -25,7 +25,7 @@ object StringTreeCodec extends MessageCodec[StringTree] {
         p.packMapHeader(0)
       case StringTree.Node(child) => {
         p.packMapHeader(child.size)
-        for ((key, x) <- child) {
+        for (key, x) <- child do {
           p.packString(key.toString)
           pack(p, x)
         }
@@ -34,7 +34,7 @@ object StringTreeCodec extends MessageCodec[StringTree] {
         p.packString(v.toString)
       case StringTree.SeqLeaf(elems) =>
         p.packArrayHeader(elems.length)
-        for (x <- elems) {
+        for x <- elems do {
           pack(p, x)
         }
     }

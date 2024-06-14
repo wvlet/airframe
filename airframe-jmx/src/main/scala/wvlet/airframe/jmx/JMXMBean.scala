@@ -32,7 +32,7 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
 
   override def getAttributes(attributes: Array[String]): AttributeList = {
     val l = new AttributeList(attributes.length)
-    for (a <- attributes) {
+    for a <- attributes do {
       l.add(getAttribute(a))
     }
     l
@@ -49,7 +49,7 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
   override def setAttributes(attributes: AttributeList): AttributeList = {
     val l = new AttributeList(attributes.size())
     import scala.jdk.CollectionConverters.*
-    for (a <- attributes.asList().asScala) {
+    for a <- attributes.asList().asScala do {
       l.add(setAttribute(a))
     }
     l
@@ -126,10 +126,10 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
 
     jmxParams.flatMap { p =>
       val (name, description) = getJMXAnnotationInfo(p)
-      val attrName            = if (name.isEmpty) p.name else name
+      val attrName            = if name.isEmpty then p.name else name
       val paramName           = parent.map(x => s"${x.name}.${attrName}").getOrElse(attrName)
 
-      if (isNestedMBean(p)) {
+      if isNestedMBean(p) then {
         collectMBeanParameters(
           Some(p),
           p.surface,
@@ -166,8 +166,8 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
     val result = Seq.newBuilder[Annotation]
 
     def loop(lst: Array[Annotation]): Unit = {
-      for (a <- lst) {
-        if (!seen.contains(a)) {
+      for a <- lst do {
+        if !seen.contains(a) then {
           seen += a
           result += a
           loop(a.annotationType().getAnnotations)

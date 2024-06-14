@@ -45,7 +45,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
       .newBuilder()
       .followRedirects(Redirect.NORMAL)
 
-    if (config.useHttp1) {
+    if config.useHttp1 then {
       builder = builder.version(Version.HTTP_1_1)
     }
     // Note: We tried to set a custom oexecutor here for Java HttpClient, but
@@ -99,7 +99,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
       request: Request,
       channelConfig: HttpChannelConfig
   ): HttpRequest = {
-    val uri = s"${request.dest.getOrElse(destination).uri}${if (request.uri.startsWith("/")) request.uri
+    val uri = s"${request.dest.getOrElse(destination).uri}${if request.uri.startsWith("/") then request.uri
       else s"/${request.uri}"}"
 
     val requestBuilder = HttpRequest
@@ -129,7 +129,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     val header: HttpMultiMap = {
       val h = HttpMultiMap.newBuilder
       httpResponse.headers().map().asScala.foreach { case (key, values) =>
-        if (!key.startsWith(":")) {
+        if !key.startsWith(":") then {
           values.asScala.foreach { v =>
             h.add(key, v)
           }

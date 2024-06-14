@@ -28,7 +28,7 @@ trait LifeCycleEventHandler {
   def wraps(child: LifeCycleEventHandler): LifeCycleEventHandler  = new LifeCycleEventHandlerPair(this, child)
 
   def removeAll(h: LifeCycleEventHandler): LifeCycleEventHandler = {
-    if (this eq h) {
+    if this eq h then {
       NilLifeCycleEventHandler
     } else {
       this

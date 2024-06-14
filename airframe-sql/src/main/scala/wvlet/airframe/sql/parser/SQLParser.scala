@@ -50,7 +50,7 @@ object SQLParser extends LogSupport {
     // Do not drop mismatched token
     parser.setErrorHandler(new DefaultErrorStrategy {
       override def recoverInline(recognizer: Parser): Token =
-        if (nextTokensContext == null) {
+        if nextTokensContext == null then {
           throw new InputMismatchException(recognizer)
         } else {
           throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext)
@@ -72,7 +72,7 @@ object SQLParser extends LogSupport {
     // Do not drop mismatched token
     parser.setErrorHandler(new DefaultErrorStrategy {
       override def recoverInline(recognizer: Parser): Token =
-        if (nextTokensContext == null) {
+        if nextTokensContext == null then {
           throw new InputMismatchException(recognizer)
         } else {
           throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext)

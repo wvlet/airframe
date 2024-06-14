@@ -33,7 +33,7 @@ object CommandLineTokenizer extends LogSupport {
 
     def skipWhiteSpaces: Unit = {
       var toContinue = true
-      while (toContinue && cursor < line.length) {
+      while toContinue && cursor < line.length do {
         val ch = line.charAt(cursor)
         ch match {
           case ' ' | '\t' | '\n' | '\r' =>
@@ -55,7 +55,7 @@ object CommandLineTokenizer extends LogSupport {
     }
 
     skipWhiteSpaces
-    if (cursor >= line.length) {
+    if cursor >= line.length then {
       Nil
     } else {
       val ch = line.charAt(cursor)

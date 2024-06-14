@@ -27,7 +27,7 @@ class RPCStatusTest extends AirSpec {
 
     RPCStatus.all.foreach { x =>
       // Bump the counter for each statusType
-      if (currentType.isEmpty || currentType != Some(x.statusType)) {
+      if currentType.isEmpty || currentType != Some(x.statusType) then {
         currentType = Some(x.statusType)
         counter = x.statusType.minCode
       }
@@ -108,7 +108,7 @@ class RPCStatusTest extends AirSpec {
 //        s"${s.getClass.getSimpleName.stripSuffix("$")} -> ${RPCStatus.fromGrpcStatusCode(GrpcStatus.ofHttpStatus(s).code)}"
 //      }.mkString(",\n")
 //
-    for (code <- 0 to 600) {
+    for code <- 0 to 600 do {
       val h = HttpStatus.ofCode(code)
       val r = RPCStatus.fromHttpStatus(HttpStatus.ofCode(code))
       h.isSuccessful shouldBe r.isSuccess

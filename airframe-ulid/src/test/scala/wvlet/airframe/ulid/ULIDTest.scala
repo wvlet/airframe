@@ -21,7 +21,7 @@ import wvlet.airspec.spi.PropertyCheck
 class ULIDTest extends AirSpec with PropertyCheck {
 
   test("generate ULID") {
-    for (i <- 0 to 10) {
+    for i <- 0 to 10 do {
       val ulid      = ULID.newULID
       val timestamp = ulid.epochMillis
       val str       = ulid.toString
@@ -110,7 +110,7 @@ class ULIDTest extends AirSpec with PropertyCheck {
   test("customize random generator") {
     try {
       ULID.useNonSecureRandomULIDGenerator
-      for (i <- 0 to 10) {
+      for i <- 0 to 10 do {
         val ulid      = ULID.newULID
         val timestamp = ulid.epochMillis
         val str       = ulid.toString

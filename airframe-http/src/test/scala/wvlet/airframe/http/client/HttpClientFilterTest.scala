@@ -32,7 +32,7 @@ object HttpClientFilterTest extends AirSpec {
 
     override def destination: ServerAddress = ServerAddress("localhost:8080")
     override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Response = {
-      if (reply.isDefinedAt(req)) {
+      if reply.isDefinedAt(req) then {
         reply(req)
       } else {
         throw RPCStatus.NOT_FOUND_U5.newException(s"RPC method not found: ${req.path}")

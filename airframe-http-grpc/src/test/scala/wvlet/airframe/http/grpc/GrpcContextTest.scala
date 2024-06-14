@@ -33,14 +33,14 @@ object GrpcContextTest extends AirSpec {
     }
 
     test("get context from RPCContext") {
-      for (i <- ParSeq(1 to 10)) {
+      for i <- ParSeq(1 to 10) do {
         val ret = client.getRPCContext
         ret shouldBe Some(DemoApi.demoClientId)
       }
     }
 
     test("get http request from RPCContext") {
-      if (isScala3) {
+      if isScala3 then {
         pending("For some reason, this test fails on Scala 3")
       }
       // Set authorization header

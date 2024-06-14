@@ -146,7 +146,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     // Apply the common filter in the config first, the apply the additional filter
     val request = requestFilter(config.requestFilter(req))
     // Add HOST header if missing
-    if (request.host.isEmpty) {
+    if request.host.isEmpty then {
       request.host = address.hostAndPort
     }
     client.apply(request)
@@ -202,7 +202,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   private val responseCodec = new HttpResponseBodyCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
-    if (implicitly[ru.TypeTag[A]] == ru.typeTag[Response]) {
+    if implicitly[ru.TypeTag[A]] == ru.typeTag[Response] then {
       // Can return the response as is
       response.asInstanceOf[Future[A]]
     } else {

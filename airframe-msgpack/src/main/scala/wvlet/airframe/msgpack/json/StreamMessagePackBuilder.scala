@@ -71,7 +71,7 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] with LogSupport {
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     context.increment
     val v = s.substring(start, end)
-    if (dotIndex >= 0 || expIndex >= 0) {
+    if dotIndex >= 0 || expIndex >= 0 then {
       packer.packDouble(v.toDouble)
     } else {
       Try(v.toLong) match {
@@ -99,7 +99,7 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] with LogSupport {
   }
 
   override def result: MsgPack = {
-    if (contextStack.length > 1) {
+    if contextStack.length > 1 then {
       Array.emptyByteArray
     } else {
       val src    = packer.toByteArray

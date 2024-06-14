@@ -34,7 +34,7 @@ class ResourceTest extends AirSpec {
 
     val l = Resource.listResources("scala.io", { (s: String) => s.endsWith(".class") })
     assert(l.size > 0)
-    for (each <- l) {
+    for each <- l do {
       debug(each)
       assert(each.url.toString.contains("/scala/io"))
     }
@@ -44,7 +44,7 @@ class ResourceTest extends AirSpec {
     val l = Resource.findClasses("scala.io", classOf[scala.io.Source])
     assert(l.size > 0)
     debug(l)
-    for (each <- l) {
+    for each <- l do {
       debug(each)
       assert(classOf[scala.io.Source].isAssignableFrom(each))
     }

@@ -47,13 +47,13 @@ class LogRotationHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
 
   override protected def writeInternal(log: Map[String, Any]): Unit = {
     val msg = config.logFormatter(log)
-    if (!closed.get()) {
+    if !closed.get() then {
       asyncLogHandler.publish(new java.util.logging.LogRecord(java.util.logging.Level.INFO, msg))
     }
   }
 
   override def close(): Unit = {
-    if (closed.compareAndSet(false, true)) {
+    if closed.compareAndSet(false, true) then {
       asyncLogHandler.close()
     }
   }

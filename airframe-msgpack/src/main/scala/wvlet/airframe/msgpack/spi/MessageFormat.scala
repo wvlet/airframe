@@ -68,7 +68,7 @@ object MessageFormat {
 
   {
     // Preparing a look up table for converting byte values into MessageFormat types
-    for (b <- 0 to 0xff) {
+    for b <- 0 to 0xff do {
       val mf = toMessageFormat(b.toByte)
       formatTable(b) = mf
     }
@@ -91,16 +91,11 @@ object MessageFormat {
     * @return
     */
   private[spi] def toMessageFormat(b: Byte): MessageFormat = {
-    if (Code.isPosFixInt(b))
-      MessageFormat.POSFIXINT
-    else if (Code.isNegFixInt(b))
-      MessageFormat.NEGFIXINT
-    else if (Code.isFixStr(b))
-      MessageFormat.FIXSTR
-    else if (Code.isFixedArray(b))
-      MessageFormat.FIXARRAY
-    else if (Code.isFixedMap(b))
-      MessageFormat.FIXMAP
+    if Code.isPosFixInt(b) then MessageFormat.POSFIXINT
+    else if Code.isNegFixInt(b) then MessageFormat.NEGFIXINT
+    else if Code.isFixStr(b) then MessageFormat.FIXSTR
+    else if Code.isFixedArray(b) then MessageFormat.FIXARRAY
+    else if Code.isFixedMap(b) then MessageFormat.FIXMAP
     else {
       b match {
         case Code.NIL =>

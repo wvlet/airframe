@@ -45,7 +45,7 @@ object OptionParser extends LogSupport {
 
   private[launcher] def splitPrefixes(prefix: String): Seq[String] = {
     for (p <- prefix.split(",").toSeq) yield {
-      if (p.startsWith("--") || p.startsWith("-")) {
+      if p.startsWith("--") || p.startsWith("-") then {
         p
       } else {
         throw new IllegalArgumentException(s"Invalid prefix ${prefix} (not beginning with - or --)")
@@ -109,7 +109,7 @@ object OptionParser extends LogSupport {
     val prefixes: Seq[String] = splitPrefixes(annot.prefix())
     override def takesArgument: Boolean = {
       val s = param.surface
-      val typeSurface = if (s.isOption) {
+      val typeSurface = if s.isOption then {
         s.typeArgs(0)
       } else {
         s
@@ -129,7 +129,7 @@ object OptionParser extends LogSupport {
       extends CLOptionItemBase(param)
       with CLArgItem {
     def name: String =
-      if (arg.name.isEmpty) {
+      if arg.name.isEmpty then {
         param.name
       } else {
         arg.name
@@ -150,7 +150,7 @@ object OptionParser extends LogSupport {
     def buildObjectWithFilter[A](surface: Surface, filter: String => Boolean): Any = {
       val b = ObjectBuilder(surface)
       trace(s"build from parse tree: ${parseTree}")
-      for ((path, value) <- parseTree.dfs if filter(path.last)) {
+      for (path, value) <- parseTree.dfs if filter(path.last) do {
         b.set(path, value)
       }
       b.build.asInstanceOf[A]
@@ -158,7 +158,7 @@ object OptionParser extends LogSupport {
 
     def build[B <: GenericBuilder](builder: B): B = {
       trace(s"build from parse tree: ${parseTree}")
-      for ((path, value) <- parseTree.dfs) {
+      for (path, value) <- parseTree.dfs do {
         builder.set(path, value)
       }
       builder
@@ -188,7 +188,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     def findMatch[T](p: Regex, s: String): Option[Match] = p.findFirstMatchIn(s)
 
     def group(m: Match, group: Int): Option[String] = {
-      if (m.start(group) != -1) Some(m.group(group)) else None
+      if m.start(group) != -1 then Some(m.group(group)) else None
     }
 
     case class Flag(opt: CLOption, remaining: List[String])
@@ -215,8 +215,8 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
           val symbol       = m.group(1)
           val immediateArg = group(m, 3)
           schema.findOptionNeedsArg(symbol) map { opt =>
-            if (immediateArg.isEmpty) {
-              if (s.tail.isEmpty) {
+            if immediateArg.isEmpty then {
+              if s.tail.isEmpty then {
                 throw new IllegalArgumentException("Option %s needs an argument" format opt)
               } else {
                 val remaining = s.tail
@@ -250,7 +250,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
       // Process command line arguments
       var continue  = true
       var remaining = l
-      while (continue && !remaining.isEmpty) {
+      while continue && !remaining.isEmpty do {
         val next = remaining match {
           case OptionFlag(m) => {
             appendOptionValue(m.opt, "true")
@@ -264,7 +264,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
             schema.findArgumentItem(argIndex) match {
               case Some(ai) => {
                 appendOptionValue(ai, e)
-                if (!ai.takesMultipleArguments) {
+                if !ai.takesMultipleArguments then {
                   argIndex += 1
                 }
               }
@@ -284,8 +284,8 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     val mapping: Seq[OptionMapping] = {
       val m = optionValues.collect {
         case (c: CLOption, values) =>
-          if (c.takesArgument) {
-            if (c.takesMultipleArguments) {
+          if c.takesArgument then {
+            if c.takesMultipleArguments then {
               OptMappingMultiple(c, values.toSeq)
             } else {
               OptMapping(c, values(0))
@@ -294,7 +294,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
             OptSetFlag(c)
           }
         case (a: CLArgument, values) =>
-          if (a.takesMultipleArguments) {
+          if a.takesMultipleArguments then {
             ArgMappingMultiple(a, values.toSeq)
           } else {
             ArgMapping(a, values(0))

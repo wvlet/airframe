@@ -38,7 +38,7 @@ class Logger(
     with Serializable {
 
   private def _log = {
-    if (wrapped == null) {
+    if wrapped == null then {
       wrapped = jl.Logger.getLogger(name)
     }
     wrapped
@@ -49,11 +49,11 @@ class Logger(
   def getLogLevel: LogLevel = {
     @tailrec
     def getLogLevelOf(l: jl.Logger): LogLevel = {
-      if (l == null) {
+      if l == null then {
         LogLevel.INFO
       } else {
         val jlLevel = l.getLevel()
-        if (jlLevel != null) {
+        if jlLevel != null then {
           LogLevel(jlLevel)
         } else {
           getLogLevelOf(l.getParent())
@@ -96,7 +96,7 @@ class Logger(
 
   def clearHandlers: Unit = {
     synchronized {
-      for (lst <- Option(_log.getHandlers); h <- lst) {
+      for lst <- Option(_log.getHandlers); h <- lst do {
         _log.removeHandler(h)
       }
     }
@@ -108,7 +108,7 @@ class Logger(
   def clearAllHandlers: Unit = {
     var l: Option[Logger] = Some(this)
     synchronized {
-      while (l.isDefined) {
+      while l.isDefined do {
         l.map { x =>
           x.clearHandlers
           l = x.getParent
@@ -152,7 +152,7 @@ class Logger(
       case _            => message.toString
     }
 
-    if (isMultiLine(formatted)) {
+    if isMultiLine(formatted) then {
       s"\n${formatted}"
     } else {
       formatted
@@ -216,7 +216,7 @@ object Logger {
 
   val rootLogger = {
     val l = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
-    if (LogEnv.isScalaJS) {
+    if LogEnv.isScalaJS then {
       l.setLogLevel(LogLevel.INFO)
     }
     l
@@ -283,7 +283,7 @@ object Logger {
     * @param level
     */
   def setLogLevel(pattern: String, level: LogLevel): Unit = {
-    if (pattern.contains("*")) {
+    if pattern.contains("*") then {
       val regexPattern = pattern.replaceAll("\\.", "\\\\.").replaceAll("\\*", ".*")
       synchronized {
         logLevelPatterns = (regexPattern.r, level) :: logLevelPatterns
@@ -301,7 +301,7 @@ object Logger {
     * @param pattern
     */
   def resetLogLevel(pattern: String): Unit = {
-    if (pattern.contains("*")) {
+    if pattern.contains("*") then {
       val regexPattern    = pattern.replaceAll("\\.", "\\\\.").replaceAll("\\*", ".*").r
       val regexPatternStr = regexPattern.regex
       synchronized {
@@ -309,7 +309,7 @@ object Logger {
       }
       // Reset the log level of already created loggers matching the removed pattern
       loggerCache.values.foreach { l =>
-        if (regexPattern.findFirstIn(l.getName).isDefined) {
+        if regexPattern.findFirstIn(l.getName).isDefined then {
           l.resetLogLevel
         }
       }
@@ -349,10 +349,10 @@ object Logger {
     * @param logLevels
     */
   def setLogLevels(logLevels: Properties): Unit = {
-    for ((loggerName, level) <- logLevels.asScala) {
+    for (loggerName, level) <- logLevels.asScala do {
       LogLevel.unapply(level) match {
         case Some(lv) =>
-          if (loggerName == "_root_") {
+          if loggerName == "_root_" then {
             rootLogger.setLogLevel(lv)
           } else {
             Logger(loggerName).setLogLevel(lv)

@@ -34,7 +34,7 @@ object LogLevel {
   def apply(name: String): LogLevel = {
     val n  = name.toLowerCase()
     val lv = values.find(n == _.name)
-    if (lv.isEmpty) {
+    if lv.isEmpty then {
       Console.err.println(s"Unknown log level [${name}] Use info log level instead.")
       INFO
     } else

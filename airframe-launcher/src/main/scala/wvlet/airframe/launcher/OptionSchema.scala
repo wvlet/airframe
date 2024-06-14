@@ -26,7 +26,7 @@ sealed trait OptionSchema extends LogSupport {
   protected lazy val symbolTable = {
     var h = Map[String, CLOption]()
     options.foreach { case opt: CLOption =>
-      for (p <- opt.prefixes) {
+      for p <- opt.prefixes do {
         h += p -> opt
       }
     }
@@ -44,7 +44,7 @@ sealed trait OptionSchema extends LogSupport {
   }
 
   def findArgumentItem(argIndex: Int): Option[CLArgItem] = {
-    if (args.isDefinedAt(argIndex)) Some(args(argIndex)) else None
+    if args.isDefinedAt(argIndex) then Some(args(argIndex)) else None
   }
 
   override def toString: String = "options:[%s], args:[%s]".format(options.mkString(", "), args.mkString(", "))
@@ -60,7 +60,7 @@ object ClassOptionSchema extends LogSupport {
     var argCount = argIndexOffset
     val o        = Seq.newBuilder[CLOption]
     val a        = Seq.newBuilder[CLArgItem]
-    for (p <- surface.params) {
+    for p <- surface.params do {
       val nextPath = path / p.name
 
       val optAnnot = p.findAnnotationOf[option]
@@ -75,7 +75,7 @@ object ClassOptionSchema extends LogSupport {
         argCount += 1
       }
 
-      if (optAnnot.isEmpty || argAnnot.isEmpty) {
+      if optAnnot.isEmpty || argAnnot.isEmpty then {
         // The parameter might be a nested object
         val nested = ClassOptionSchema(p.surface, nextPath, argCount)
         o ++= nested.options
@@ -104,7 +104,7 @@ object MethodOptionSchema {
     val a = Seq.newBuilder[CLArgItem]
 
     var argCount = argIndexOffset
-    for (p <- method.args) {
+    for p <- method.args do {
       val nextPath = path / p.name
       // Find options
       val optAnnot = p.findAnnotationOf[option]
@@ -118,7 +118,7 @@ object MethodOptionSchema {
         argCount += 1
       }
 
-      if (optAnnot.isEmpty || argAnnot.isEmpty) {
+      if optAnnot.isEmpty || argAnnot.isEmpty then {
         // The method argument might be a nested object
         val nested = ClassOptionSchema(p.surface, nextPath, argCount)
         o ++= nested.options

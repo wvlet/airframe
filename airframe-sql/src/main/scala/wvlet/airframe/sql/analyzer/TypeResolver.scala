@@ -114,7 +114,7 @@ object TypeResolver extends LogSupport {
           case other =>
             ResolvedGroupingKey(None, other.child, other.nodeLocation)
         }
-        if (changed) {
+        if changed then {
           Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
         } else {
           a
@@ -300,7 +300,7 @@ object TypeResolver extends LogSupport {
                   k.nodeLocation
                 )
               case other =>
-                if (other.size > 1) {
+                if other.size > 1 then {
                   throw SQLErrorCode.SyntaxError.newException(
                     s"ambiguous join condition: ${expr} matches with [${other.mkString(", ")}]",
                     k.nodeLocation
@@ -363,7 +363,7 @@ object TypeResolver extends LogSupport {
     outputColumns.map {
       case a @ Alias(qualifier, name, expr, _, _) =>
         val resolved = resolveExpression(context, expr, inputAttributes)
-        if (expr eq resolved) {
+        if expr eq resolved then {
           resolvedColumns += a
         } else {
           resolvedColumns += a.copy(expr = resolved)
@@ -387,7 +387,7 @@ object TypeResolver extends LogSupport {
     attribute match {
       case a @ Alias(qualifier, name, attr: Attribute, _, _) =>
         val resolved = resolveAttribute(attr)
-        if (attr eq resolved) {
+        if attr eq resolved then {
           a
         } else {
           a.copy(expr = resolved)
@@ -399,13 +399,13 @@ object TypeResolver extends LogSupport {
         val resolvedInputs = m.inputs.map {
           case a: Attribute =>
             val x = resolveAttribute(a)
-            if (!(x eq a)) {
+            if !(x eq a) then {
               changed = true
             }
             x
           case other => other
         }
-        if (changed) {
+        if changed then {
           m.copy(inputs = resolvedInputs)
         } else {
           m

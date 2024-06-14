@@ -24,7 +24,7 @@ class TimeParserTest extends AirSpec {
     val z   = TimeParser.parse(str, UTC)
     val ans = ZonedDateTime.parse(expected)
 
-    if (z.isEmpty) {
+    if z.isEmpty then {
       warn(s"failed to parse ${str}")
     }
     z shouldBe defined

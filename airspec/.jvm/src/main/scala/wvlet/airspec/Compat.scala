@@ -73,8 +73,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
       .orElse {
         Try(classLoader.loadClass(fullyQualifiedName)).toOption
           .flatMap { x =>
-            if (classOf[AirSpec].isAssignableFrom(x))
-              Some(AirSpecClassFingerPrint)
+            if classOf[AirSpec].isAssignableFrom(x) then Some(AirSpecClassFingerPrint)
             else {
               None
             }
@@ -86,7 +85,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match {
       case Success(x) => Some(x)
       case Failure(e: InvocationTargetException) if e.getCause != null =>
-        if (classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass)) {
+        if classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass) then {
           // For assertion failrues, throw it as is
           throw e
         } else {
@@ -128,15 +127,15 @@ private[airspec] object Compat extends CompatApi with LogSupport {
   override private[airspec] def getSpecName(cl: Class[_]): String = {
     var name = cl.getName
 
-    if (name.endsWith("$")) {
+    if name.endsWith("$") then {
       // Remove trailing $ of Scala Object name
       name = name.substring(0, name.length - 1)
     }
 
     // When class is an anonymous trait
-    if (name.contains("$anon$")) {
+    if name.contains("$anon$") then {
       val interfaces = cl.getInterfaces
-      if (interfaces != null && interfaces.length > 0) {
+      if interfaces != null && interfaces.length > 0 then {
         // Use the first interface name instead of the anonymous name and Airframe SessionHolder (injected at compile-time)
         interfaces
           .map(_.getName)

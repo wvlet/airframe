@@ -71,7 +71,7 @@ object ClassScanner extends LogSupport {
       f match {
         case d: File if f.isDirectory =>
           val files = d.listFiles()
-          if (files != null) {
+          if files != null then {
             files.foreach(loop(baseDir, _))
           }
         case f: File if f.getPath.endsWith(".class") =>
@@ -85,7 +85,7 @@ object ClassScanner extends LogSupport {
     }
 
     val baseDir = new File(dir)
-    if (baseDir.exists() && baseDir.isDirectory) {
+    if baseDir.exists() && baseDir.isDirectory then {
       val dirs = targetPackageNames.map(toFilePath).map { path => new File(baseDir, path) }
       dirs.foreach(x => loop(baseDir, x))
     }
@@ -101,10 +101,10 @@ object ClassScanner extends LogSupport {
 
     val classes = Seq.newBuilder[String]
 
-    while (entryEnum.hasMoreElements) {
+    while entryEnum.hasMoreElements do {
       val jarEntry  = entryEnum.nextElement
       val entryName = jarEntry.getName
-      if (entryName.endsWith(".class") && targetPaths.exists(p => entryName.startsWith(p))) {
+      if entryName.endsWith(".class") && targetPaths.exists(p => entryName.startsWith(p)) then {
         val clsName = entryName
           .stripSuffix(".class")
           .replaceAll("\\/", ".")

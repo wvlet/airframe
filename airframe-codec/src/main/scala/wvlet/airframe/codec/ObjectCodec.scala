@@ -54,8 +54,8 @@ class ParamListCodec(
     val numParams = params.length
     // Use array format [p1, p2, ....]
     p.packArrayHeader(numParams)
-    for ((paramValue, codec) <- paramValueList.zip(paramCodec)) {
-      if (paramValue == null) {
+    for (paramValue, codec) <- paramValueList.zip(paramCodec) do {
+      if paramValue == null then {
         p.packNil
       } else {
         codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
@@ -65,7 +65,7 @@ class ParamListCodec(
 
   def packAsMap(p: Packer, obj: Any): Unit = {
     def hasValue(param: Parameter): Boolean = {
-      if (!param.surface.isOption) {
+      if !param.surface.isOption then {
         true
       } else {
         param.get(obj) match {
@@ -79,9 +79,9 @@ class ParamListCodec(
     val numParams = params.count(hasValue)
     // Use map format {k1:p1, k2:p2, ....}
     p.packMapHeader(numParams)
-    for ((param, codec) <- params.zip(paramCodec)) {
+    for (param, codec) <- params.zip(paramCodec) do {
       // If the parameter value is None of Option type, we can suppress its key-value output.
-      if (hasValue(param)) {
+      if hasValue(param) then {
         val paramValue = param.get(obj)
         p.packString(param.name)
         codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
@@ -91,7 +91,7 @@ class ParamListCodec(
 
   private def getParamDefaultValue(p: Parameter): Any = {
     def returnZero: Any = {
-      if (p.isRequired) {
+      if p.isRequired then {
         // If the parameter has @required annotation, we can't use the Zero value
         throw new MessageCodecException(
           MISSING_PARAMETER,
@@ -125,10 +125,10 @@ class ParamListCodec(
         val numElems = u.unpackArrayHeader
         var index    = 0
         val b        = Seq.newBuilder[Any]
-        while (index < numElems && index < numParams) {
+        while index < numElems && index < numParams do {
           val p = params(index)
           paramCodec(index).unpack(u, v)
-          val arg = if (v.isNull) {
+          val arg = if v.isNull then {
             trace(v.getError)
             getParamDefaultValue(p)
           } else {
@@ -138,14 +138,14 @@ class ParamListCodec(
           index += 1
         }
         // Populate args with the default or zero value
-        while (index < numParams) {
+        while index < numParams do {
           val p = params(index)
           val v = getParamDefaultValue(p)
           b += v
           index += 1
         }
         // Ignore additional args
-        while (index < numElems) {
+        while index < numElems do {
           u.skipValue
           index += 1
         }
@@ -155,7 +155,7 @@ class ParamListCodec(
 
         // { key:value, ...} -> record
         val mapSize = u.unpackMapHeader
-        for (i <- 0 until mapSize) {
+        for i <- 0 until mapSize do {
           // Read key
           val keyValue = u.unpackValue
 
@@ -166,7 +166,7 @@ class ParamListCodec(
           codecTable.get(cKey) match {
             case Some(codec) =>
               codec.unpack(u, v)
-              if (!v.isNull) {
+              if !v.isNull then {
                 m += (cKey -> v.getLastValue)
               }
             case None =>
@@ -225,7 +225,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
 
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
     paramListCodec.unpack(u, v)
-    if (!v.isNull) {
+    if !v.isNull then {
       val args = v.getLastValue.asInstanceOf[Seq[Any]]
       surface.objectFactory match {
         case Some(c) =>
@@ -262,7 +262,7 @@ case class ObjectMapCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
 
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
     paramListCodec.unpack(u, v)
-    if (!v.isNull) {
+    if !v.isNull then {
       val args = v.getLastValue.asInstanceOf[Seq[Any]]
       surface.objectFactory match {
         case Some(c) =>

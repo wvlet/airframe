@@ -142,10 +142,10 @@ case class FinagleServerConfig(
   // Initialize Finagle server using this config
   private[finagle] def initServer(server: Http.Server): Http.Server = {
     var s = serverInitializer(server)
-    for (x <- tracer) {
+    for x <- tracer do {
       s = s.withTracer(x)
     }
-    for (x <- statsReceiver) {
+    for x <- statsReceiver do {
       s = s.withStatsReceiver(x)
     }
     s
@@ -207,7 +207,7 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
   @PostConstruct
   def start: Unit = {
     synchronized {
-      if (server.isEmpty) {
+      if server.isEmpty then {
         info(s"Starting ${finagleConfig.name} server at http://localhost:${port}")
         val customServer = finagleConfig.initServer(Http.Server())
         server = Some(customServer.serve(s":${port}", finagleService))
@@ -217,7 +217,7 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
 
   def stop = {
     synchronized {
-      if (server.isDefined) {
+      if server.isDefined then {
         info(s"Stopping ${finagleConfig.name} server at http://localhost:${port}")
         server.map(x => Await.result(x.close()))
         server = None
@@ -279,7 +279,7 @@ object FinagleServer extends LogSupport {
 
               try {
                 // Embed RPCError into the response body
-                if (request.acceptsJson) {
+                if request.acceptsJson then {
                   resp = resp.withJson(e.toJson)
                 } else {
                   // Use MessagePack encoding by default
@@ -384,7 +384,7 @@ class FinagleServerFactory(session: Session) extends AutoCloseable with LogSuppo
   override def close(): Unit = {
     debug(s"Closing FinagleServerFactory")
     val ex = Seq.newBuilder[Throwable]
-    for (server <- createdServers) {
+    for server <- createdServers do {
       try {
         server.close()
       } catch {
@@ -395,8 +395,8 @@ class FinagleServerFactory(session: Session) extends AutoCloseable with LogSuppo
     createdServers = List.empty
 
     val exceptions = ex.result()
-    if (exceptions.nonEmpty) {
-      if (exceptions.size == 1) {
+    if exceptions.nonEmpty then {
+      if exceptions.size == 1 then {
         throw exceptions.head
       } else {
         throw MultipleExceptions(exceptions)

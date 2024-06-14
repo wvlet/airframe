@@ -133,7 +133,7 @@ object HttpClientIR extends LogSupport {
 
     def fullServiceName: String = s"${internalPackageName}.${serviceName}"
     def internalPackageName: String = {
-      if (relativePackageName.isEmpty) {
+      if relativePackageName.isEmpty then {
         "internal"
       } else {
         s"internal.${relativePackageName}"
@@ -141,7 +141,7 @@ object HttpClientIR extends LogSupport {
     }
 
     def relativePackageName: String = {
-      if (fullPackageName == basePackageName) {
+      if fullPackageName == basePackageName then {
         ""
       } else {
         fullPackageName.stripPrefix(s"${basePackageName}.")
@@ -152,7 +152,7 @@ object HttpClientIR extends LogSupport {
 
   case class ClientRequestModelClassDef(name: String, parameter: Seq[Parameter]) {
     def code(isPrivate: Boolean = true) =
-      s"${if (isPrivate) "private "
+      s"${if isPrivate then "private "
         else ""}case class ${name}(${parameter
           .map { p =>
             s"${p.name}: ${fullTypeNameOf(p.surface).replaceAll("\\$", ".")}"
@@ -179,7 +179,7 @@ object HttpClientIR extends LogSupport {
         .mkString(", ")
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
-      if (isOpsRequest) s"${methodName}Ops"
+      if isOpsRequest then s"${methodName}Ops"
       else methodName
     }
     def requestModelClassType: String = {
@@ -207,14 +207,12 @@ object HttpClientIR extends LogSupport {
 
     def grpcMethodType: GrpcMethodType = {
       val isClientStreaming: Boolean = grpcClientStreamingArg.isDefined
-      if (classOf[Rx[_]].isAssignableFrom(returnType.rawType)) {
-        if (isClientStreaming)
-          GrpcMethodType.BIDI_STREAMING
+      if classOf[Rx[_]].isAssignableFrom(returnType.rawType) then {
+        if isClientStreaming then GrpcMethodType.BIDI_STREAMING
         else
           GrpcMethodType.SERVER_STREAMING
       } else {
-        if (isClientStreaming)
-          GrpcMethodType.CLIENT_STREAMING
+        if isClientStreaming then GrpcMethodType.CLIENT_STREAMING
         else
           GrpcMethodType.UNARY
       }
@@ -305,21 +303,21 @@ object HttpClientIR extends LogSupport {
       val clientCallParams                                         = Seq.newBuilder[String]
       var requestModelClassDef: Option[ClientRequestModelClassDef] = None
 
-      if (httpClientCallInputs.isEmpty) {
-        if (route.httpMethod == HttpMethod.POST) {
+      if httpClientCallInputs.isEmpty then {
+        if route.httpMethod == HttpMethod.POST then {
           // For RPC calls without any input, embed an empty json
           clientCallParams += "Map.empty[String, Any]"
           typeArgBuilder += Surface.of[Map[String, Any]]
         } else {
           // Do not add any parameters for empty requests
         }
-      } else if (httpClientCallInputs.size == 1 && !primitiveOnlyInputs && !route.isRPC) {
+      } else if httpClientCallInputs.size == 1 && !primitiveOnlyInputs && !route.isRPC then {
         // Unary Endpoint call
         httpClientCallInputs.headOption.map { x =>
           clientCallParams += x.name
           typeArgBuilder += x.surface
         }
-      } else if (primitiveOnlyInputs) {
+      } else if primitiveOnlyInputs then {
         // Primitive values (or its Option) cannot be represented in JSON, so we need to wrap them with a map
         val params = Seq.newBuilder[String]
         httpClientCallInputs.foreach { x =>
@@ -346,7 +344,7 @@ object HttpClientIR extends LogSupport {
             }
           }
 
-        if (findGrpcClientStreamingArg(route.methodSurface.args).isEmpty) {
+        if findGrpcClientStreamingArg(route.methodSurface.args).isEmpty then {
           requestModelClassDef = Some(ClientRequestModelClassDef(requestModelClassName, requestModelClassParamSurfaces))
         }
 

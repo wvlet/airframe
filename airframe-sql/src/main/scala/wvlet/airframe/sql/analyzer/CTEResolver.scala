@@ -25,7 +25,7 @@ object CTEResolver extends LogSupport {
 
   def resolveCTE(analyzerContext: AnalyzerContext, p: LogicalPlan): LogicalPlan = {
     p.transform { case q @ Query(w @ With(recursive, queryDefs, _), body, _) =>
-      if (recursive) {
+      if recursive then {
         throw SQLErrorCode.UnsupportedSyntax.newException(s"recursive WITH statement is not supported", q.nodeLocation)
       }
 
@@ -37,7 +37,7 @@ object CTEResolver extends LogSupport {
             resolvedQuery
           case Some(aliases) =>
             // When there are aliases, WITH q(p1, p2, ...) as (select ....)
-            if (resolvedQuery.outputAttributes.size != aliases.size) {
+            if resolvedQuery.outputAttributes.size != aliases.size then {
               throw SQLErrorCode.SyntaxError.newException(
                 s"A wrong number of columns ${aliases.size} is used for WITH statement: ${x.name.value}",
                 x.nodeLocation

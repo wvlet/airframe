@@ -42,7 +42,7 @@ object JSONCodec extends MessageCodec[String] {
     v match {
       case JSONObject(map) =>
         p.packMapHeader(map.size)
-        for ((k: String, v: JSONValue) <- map) {
+        for (k: String, v: JSONValue) <- map do {
           p.packString(k)
           packJsonValue(p, v)
         }
@@ -119,7 +119,7 @@ object JSONValueCodec extends MessageCodec[JSONValue] {
       case ValueType.ARRAY =>
         val len = u.unpackArrayHeader
         val b   = IndexedSeq.newBuilder[JSONValue]
-        for (i <- 0 until len) {
+        for i <- 0 until len do {
           b += unpackJson(u)
         }
         JSONArray(b.result())

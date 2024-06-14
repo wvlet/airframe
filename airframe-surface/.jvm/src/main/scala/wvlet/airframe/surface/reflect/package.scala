@@ -44,7 +44,7 @@ package object reflect {
         cl match {
           case null => None
           case _ =>
-            if (cl.getDeclaredAnnotations.exists(a => c.runtimeClass.isAssignableFrom(a.annotationType()))) {
+            if cl.getDeclaredAnnotations.exists(a => c.runtimeClass.isAssignableFrom(a.annotationType())) then {
               Some(cl)
             } else {
               cl.getInterfaces.find(x => loop(x).isDefined)
@@ -80,7 +80,7 @@ package object reflect {
       p match {
         case mp: MethodParameter =>
           Try {
-            if (mp.method.name == "<init>") {
+            if mp.method.name == "<init>" then {
               // constructor
               val owner = mp.method.owner
               Try(owner.getDeclaredConstructor(mp.method.paramTypes: _*)).toOption
@@ -103,7 +103,7 @@ package object reflect {
 
     def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
       val annots = annotations
-      if (p.index < annots.length) {
+      if p.index < annots.length then {
         findAnnotation[T](annots(p.index).toIndexedSeq)
       } else {
         None

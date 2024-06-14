@@ -17,12 +17,12 @@ import wvlet.airframe.rx.html.RxEmbedding.*
 trait HtmlNode extends HtmlNodeBase {
   @deprecated("Use html.when(cond, node)", since = "23.7.0")
   def when(cond: => Boolean): HtmlNode = {
-    if (cond) this else HtmlNode.empty
+    if cond then this else HtmlNode.empty
   }
 
   @deprecated("Use html.when(!cond, node)", since = "23.7.0")
   def unless(cond: => Boolean): HtmlNode = {
-    if (cond) HtmlNode.empty else this
+    if cond then HtmlNode.empty else this
   }
 }
 

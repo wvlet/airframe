@@ -129,7 +129,7 @@ object HealthCheckPolicy extends LogSupport {
       }
 
       override def isMarkedDead: Boolean = {
-        if (executionCount < numExecutions) {
+        if executionCount < numExecutions then {
           false
         } else {
           failureCount >= numFailures
@@ -138,14 +138,14 @@ object HealthCheckPolicy extends LogSupport {
 
       private def setAndMove(v: Boolean): Unit = {
         val i    = (executionCount % numExecutions).toInt
-        val mask = 1L << (63 - i   % 64)
-        if (v == true) {
+        val mask = 1L << (63 - i % 64)
+        if v == true then {
           executionHistory(i / 64) |= mask
         } else {
           executionHistory(i / 64) &= ~mask
         }
         executionCount += 1
-        if (executionCount < 0) {
+        if executionCount < 0 then {
           // Reset upon overflow
           executionCount = numExecutions
         }

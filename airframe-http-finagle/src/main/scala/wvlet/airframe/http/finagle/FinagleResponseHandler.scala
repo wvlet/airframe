@@ -53,7 +53,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
 
   private def newResponse(route: Route, request: Request, responseSurface: Surface): Response = {
     val r = Response(request)
-    if (responseSurface == Primitive.Unit) {
+    if responseSurface == Primitive.Unit then {
       request.method match {
         case Method.Post if route.isRPC =>
           // For RPC, return 200 even for POST
@@ -71,9 +71,9 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
 
   private def newStreamResponse(request: Request, reader: Reader[Buf]): Response = {
     val resp = Response(request.version, Status.Ok, reader)
-    if (isMsgPackRequest(request)) {
+    if isMsgPackRequest(request) then {
       resp.contentType = xMsgPack
-    } else if (isOctetStreamRequest(request)) {
+    } else if isOctetStreamRequest(request) then {
       resp.contentType = MediaType.OctetStream
     } else {
       // TODO Support other content types
@@ -103,7 +103,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
             val r     = reader.asInstanceOf[Reader[Any]]
             val codec = mapCodecFactory.of(elemType).asInstanceOf[MessageCodec[Any]]
 
-            if (isMsgPackRequest(request)) {
+            if isMsgPackRequest(request) then {
               // Return a stream sequence of MessagePack bytes
               newStreamResponse(request, FinagleResponseHandler.toMsgPackStream(reader, codec))
             } else {
@@ -141,7 +141,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
         }
 
         // Return application/x-msgpack content type
-        if (isMsgPackRequest(request)) {
+        if isMsgPackRequest(request) then {
           val res = newResponse(route, request, responseSurface)
           res.contentType = xMsgPack
           res.content = ByteArray.Owned(msgpack)
@@ -168,7 +168,7 @@ object FinagleResponseHandler {
 
     val jsonArrayElementReader = reader.map { x =>
       val json = codec.toJson(x)
-      if (reported.compareAndSet(false, true)) {
+      if reported.compareAndSet(false, true) then {
         // The first element
         Buf.Utf8(json)
       } else {

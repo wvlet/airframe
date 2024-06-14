@@ -53,13 +53,13 @@ object Config extends LogSupport {
 
   def cleanupConfigPaths(paths: Seq[String]) = {
     val b = Seq.newBuilder[String]
-    for (p <- paths) {
-      if (!p.isEmpty) {
+    for p <- paths do {
+      if !p.isEmpty then {
         b += p
       }
     }
     val result = b.result()
-    if (result.isEmpty) {
+    if result.isEmpty then {
       Seq(".") // current directory
     } else {
       result
@@ -98,7 +98,7 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     */
   def toPrintableMap: Map[String, Any] = {
     def traverse(s: Surface, v: Any, secret: Option[wvlet.airframe.surface.secret]): Any = {
-      if (s.params.isEmpty) {
+      if s.params.isEmpty then {
         val value = v match {
           case null => ""
           case Some(x) if x != null =>
@@ -119,7 +119,7 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
       } else {
         // Use ListMap to preserve the parameter order
         val m = ListMap.newBuilder[String, Any]
-        for (p <- s.params) {
+        for p <- s.params do {
           m += p.name -> traverse(p.surface, p.get(v), p.findAnnotationOf[wvlet.airframe.surface.secret])
         }
         m.result()
@@ -139,8 +139,8 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
 
     def traverse(m: Map[String, Any], indent: Int): Unit = {
       val paramWidth = m.keys.map(_.length).max
-      for ((paramName, v) <- m) {
-        val prefix = if (indent == 0) {
+      for (paramName, v) <- m do {
+        val prefix = if indent == 0 then {
           s += s"[${paramName}]"
           ""
         } else {
@@ -150,7 +150,7 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
         val gap = " " * (paramWidth - paramName.length).max(0)
         v match {
           case mm: Map[String @unchecked, Any @unchecked] =>
-            if (indent > 0) {
+            if indent > 0 then {
               s += prefix
             }
             traverse(mm, indent + 1)
@@ -182,14 +182,13 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
 
   def getConfigChanges: Seq[ConfigChange] = {
     val b = Seq.newBuilder[ConfigChange]
-    for (c <- getAll) {
+    for c <- getAll do {
       val defaultProps = PropertiesConfig.toConfigProperties(c.tpe, getDefaultValueOf(c.tpe))
       val currentProps = PropertiesConfig.toConfigProperties(c.tpe, c.value)
 
-      for (
-        (k, props) <- defaultProps.groupBy(_.key); defaultValue <- props;
-        current    <- currentProps.filter(x => x.key == k)
-      ) {
+      for (k, props) <- defaultProps.groupBy(_.key); defaultValue <- props;
+      current        <- currentProps.filter(x => x.key == k)
+      do {
         b += ConfigChange(c.tpe, k, defaultValue.v, current.v)
       }
     }
@@ -297,17 +296,17 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
       onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
   ): Config = {
     val p = new Properties
-    for ((k, v) <- props) {
+    for (k, v) <- props do {
       Option(v).map { x => p.setProperty(k, x.toString) }
     }
-    if (p.isEmpty) this else PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
+    if p.isEmpty then this else PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
   }
 
   def overrideWithProperties(
       props: Properties,
       onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
   ): Config = {
-    if (props.isEmpty) this else PropertiesConfig.overrideWithProperties(this, props, onUnusedProperties)
+    if props.isEmpty then this else PropertiesConfig.overrideWithProperties(this, props, onUnusedProperties)
   }
 
   def overrideWithPropertiesFile(

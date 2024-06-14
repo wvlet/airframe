@@ -22,7 +22,7 @@ object Path extends LogSupport {
   def current: Path = Current
 
   def apply(s: String): Path = {
-    if (s.startsWith("""/""")) {
+    if s.startsWith("""/""") then {
       val c = s.substring(1).split("""\/""")
       c.foldLeft[Path](Root) { (parent, component) => parent / component }
     } else {
@@ -78,7 +78,7 @@ trait Path extends Iterable[String] {
   def parent: Option[Path]
   def isLeaf = size == 1
   def tailPath: Path =
-    if (isEmpty) {
+    if isEmpty then {
       Path.Current
     } else {
       drop(1).foldLeft[Path](Path.Current) { (p, c) => p / c }
@@ -93,9 +93,9 @@ trait Path extends Iterable[String] {
   override def hashCode = fullPath.hashCode
   override def equals(other: Any) = {
     val o = other.asInstanceOf[AnyRef]
-    if (this eq o) {
+    if this eq o then {
       true
-    } else if (classOf[Path].isAssignableFrom(o.getClass)) {
+    } else if classOf[Path].isAssignableFrom(o.getClass) then {
       this.fullPath == other.asInstanceOf[Path].fullPath
     } else {
       false

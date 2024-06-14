@@ -19,8 +19,7 @@ object JavaHttpClientBackend extends HttpClientBackend {
 
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
     // For JDK8, use URLConnectionChannel
-    if (isJava8)
-      new URLConnectionChannel(serverAddress, config)
+    if isJava8 then new URLConnectionChannel(serverAddress, config)
     else
       new JavaHttpClientChannel(serverAddress, config)
   }

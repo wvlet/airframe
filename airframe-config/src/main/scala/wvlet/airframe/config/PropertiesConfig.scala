@@ -56,7 +56,7 @@ object PropertiesConfig extends LogSupport {
     c.length match {
       case l if l >= 2 =>
         val prefixSplit = c(0).split("@+")
-        if (prefixSplit.length > 1) {
+        if prefixSplit.length > 1 then {
           val param = c(1).mkString.canonicalName
           ConfigKey(Prefix(prefixSplit(0).canonicalName, Some(prefixSplit(1).canonicalName)), param)
         } else {
@@ -72,7 +72,7 @@ object PropertiesConfig extends LogSupport {
   private[config] def toConfigProperties(tpe: Surface, config: Any): Seq[ConfigProperty] = {
     val prefix = extractPrefix(tpe)
     val b      = Seq.newBuilder[ConfigProperty]
-    for (p <- tpe.params) {
+    for p <- tpe.params do {
       val key = ConfigKey(prefix, p.name.canonicalName)
       Try(p.get(config)) match {
         case Success(v) =>
@@ -113,7 +113,7 @@ object PropertiesConfig extends LogSupport {
         }
 
       unusedProperties ++= unused
-      for (p <- overrideParams) {
+      for p <- overrideParams do {
         trace(s"override: ${p}")
         configBuilder.set(p.key.param, p.v)
       }
@@ -122,7 +122,7 @@ object PropertiesConfig extends LogSupport {
     }
 
     val unused = unusedProperties.result()
-    if (unused.size > 0) {
+    if unused.size > 0 then {
       val unusedProps = new Properties
       unused.map(p => unusedProps.put(p.key.toString, p.v.asInstanceOf[AnyRef]))
       onUnusedProperties(unusedProps)

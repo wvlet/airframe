@@ -65,7 +65,7 @@ object ParquetRecordReader extends LogSupport {
     override def addBinary(value: Binary): Unit = {
       val jsonStr = value.toStringUsingUTF8
       val obj: Any =
-        if (jsonStr.startsWith("{") || jsonStr.endsWith("[")) {
+        if jsonStr.startsWith("{") || jsonStr.endsWith("[") then {
           // Map to message pack value for handling nested objects
           ValueCodec.fromJson(jsonStr)
         } else {
@@ -109,7 +109,7 @@ class ParquetRecordReader[A](
         }
       case _ if surface.isMap =>
         // Mapping Parquet columns to non-object types (e.g., Map[String, Any])
-        if (f.isPrimitive) {
+        if f.isPrimitive then {
           new MsgPackConverter(f.getName, recordBuilder)
         } else {
           // Mapping Parquet group types to non-object types
@@ -123,7 +123,7 @@ class ParquetRecordReader[A](
         // GroupConverter for nested objects
         surface.params.find(_.name == f.getName) match {
           case Some(param) =>
-            if (param.surface.isOption || param.surface.isSeq || param.surface.isArray) {
+            if param.surface.isOption || param.surface.isSeq || param.surface.isArray then {
               // For Option[X], Seq[X] types, extract X
               val elementSurface = param.surface.typeArgs(0)
               new ParquetRecordReader(

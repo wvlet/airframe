@@ -31,7 +31,7 @@ object YamlReader extends YamlReaderCompat with LogSupport {
 
   private[config] def load[A](surface: Surface, resourcePath: String, env: String): A = {
     val map = loadMapOf[A](surface, resourcePath)
-    if (!map.contains(env)) {
+    if !map.contains(env) then {
       throw new IllegalArgumentException(s"Env $env is not found in $resourcePath")
     }
     map(env)
@@ -108,7 +108,7 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
   }
 
   private def pack(packer: Packer, v: Any): Packer = {
-    if (v == null) {
+    if v == null then {
       packer.packNil
     } else {
       trace(s"pack: ${v} (${v.getClass.getName})")
@@ -135,14 +135,14 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
           val ar = a.asInstanceOf[Array[_]]
           trace(s"pack array (${ar.size})")
           packer.packArrayHeader(ar.length)
-          for (e <- ar) {
+          for e <- ar do {
             pack(packer, e)
           }
         case m if ReflectTypeUtil.isJavaMap(m.getClass) =>
           val mp = m.asInstanceOf[java.util.Map[AnyRef, AnyRef]].asScala
           trace(s"pack map (${mp.size})")
           packer.packMapHeader(mp.size)
-          for ((k, v) <- mp) {
+          for (k, v) <- mp do {
             pack(packer, k)
             pack(packer, v)
           }
@@ -150,7 +150,7 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
           val cl = c.asInstanceOf[java.util.Collection[_]].asScala
           trace(s"pack collection (${cl.size})")
           packer.packArrayHeader(cl.size)
-          for (e <- cl) {
+          for e <- cl do {
             pack(packer, e)
           }
         case other =>

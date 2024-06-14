@@ -48,7 +48,7 @@ object TimeParser extends LogSupport {
   def parseZonedDateTime(s: String): Option[TimeParseResult] = {
     @tailrec
     def loop(lst: List[DateTimeFormatter]): Option[TimeParseResult] = {
-      if (lst.isEmpty) {
+      if lst.isEmpty then {
         None
       } else {
         val formatter = lst.head

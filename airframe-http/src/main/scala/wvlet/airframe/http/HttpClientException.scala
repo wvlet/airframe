@@ -63,12 +63,12 @@ object HttpClientException extends LogSupport {
   private def requestFailure[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
     val status                  = adapter.statusOf(response)
     val isRPCException: Boolean = adapter.headerOf(response).get(HttpHeader.xAirframeRPCStatus).isDefined
-    if (isRPCException) {
+    if isRPCException then {
       val cause = RPCException.fromResponse(adapter.httpResponseOf(response))
       new HttpClientException(adapter.wrap(response), status, cause)
     } else {
       val content = adapter.contentStringOf(response)
-      if (content == null || content.isEmpty || isRPCException) {
+      if content == null || content.isEmpty || isRPCException then {
         new HttpClientException(adapter.wrap(response), status)
       } else {
         new HttpClientException(adapter.wrap(response), status, s"Request failed: ${content}")
@@ -92,7 +92,7 @@ object HttpClientException extends LogSupport {
       case s if s.isServerError =>
         // We should retry on any server side errors
         val f = retryableFailure(requestFailure(response))
-        if (status == HttpStatus.ServiceUnavailable_503) {
+        if status == HttpStatus.ServiceUnavailable_503 then {
           // Server is busy (e.g., S3 slow down). We need to reduce the request rate.
           f.withExtraWaitFactor(0.5)
         } else {
@@ -212,7 +212,7 @@ object HttpClientException extends LogSupport {
         case e: Throwable =>
           iter(e.getClass)
         case cl: Class[_] if classOf[Throwable].isAssignableFrom(cl) =>
-          if (finagleRetryableExceptionClasses.contains(cl.getName)) {
+          if finagleRetryableExceptionClasses.contains(cl.getName) then {
             true
           } else {
             // Traverse the parent exception class

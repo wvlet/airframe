@@ -186,7 +186,7 @@ class LoggerTest extends Spec {
   }
 
   test("use succinct name when used with anonymous trait") {
-    if (isScalaJS || isScalaNative) {
+    if isScalaJS || isScalaNative then {
       pending("Scala.js/Native cannot get a logger name from anonymous trait")
     } else {
       val l = new Sample with LogSupport {
@@ -231,18 +231,17 @@ class LoggerTest extends Spec {
   }
 
   test("support java.util.LogLevel") {
-    for (
-      l <- Seq(
-        jul.Level.ALL,
-        jul.Level.SEVERE,
-        jul.Level.WARNING,
-        jul.Level.FINE,
-        jul.Level.CONFIG,
-        jul.Level.FINER,
-        jul.Level.FINEST,
-        jul.Level.OFF
-      )
-    ) {
+    for l <- Seq(
+      jul.Level.ALL,
+      jul.Level.SEVERE,
+      jul.Level.WARNING,
+      jul.Level.FINE,
+      jul.Level.CONFIG,
+      jul.Level.FINER,
+      jul.Level.FINEST,
+      jul.Level.OFF
+    )
+    do {
       LogLevel(l)
     }
   }
@@ -251,7 +250,7 @@ class LoggerTest extends Spec {
     val logLevels = LogLevel.values.map(_.name.toLowerCase())
 
     // string to LogLevel
-    for (l <- logLevels) {
+    for l <- logLevels do {
       val level = LogLevel(l)
     }
 

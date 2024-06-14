@@ -27,7 +27,7 @@ class EmbeddedDBConnectionPool(val config: DbConfig) extends ConnectionPool with
   private def newConnection: Connection = {
     // Prepare parent db folder
     Option(new File(config.database).getParentFile).map { p =>
-      if (!p.exists()) {
+      if !p.exists() then {
         info(s"Create db folder: ${p}")
         p.mkdirs()
       }
@@ -44,7 +44,7 @@ class EmbeddedDBConnectionPool(val config: DbConfig) extends ConnectionPool with
 
   def withConnection[U](body: Connection => U): U = {
     guard {
-      if (conn.isClosed) {
+      if conn.isClosed then {
         conn = newConnection
       }
       // In sqlite-jdbc, we can reuse the same connection instance,
@@ -55,7 +55,7 @@ class EmbeddedDBConnectionPool(val config: DbConfig) extends ConnectionPool with
 
   def stop: Unit = {
     guard {
-      if (!conn.isClosed) {
+      if !conn.isClosed then {
         info(s"Closing the connection pool for ${config.jdbcUrl}")
         conn.close()
       }

@@ -25,13 +25,13 @@ private[canvas] object UnsafeUtil {
     field.get(null).asInstanceOf[Unsafe]
   }
 
-  if (unsafe == null)
-    throw new RuntimeException("Unsafe is unavailable")
+  if unsafe == null then throw new RuntimeException("Unsafe is unavailable")
 
   private[canvas] val arrayByteBaseOffset: Long = unsafe.arrayBaseOffset(classOf[Array[Byte]])
   private[canvas] val arrayByteIndexScale: Int  = unsafe.arrayIndexScale(classOf[Array[Byte]])
 
   // Make sure the VM thinks bytes are only one byte wide
-  if (arrayByteIndexScale != 1)
-    throw new IllegalStateException("Byte array index scale must be 1, but is " + arrayByteIndexScale)
+  if arrayByteIndexScale != 1 then throw new IllegalStateException(
+    "Byte array index scale must be 1, but is " + arrayByteIndexScale
+  )
 }

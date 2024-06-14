@@ -113,7 +113,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
              |${current.children
               .map(traverse(_))
               .mkString("\n")}""".stripMargin.trim
-        if (current.packageLeafName.isEmpty) {
+        if current.packageLeafName.isEmpty then {
           body
         } else {
           s"""object ${current.packageLeafName} {

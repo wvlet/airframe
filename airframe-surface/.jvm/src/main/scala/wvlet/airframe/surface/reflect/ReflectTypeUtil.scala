@@ -25,7 +25,7 @@ import scala.language.existentials
   */
 object ReflectTypeUtil extends LogSupport {
   @inline def cls[A](obj: A): Class[_] = {
-    if (obj == null) {
+    if obj == null then {
       classOf[AnyRef]
     } else {
       obj.asInstanceOf[AnyRef].getClass
@@ -37,7 +37,7 @@ object ReflectTypeUtil extends LogSupport {
       import scala.language.existentials
 
       val clName = cl.getName
-      val companionCls = if (clName.endsWith("$")) {
+      val companionCls = if clName.endsWith("$") then {
         cl
       } else {
         Class.forName(clName + "$")
@@ -59,12 +59,12 @@ object ReflectTypeUtil extends LogSupport {
       // For JDK9 or later, we need to use f.canAccess(obj)
       val accessible = f.isAccessible
       try {
-        if (!accessible) {
+        if !accessible then {
           f.setAccessible(true)
         }
         body
       } finally {
-        if (!accessible) {
+        if !accessible then {
           f.setAccessible(false)
         }
       }

@@ -159,7 +159,7 @@ class ElapsedTimeTest extends AirSpec {
   }
 
   test("convert units") {
-    for (c <- conversionExamples) {
+    for c <- conversionExamples do {
       val duration = ElapsedTime(1, c.inputUnit).convertTo(c.targetUnit)
       duration.unit shouldBe c.targetUnit
       assertEquals(duration.value, c.factor, (c.factor * 0.001))
@@ -168,12 +168,12 @@ class ElapsedTimeTest extends AirSpec {
   }
 
   test("convert to succinct units") {
-    for (c <- conversionExamples) {
+    for c <- conversionExamples do {
       val duration = ElapsedTime(c.factor, c.targetUnit)
       val actual   = duration.convertToMostSuccinctTimeUnit
       assertEquals(actual.valueIn(c.targetUnit), c.factor, c.factor * 0.001)
       assertEquals(actual.valueIn(c.inputUnit), 1.0, 0.001)
-      if (actual.unit != c.inputUnit) {
+      if actual.unit != c.inputUnit then {
         actual.unit shouldBe c.inputUnit
       }
     }

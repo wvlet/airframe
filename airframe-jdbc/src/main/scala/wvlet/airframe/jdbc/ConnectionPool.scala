@@ -49,7 +49,7 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
           conn.rollback()
           throw e
       } finally {
-        if (failed == false) {
+        if failed == false then {
           conn.commit()
         }
       }
@@ -79,7 +79,7 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
     */
   def query[U](sql: String)(rowHandler: ResultSet => U): Unit = {
     executeQuery(sql) { rs =>
-      while (rs.next()) {
+      while rs.next() do {
         rowHandler(rs)
       }
     }
@@ -94,7 +94,7 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
       withResource(conn.createStatement()) { stmt =>
         debug(s"execute query: ${sql}")
         withResource(stmt.executeQuery(sql)) { rs =>
-          if (rs.next()) {
+          if rs.next() then {
             rowHandler(rs)
           } else {
             throw new NoSuchElementException(s"No result found for ${sql}")

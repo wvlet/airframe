@@ -68,7 +68,7 @@ object RouteScanner extends LogSupport {
           rxRouterProvider.router
         }
 
-      if (routers.isEmpty) {
+      if routers.isEmpty then {
         error(
           s"No router definition is found. Make sure implementing RxRouterProvider in your api objects"
         )

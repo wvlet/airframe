@@ -51,7 +51,7 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     * Add child elements or attributes to this element and return this element
     */
   def apply(xs: HtmlNode*): RxElement = {
-    if (xs.isEmpty) {
+    if xs.isEmpty then {
       this
     } else {
       addModifier(xs)

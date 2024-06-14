@@ -28,7 +28,7 @@ class Injectee(val surface: Surface, val injectee: Any) {
     }
 
   override def hashCode(): Int = {
-    val h = 31 * surface.hashCode() + (if (injectee != null) injectee.hashCode() else 0)
+    val h = 31 * surface.hashCode() + (if injectee != null then injectee.hashCode() else 0)
     h
   }
 }

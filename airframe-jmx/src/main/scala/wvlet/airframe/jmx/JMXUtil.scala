@@ -65,7 +65,7 @@ object JMXUtil extends LogSupport {
     p.setProperty("com.sun.management.jmxremote.ssl", "false")
 
     import scala.jdk.CollectionConverters.*
-    if (isAtLeastJava9) {
+    if isAtLeastJava9 then {
       // TODO Java9 support
 //      Try {
 //        val processId = getProcessId.toString
@@ -84,7 +84,7 @@ object JMXUtil extends LogSupport {
 //      }
     } else {
       // Java8
-      for ((k, v) <- p.asScala) {
+      for (k, v) <- p.asScala do {
         System.setProperty(k, v)
       }
       "sun.management.Agent".invokeStaticMethod("startAgent")
@@ -104,7 +104,7 @@ object JMXUtil extends LogSupport {
   }
 
   private[jmx] def currentJMXRegistry: Option[HostAndPort] = {
-    if (isAtLeastJava9) {
+    if isAtLeastJava9 then {
       // In Java 9, sun.management.xxx is unavailable
       None
     } else {

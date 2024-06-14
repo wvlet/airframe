@@ -108,7 +108,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / s"airframe" / airframeHttpVersion.value,
       airframeHttpClean := {
         val d = airframeHttpWorkDir.value
-        if (d.exists) {
+        if d.exists then {
           IO.delete(d)
         }
       },
@@ -125,7 +125,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             line.contains(s"version:=${airframeVersion}")
           }
 
-        if (needsUpdate) {
+        if needsUpdate then {
           // Download airframe-http.tgz with coursier
           import coursier.*
           val moduleName = s"airframe-http-codegen_${scalaBinaryVersion.value}"
@@ -164,7 +164,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
                   // Strip the first path component
                   val path       = fileName.split("/").tail.mkString("/")
                   val outputFile = new File(packageDir, path)
-                  if (entry.isDirectory) {
+                  if entry.isDirectory then {
                     debug(s"Creating dir : ${path}")
                     outputFile.mkdirs()
                   } else {
@@ -251,7 +251,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             packageNames = packages
           )
           val optFile = baseDir / "openapi-opts.json"
-          if (packages.isEmpty) {
+          if packages.isEmpty then {
             Seq.empty
           } else {
             val optJson = MessageCodec.of[OpenAPIGeneratorOption].toJson(cmdOpts)
@@ -276,7 +276,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   }
 
   private def generatorName = {
-    val cmdName = if (OS.isWindows) {
+    val cmdName = if OS.isWindows then {
       "airframe-http-code-generator.bat"
     } else {
       "airframe-http-code-generator"

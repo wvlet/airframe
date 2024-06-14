@@ -31,12 +31,10 @@ object Shell extends LogSupport {
     // For JDK9 or later, we need to use f.canAccess(obj)
     val a = f.isAccessible()
     try {
-      if (!a)
-        f.setAccessible(true)
+      if !a then f.setAccessible(true)
       body
     } finally {
-      if (!a)
-        f.setAccessible(a)
+      if !a then f.setAccessible(a)
     }
   }
 
@@ -66,7 +64,7 @@ object Shell extends LogSupport {
     // retrieve child processes
     val pb = prepareProcessBuilder(s"ps -o pid -p $pid | sed 1d", inheritIO = true)
     // TODO: Use lazyLines when Scala 2.12 dropped
-    for (line <- Process(pb).!!.linesIterator) {
+    for line <- Process(pb).!!.linesIterator do {
       val childPID = line.trim.toInt
       killTree(childPID, signal)
     }
@@ -82,7 +80,7 @@ object Shell extends LogSupport {
     val r      = """([^\\])(\")""".r
     val b      = new StringBuilder
     var cursor = 0
-    for (m <- r.findAllIn(s).matchData) {
+    for m <- r.findAllIn(s).matchData do {
       b append s.substring(cursor, m.start)
       b append m.group(2)
       cursor = m.end
@@ -95,7 +93,7 @@ object Shell extends LogSupport {
     val r      = """(\\)([\\/\\"bfnrt])""".r
     val b      = new StringBuilder
     var cursor = 0
-    for (m <- r.findAllIn(s).matchData) {
+    for m <- r.findAllIn(s).matchData do {
       b append s.substring(cursor, m.start)
       b append m.group(2)
       cursor = m.end
@@ -151,8 +149,7 @@ object Shell extends LogSupport {
 
   def launchJava(args: String) = {
     val javaCmd = Shell.findJavaCommand()
-    if (javaCmd.isEmpty)
-      throw new IllegalStateException("No JVM is found. Set JAVA_HOME environmental variable")
+    if javaCmd.isEmpty then throw new IllegalStateException("No JVM is found. Set JAVA_HOME environmental variable")
 
     val cmdLine = "%s %s".format(javaCmd.get, args)
     launchProcess(cmdLine)
@@ -190,18 +187,16 @@ object Shell extends LogSupport {
 
   def prepareProcessBuilder(cmdLine: String, inheritIO: Boolean): ProcessBuilder = {
     trace(s"cmdLine: $cmdLine")
-    val tokens = Array(Shell.getCommand("sh"), "-c", if (OS.isWindows) quote(cmdLine) else cmdLine)
+    val tokens = Array(Shell.getCommand("sh"), "-c", if OS.isWindows then quote(cmdLine) else cmdLine)
     prepareProcessBuilderFromSeq(tokens.toIndexedSeq, inheritIO)
   }
 
   def prepareProcessBuilderFromSeq(tokens: Seq[String], inheritIO: Boolean): ProcessBuilder = {
     trace(s"command line tokens: ${tokens.mkString(", ")}")
     val pb = new ProcessBuilder(tokens: _*)
-    if (inheritIO)
-      pb.inheritIO()
-    var env = getEnv
-    if (OS.isWindows)
-      env += ("CYGWIN" -> "notty")
+    if inheritIO then pb.inheritIO()
+    var env    = getEnv
+    if OS.isWindows then env += ("CYGWIN" -> "notty")
     val envMap = pb.environment()
     env.foreach(e => envMap.put(e._1, e._2))
     pb
@@ -243,8 +238,7 @@ object Shell extends LogSupport {
     * Return OS-dependent program name. (e.g., sh in Unix, sh.exe in Windows)
     */
   def progName(p: String): String = {
-    if (OS.isWindows)
-      p + ".exe"
+    if OS.isWindows then p + ".exe"
     else
       p
   }
@@ -253,8 +247,7 @@ object Shell extends LogSupport {
     cmdPathCache.getOrElseUpdate(
       name, {
         val path = {
-          if (OS.isWindows)
-            getExecPath ++ Seq("c:/cygwin/bin")
+          if OS.isWindows then getExecPath ++ Seq("c:/cygwin/bin")
           else
             getExecPath
         }
@@ -262,7 +255,7 @@ object Shell extends LogSupport {
 
         val exe = path.map(new File(_, prog)).find(_.exists).map(_.getAbsolutePath)
         trace {
-          if (exe.isDefined) "%s is found at %s".format(name, exe.get)
+          if exe.isDefined then "%s is found at %s".format(name, exe.get)
           else "%s is not found".format(name)
         }
         exe
@@ -279,11 +272,10 @@ object Shell extends LogSupport {
     val e: Option[String] = env("JAVA_HOME") orElse sysProp("java.home")
 
     def resolveCygpath(p: String): String = {
-      if (OS.isWindows) {
+      if OS.isWindows then {
         // If the path is for Cygwin environment
         val m = """/cygdrive/(\w)(/.*)""".r.findFirstMatchIn(p)
-        if (m.isDefined)
-          "%s:%s".format(m.get.group(1), m.get.group(2))
+        if m.isDefined then "%s:%s".format(m.get.group(1), m.get.group(2))
         else
           p
       } else
@@ -321,8 +313,7 @@ object Shell extends LogSupport {
                 ).map(_.getAbsolutePath)
             }
             def latestJDK(jdkPath: Array[String]): Option[String] = {
-              if (jdkPath.isEmpty)
-                None
+              if jdkPath.isEmpty then None
               else {
                 // TODO parse version number
                 val sorted = jdkPath.sorted.reverse
@@ -339,8 +330,7 @@ object Shell extends LogSupport {
                     "/System/Library/Frameworkds/JavaVM.framework/Home",
                     "/System/Library/Frameworkds/JavaVM.framework/Versions/CurrentJDK/Home"
                   ).filter(hasJavaCommand)
-                if (l.isEmpty)
-                  None
+                if l.isEmpty then None
                 else
                   Some(l(0))
               }
@@ -354,8 +344,7 @@ object Shell extends LogSupport {
         case Some(x) => Some(javaBin(x).trim)
         case None => {
           val javaPath = Process("which %s".format(javaCmdName)).!!.trim
-          if (javaPath.isEmpty)
-            None
+          if javaPath.isEmpty then None
           else
             Some(javaPath)
         }

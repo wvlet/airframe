@@ -55,7 +55,7 @@ class AsyncHandlerTest extends Spec with Timer {
         body(threadManager)
       } finally {
         threadManager.shutdown()
-        while (!threadManager.awaitTermination(10, TimeUnit.MILLISECONDS)) {}
+        while !threadManager.awaitTermination(10, TimeUnit.MILLISECONDS) do {}
       }
     }
 
@@ -77,7 +77,7 @@ class AsyncHandlerTest extends Spec with Timer {
             // import CompatParColls.Converters._
             block("async") {
               withThreadManager { threadManager =>
-                for (i <- (0 until N)) {
+                for i <- (0 until N) do {
                   threadManager.submit(
                     new Runnable {
                       override def run(): Unit = {
@@ -91,7 +91,7 @@ class AsyncHandlerTest extends Spec with Timer {
 
             block("sync") {
               withThreadManager { threadManager =>
-                for (i <- (0 until N)) {
+                for i <- (0 until N) do {
                   threadManager.submit(
                     new Runnable {
                       override def run(): Unit = {

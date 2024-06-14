@@ -47,7 +47,7 @@ case class LogRecord(level: LogLevel, source: Option[LogSource], message: String
           case null => ""
           case name =>
             val pos = name.lastIndexOf('.')
-            if (pos == -1) {
+            if pos == -1 then {
               name
             } else {
               name.substring(pos + 1)

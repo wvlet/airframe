@@ -53,7 +53,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
         Reflect
           .lookupInstantiatableClass(fullyQualifiedName)
           .flatMap { x =>
-            if (classOf[AirSpecSpi].isAssignableFrom(x.runtimeClass)) {
+            if classOf[AirSpecSpi].isAssignableFrom(x.runtimeClass) then {
               Some(AirSpecClassFingerPrint)
             } else {
               None
@@ -88,7 +88,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
 
     // In Scala.js we cannot use cl.getInterfaces to find the actual type
     val pos = name.indexOf("$")
-    if (pos > 0) {
+    if pos > 0 then {
       // Remove trailing $xxx
       name = name.substring(0, pos)
     }

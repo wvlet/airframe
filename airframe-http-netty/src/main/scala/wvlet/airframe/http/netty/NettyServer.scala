@@ -149,7 +149,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
-    if (config.canUseEpoll) {
+    if config.canUseEpoll then {
       new EpollEventLoopGroup(1, tf)
     } else {
       new NioEventLoopGroup(1, tf)
@@ -158,7 +158,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
   private val workerGroup = {
     val tf         = ThreadUtil.newDaemonThreadFactory("airframe-netty-worker")
     val numWorkers = math.max(4, (Runtime.getRuntime.availableProcessors().toDouble / 3).ceil.toInt)
-    if (config.canUseEpoll) {
+    if config.canUseEpoll then {
       new EpollEventLoopGroup(numWorkers, tf)
     } else {
       new NioEventLoopGroup(numWorkers, tf)
@@ -182,11 +182,11 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
   @PostConstruct
   def start: Unit = {
-    if (stopped.get()) {
+    if stopped.get() then {
       throw new IllegalStateException(s"Server ${config.name} is already closed")
     }
 
-    if (started.compareAndSet(false, true)) {
+    if started.compareAndSet(false, true) then {
       startInternal
     }
   }
@@ -196,7 +196,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
     val b = new ServerBootstrap()
     b.group(bossGroup, workerGroup)
 
-    if (config.useEpoll && Epoll.isAvailable) {
+    if config.useEpoll && Epoll.isAvailable then {
       b.channel(classOf[EpollServerSocketChannel])
       b.option(UnixChannelOption.SO_REUSEPORT, Boolean.box(true))
     } else {
@@ -264,7 +264,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
   }
 
   override def stop(): Unit = {
-    if (stopped.compareAndSet(false, true)) {
+    if stopped.compareAndSet(false, true) then {
       info(s"Stopping ${config.name} server at ${localAddress}")
       workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
       bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)

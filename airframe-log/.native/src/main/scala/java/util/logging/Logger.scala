@@ -34,9 +34,9 @@ class Logger(parent: Option[Logger], name: String) {
     log(LogRecord(level, msg))
 
   def log(record: LogRecord): Unit = {
-    if (isLoggable(record.getLevel())) {
-      if (record.getLoggerName() == null) record.setLoggerName(name)
-      if (parent.nonEmpty && useParentHandlers) {
+    if isLoggable(record.getLevel()) then {
+      if record.getLoggerName() == null then record.setLoggerName(name)
+      if parent.nonEmpty && useParentHandlers then {
         getParent().log(record)
       } else {
         handlers.foreach { h => h.publish(record) }

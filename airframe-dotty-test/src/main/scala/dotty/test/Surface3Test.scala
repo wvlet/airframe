@@ -14,14 +14,14 @@ object Surface3Test extends LogSupport {
       case _ =>
         val str = s.toString
         // info(s"${s}: ${s.getClass}")
-        if (str != expected) {
+        if str != expected then {
           warn(s"Surface: expected: ${expected}, but ${str}")
         }
     }
   }
 
   inline def assert(v: Any, expected: Any): Unit = {
-    if (v != expected) {
+    if v != expected then {
       warn(s"Expected: ${expected}, but ${v}")
     }
   }

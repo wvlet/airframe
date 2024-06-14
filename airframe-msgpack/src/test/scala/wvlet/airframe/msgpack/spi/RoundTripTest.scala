@@ -73,11 +73,11 @@ class RoundTripTest extends AirSpec with PropertyCheck {
       { OffsetUnpacker.unpackBigInteger(_).longValue().toByte }
     )
 
-    for (p <- packers; u <- unpackers) {
+    for p <- packers; u <- unpackers do {
       roundtrip(v)(p)(u)
     }
-    if (v > 0) {
-      for (p <- posNumPackers; u <- unpackers) {
+    if v > 0 then {
+      for p <- posNumPackers; u <- unpackers do {
         roundtrip(v)(p)(u)
       }
     }
@@ -106,11 +106,11 @@ class RoundTripTest extends AirSpec with PropertyCheck {
       { OffsetUnpacker.unpackBigInteger(_).longValue().toShort }
     )
 
-    for (p <- packers; u <- unpackers) {
+    for p <- packers; u <- unpackers do {
       roundtrip(v)(p)(u)
     }
-    if (v > 0) {
-      for (p <- posNumPackers; u <- unpackers) {
+    if v > 0 then {
+      for p <- posNumPackers; u <- unpackers do {
         roundtrip(v)(p)(u)
       }
     }
@@ -131,7 +131,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
       newArray(newInteger(20), newBoolean(false)),
       newMap(newString("a") -> newString("apple"), newString("b") -> newString("banana"))
     )
-    for (v <- list) {
+    for v <- list do {
       roundtrip(v) { OffsetPacker.packValue(_, _) } { OffsetUnpacker.unpackValue(_) }
     }
   }
@@ -225,11 +225,11 @@ class RoundTripTest extends AirSpec with PropertyCheck {
         { OffsetUnpacker.unpackBigInteger(_).longValue().toInt }
       )
 
-      for (p <- packers; u <- unpackers) {
+      for p <- packers; u <- unpackers do {
         roundtrip(v)(p)(u)
       }
-      if (v > 0) {
-        for (p <- posNumPackers; u <- unpackers) {
+      if v > 0 then {
+        for p <- posNumPackers; u <- unpackers do {
           roundtrip(v)(p)(u)
         }
       }
@@ -255,11 +255,11 @@ class RoundTripTest extends AirSpec with PropertyCheck {
         { OffsetUnpacker.unpackBigInteger(_).longValue() }
       )
 
-      for (p <- packers; u <- unpackers) {
+      for p <- packers; u <- unpackers do {
         roundtrip(v)(p)(u)
       }
-      if (v > 0) {
-        for (p <- posNumPackers; u <- unpackers) {
+      if v > 0 then {
+        for p <- posNumPackers; u <- unpackers do {
           roundtrip(v)(p)(u)
         }
       }
@@ -299,7 +299,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
         { OffsetUnpacker.unpackDouble(_).toFloat }
       )
 
-      for (p <- packers; u <- unpackers) {
+      for p <- packers; u <- unpackers do {
         roundtrip(v)(p)(u)
       }
     }
@@ -316,7 +316,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
         { OffsetUnpacker.unpackDouble(_) }
       )
 
-      for (p <- packers; u <- unpackers) {
+      for p <- packers; u <- unpackers do {
         roundtrip(v)(p)(u)
       }
       roundtrip(v) { OffsetPacker.packDouble(_, _) } { OffsetUnpacker.unpackDouble(_) }
@@ -370,14 +370,13 @@ class RoundTripTest extends AirSpec with PropertyCheck {
 
     // Corner cases for u
     // sign uint32 nanoseq (out of int32 range)
-    for (
-      v <- Seq(
-        Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L),
-        Instant.ofEpochSecond(-1302749144L, 0), // 1928-09-19T21:14:16Z
-        Instant.ofEpochSecond(-747359729L, 0),  // 1946-04-27T00:04:31Z
-        Instant.ofEpochSecond(4257387427L, 0)   // 2104-11-29T07:37:07Z
-      )
-    ) {
+    for v <- Seq(
+      Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L),
+      Instant.ofEpochSecond(-1302749144L, 0), // 1928-09-19T21:14:16Z
+      Instant.ofEpochSecond(-747359729L, 0),  // 1946-04-27T00:04:31Z
+      Instant.ofEpochSecond(4257387427L, 0)   // 2104-11-29T07:37:07Z
+    )
+    do {
       roundtrip(v) { OffsetPacker.packTimestamp(_, _) } { OffsetUnpacker.unpackTimestamp(_) }
     }
   }
@@ -386,7 +385,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   val sizeGen     = Gen.chooseNum[Int](0, Int.MaxValue)
 
   test("support ArrayHeader") {
-    for (size <- headerSizes) {
+    for size <- headerSizes do {
       roundtrip(size) { OffsetPacker.packArrayHeader(_, _) } { OffsetUnpacker.unpackArrayHeader(_) }
     }
 
@@ -396,7 +395,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("support MapHeader") {
-    for (size <- headerSizes) {
+    for size <- headerSizes do {
       roundtrip(size) { OffsetPacker.packMapHeader(_, _) } { OffsetUnpacker.unpackMapHeader(_) }
     }
     forAll(sizeGen) { (len: Int) =>
@@ -405,7 +404,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("support RawStringHeader") {
-    for (size <- headerSizes) {
+    for size <- headerSizes do {
       roundtrip(size) { OffsetPacker.packRawStringHeader(_, _) } { OffsetUnpacker.unpackRawStringHeader(_) }
     }
     forAll(sizeGen) { (len: Int) =>
@@ -414,7 +413,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("support BinaryHeader") {
-    for (size <- headerSizes) {
+    for size <- headerSizes do {
       roundtrip(size) { OffsetPacker.packBinaryHeader(_, _) } { OffsetUnpacker.unpackBinaryHeader(_) }
     }
     forAll(sizeGen) { (len: Int) =>
@@ -424,7 +423,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
 
   test("support ExtHeader") {
     // For FIXEXT1, 2, 4, 8, 16, etc.
-    for (i <- headerSizes) {
+    for i <- headerSizes do {
       roundtrip(ExtTypeHeader(1, i)) { OffsetPacker.packExtTypeHeader(_, _) } {
         OffsetUnpacker.unpackExtTypeHeader(_)
       }

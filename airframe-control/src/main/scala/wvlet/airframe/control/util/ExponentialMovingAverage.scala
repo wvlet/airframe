@@ -31,7 +31,7 @@ private[control] class ExponentialMovingAverage(windowSize: Long) {
     * Since `update` requires monotonic timestamps, it is up to the caller to ensure that calls to update do not race.
     */
   def update(timeStamp: Long, x: Double): Double = {
-    if (time == Long.MinValue) {
+    if time == Long.MinValue then {
       time = timeStamp
       ema = x
       x
@@ -39,7 +39,7 @@ private[control] class ExponentialMovingAverage(windowSize: Long) {
       val td = timeStamp - time
       assert(td >= 0, "Nonmonotonic timestamp")
       time = timeStamp
-      val w      = if (windowSize == 0.0) 0.0 else math.exp(-td.toDouble / windowSize)
+      val w      = if windowSize == 0.0 then 0.0 else math.exp(-td.toDouble / windowSize)
       val newEma = x * (1 - w) + ema * w
       ema = newEma
       newEma

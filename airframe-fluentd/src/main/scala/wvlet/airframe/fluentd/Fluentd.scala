@@ -143,7 +143,7 @@ object Fluentd {
       errorHandler: ErrorHandler = null
   ): FluentdLogger = {
     FluentdClientConfig(
-      tagPrefix = if (tagPrefix.isEmpty) None else Some(tagPrefix),
+      tagPrefix = if tagPrefix.isEmpty then None else Some(tagPrefix),
       useExtendedEventTime = useExtendedEventTime,
       maxBufferSize = maxBufferSize,
       flushIntervalMillis = flushIntervalMillis,
@@ -177,7 +177,7 @@ object Fluentd {
       errorHandler: ErrorHandler = null
   ): FluentdLogger = {
     FluentdClientConfig(
-      tagPrefix = if (tagPrefix.isEmpty) None else Some(tagPrefix),
+      tagPrefix = if tagPrefix.isEmpty then None else Some(tagPrefix),
       useExtendedEventTime = useExtendedEventTime,
       maxBufferSize = maxBufferSize,
       flushIntervalMillis = flushIntervalMillis,

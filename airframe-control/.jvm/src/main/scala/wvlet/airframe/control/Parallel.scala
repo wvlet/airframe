@@ -88,9 +88,9 @@ object Parallel extends LogSupport {
     try {
       // Process all elements of source
       val it = source.iterator
-      while (it.hasNext && !interrupted.get()) {
+      while it.hasNext && !interrupted.get() do {
         val worker = requestQueue.take()
-        if (!interrupted.get()) {
+        if !interrupted.get() then {
           worker.message.set(it.next())
           executor.execute(worker)
         } else {
@@ -99,7 +99,7 @@ object Parallel extends LogSupport {
       }
 
       // Wait for completion
-      while (requestQueue.size() != parallelism) {
+      while requestQueue.size() != parallelism do {
         try {
           Thread.sleep(10)
         } catch {
@@ -154,9 +154,9 @@ object Parallel extends LogSupport {
 
         try {
           // Process all elements of source
-          while (source.hasNext && !interruptedFlag.get()) {
+          while source.hasNext && !interruptedFlag.get() do {
             val worker = requestQueue.take()
-            if (!interruptedFlag.get()) {
+            if !interruptedFlag.get() then {
               worker.message.set(source.next())
               executor.execute(worker)
             } else {
@@ -165,7 +165,7 @@ object Parallel extends LogSupport {
           }
 
           // Wait for completion
-          while (requestQueue.size() != parallelism) {
+          while requestQueue.size() != parallelism do {
             try {
               Thread.sleep(10)
             } catch {

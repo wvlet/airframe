@@ -69,7 +69,7 @@ object HttpClientGenerator extends LogSupport {
       val body =
         s"""${serviceStubBody}
            |${childServiceStubBody}""".stripMargin.trim
-      if (p.packageLeafName.isEmpty) {
+      if p.packageLeafName.isEmpty then {
         body
       } else {
         s"""object ${p.packageLeafName} {

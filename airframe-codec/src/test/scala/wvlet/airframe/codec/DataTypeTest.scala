@@ -29,7 +29,7 @@ class DataTypeTest extends AirSpec {
     DataType.primitiveTypes.contains(DataType.BINARY) shouldBe true
     DataType.primitiveTypes.contains(DataType.JSON) shouldBe true
 
-    for (p <- DataType.primitiveTypes) {
+    for p <- DataType.primitiveTypes do {
       val name = p.toString.toLowerCase()
       p.typeName shouldBe name
       p.signature shouldBe name

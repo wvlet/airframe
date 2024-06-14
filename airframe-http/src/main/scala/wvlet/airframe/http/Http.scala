@@ -97,7 +97,7 @@ object Http {
     */
   def serverException(request: Request, status: HttpStatus): HttpServerException = {
     val e = new HttpServerException(status)
-    if (request.acceptsMsgPack) {
+    if request.acceptsMsgPack then {
       e.withContentTypeMsgPack
     } else {
       e.withContentTypeJson

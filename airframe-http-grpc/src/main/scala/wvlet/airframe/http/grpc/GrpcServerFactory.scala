@@ -47,7 +47,7 @@ class GrpcServerFactory(session: Session) extends AutoCloseable with LogSupport 
   override def close(): Unit = {
     debug(s"Closing GrpcServerFactory")
     val ex = Seq.newBuilder[Throwable]
-    for (server <- createdServers) {
+    for server <- createdServers do {
       try {
         server.close()
       } catch {
@@ -58,8 +58,8 @@ class GrpcServerFactory(session: Session) extends AutoCloseable with LogSupport 
     createdServers = List.empty
 
     val exceptions = ex.result()
-    if (exceptions.nonEmpty) {
-      if (exceptions.size == 1) {
+    if exceptions.nonEmpty then {
+      if exceptions.size == 1 then {
         throw exceptions.head
       } else {
         throw MultipleExceptions(exceptions)

@@ -57,7 +57,7 @@ object Launcher extends LauncherCompat with LogSupport {
     // If the user specified usage and description via @command annotation, use them.
     val commandUsage       = command.map(_.usage()).find(_.nonEmpty).getOrElse(defaultUsage)
     val commandDescription = command.map(_.description()).find(_.nonEmpty).getOrElse(description.trim)
-    val commandName        = if (name.nonEmpty) name else CName.toNaturalName(surface.name).replaceAll("\\s+", "_")
+    val commandName        = if name.nonEmpty then name else CName.toNaturalName(surface.name).replaceAll("\\s+", "_")
 
     // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
     import wvlet.airframe.surface.reflect.*
@@ -225,7 +225,7 @@ class CommandLauncher(
     val help = launcherConfig.helpMessagePrinter.render(
       commandName = li.name,
       arguments = m.args,
-      oneLineUsage = if (li.usage.isEmpty) None else Some(li.usage),
+      oneLineUsage = if li.usage.isEmpty then None else Some(li.usage),
       description = li.description,
       options = m.options,
       globalOptions = globalOptions,
@@ -243,7 +243,7 @@ class CommandLauncher(
     val help = launcherConfig.helpMessagePrinter.render(
       commandName = l.name,
       arguments = schema.args,
-      oneLineUsage = if (l.usage.isEmpty) None else Some(l.usage),
+      oneLineUsage = if l.usage.isEmpty then None else Some(l.usage),
       description = l.description,
       options = schema.options,
       globalOptions = globalOptions,
@@ -279,9 +279,9 @@ class CommandLauncher(
         val head      = LauncherInstance(this, obj)
         val nextStack = head :: stack
 
-        if (result.unusedArgument.isEmpty) {
+        if result.unusedArgument.isEmpty then {
           // This Launcher is a leaf (= no more sub commands)
-          if (showHelpMessage) {
+          if showHelpMessage then {
             // Show the help message
             printHelp(launcherConfig, nextStack)
             LauncherResult(nextStack, None)
@@ -306,7 +306,7 @@ class CommandLauncher(
         }
       case m: MethodOptionSchema =>
         // A command method inside the class
-        if (result.unusedArgument.nonEmpty) {
+        if result.unusedArgument.nonEmpty then {
           throw new IllegalArgumentException(s"Unknown arguments are found: [${result.unusedArgument.mkString(", ")}]")
         }
 
@@ -314,7 +314,7 @@ class CommandLauncher(
           throw new IllegalStateException("parent should not be empty")
         }
 
-        if (showHelpMessage) {
+        if showHelpMessage then {
           // Show the help message
           printMethodHelp(launcherConfig, m, LauncherInstance(this, parentObj) :: stack)
           LauncherResult(stack, None)

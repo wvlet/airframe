@@ -65,14 +65,14 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
           val newExpr = e.transformPlan { case x =>
             f(x)
           }
-          if (!newExpr.eq(e)) {
+          if !newExpr.eq(e) then {
             changed = true
           }
           newExpr
         }
         case l: LogicalPlan => {
           val newPlan = f(l)
-          if (!newPlan.eq(l)) {
+          if !newPlan.eq(l) then {
             changed = true
           }
           newPlan
@@ -84,7 +84,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     val newArgs = productIterator.map(transformElement).toIndexedSeq
-    if (changed) {
+    if changed then {
       copyInstance(newArgs)
     } else {
       this
@@ -96,7 +96,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       v match {
         case e: Expression => e.traversePlan(f)
         case l: LogicalPlan => {
-          if (f.isDefinedAt(l)) {
+          if f.isDefinedAt(l) then {
             f.apply(l)
           }
           l.productIterator.foreach(x => loop(x))
@@ -133,7 +133,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       v match {
         case e: Expression => e.traversePlanOnce(f)
         case l: LogicalPlan => {
-          if (f.isDefinedAt(l)) {
+          if f.isDefinedAt(l) then {
             f.apply(l)
           } else {
             l.productIterator.foreach(x => loop(x))
@@ -176,7 +176,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     */
   def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
-    if (newNode.eq(this)) {
+    if newNode.eq(this) then {
       mapChildren(_.transform(rule))
     } else {
       newNode.mapChildren(_.transform(rule))
@@ -199,7 +199,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     */
   def transformOnce(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
-    if (newNode.eq(this)) {
+    if newNode.eq(this) then {
       transformChildrenOnce(rule)
     } else {
       // The root node was transformed
@@ -221,7 +221,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
         case e: Expression => e
         case l: LogicalPlan => {
           val newPlan = rule.applyOrElse(l, identity[LogicalPlan])
-          if (!newPlan.eq(l)) {
+          if !newPlan.eq(l) then {
             changed = true
           }
           newPlan
@@ -233,7 +233,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     val newArgs = productIterator.map(transformElement).toIndexedSeq
-    if (changed) {
+    if changed then {
       copyInstance(newArgs)
     } else {
       this
@@ -254,7 +254,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
         case e: Expression => e
         case l: LogicalPlan => {
           val newPlan = l.transformOnce(rule)
-          if (!newPlan.eq(l)) {
+          if !newPlan.eq(l) then {
             changed = true
           }
           newPlan
@@ -266,7 +266,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
-    if (changed) {
+    if changed then {
       copyInstance(newArgs)
     } else {
       this
@@ -285,7 +285,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
         case e: Expression => e
         case l: LogicalPlan =>
           val newPlan = l.transformExpressions(rule)
-          if (l eq newPlan) {
+          if l eq newPlan then {
             l
           } else {
             changed = true
@@ -301,7 +301,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     // Transform child expressions first
     val newPlan = transformChildExpressions(rule)
     val newArgs = newPlan.productIterator.map(loopOnlyPlan).toSeq
-    if (changed) {
+    if changed then {
       copyInstance(newArgs)
     } else {
       newPlan
@@ -320,7 +320,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       arg match {
         case e: Expression =>
           val newExpr = e.transformUpExpression(rule)
-          if (e eq newExpr) {
+          if e eq newExpr then {
             e
           } else {
             changed = true
@@ -328,7 +328,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
           }
         case l: LogicalPlan =>
           val newPlan = l.transformUpExpressions(rule)
-          if (l eq newPlan) l
+          if l eq newPlan then l
           else {
             changed = true
             newPlan
@@ -340,7 +340,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     val newArgs = productIterator.map(iter).toIndexedSeq
-    if (changed) {
+    if changed then {
       copyInstance(newArgs)
     } else {
       this
@@ -358,7 +358,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       arg match {
         case e: Expression =>
           val newExpr = rule.applyOrElse(e, identity[Expression])
-          if (e eq newExpr) {
+          if e eq newExpr then {
             e
           } else {
             changed = true
@@ -372,8 +372,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     val newArgs = productIterator.map(iterOnce).toIndexedSeq
-    if (changed)
-      copyInstance(newArgs)
+    if changed then copyInstance(newArgs)
     else
       this
   }
@@ -412,7 +411,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     traverseExpressions(new PartialFunction[Expression, Unit] {
       override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
       override def apply(v1: Expression): Unit = {
-        if (cond.apply(v1)) {
+        if cond.apply(v1) then {
           l += v1
         }
       }
@@ -552,7 +551,7 @@ object LogicalPlan {
 
   case class TableRef(name: QName, nodeLocation: Option[NodeLocation]) extends Relation with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = {
-      if (config.embedTableNames) {
+      if config.embedTableNames then {
         name.toString
       } else {
         "T"
@@ -614,7 +613,7 @@ object LogicalPlan {
       with Selection {
     override def sig(config: QuerySignatureConfig): String = {
       val proj =
-        if (LogicalPlan.isSelectAll(selectItems)) "*"
+        if LogicalPlan.isSelectAll(selectItems) then "*"
         else s"${selectItems.length}"
       s"P[${proj}](${child.sig(config)})"
     }
@@ -635,7 +634,7 @@ object LogicalPlan {
       with Selection {
     override def sig(config: QuerySignatureConfig): String = {
       val proj =
-        if (LogicalPlan.isSelectAll(selectItems)) "*"
+        if LogicalPlan.isSelectAll(selectItems) then "*"
         else s"${selectItems.length}"
       s"A[${proj},${groupingKeys.length}](${child.sig(config)})"
     }
@@ -810,7 +809,7 @@ object LogicalPlan {
           inputs = columns.toSeq,
           qualifier = {
             // If all of the qualifiers are the same, use it.
-            if (qualifiers.size == 1) {
+            if qualifiers.size == 1 then {
               qualifiers.head
             } else {
               None

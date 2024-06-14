@@ -34,14 +34,14 @@ object GrpcStreamingTest extends AirSpec {
       val N = 10
 
       test("unary") {
-        for (i <- 0 to N) {
+        for i <- 0 to N do {
           val ret = stub.hello("world")
           ret shouldBe "Hello world!"
         }
       }
 
       test("n-ary") {
-        for (i <- 0 to N) {
+        for i <- 0 to N do {
           val ret2 = stub.hello2("world", i)
           ret2 shouldBe s"Hello world! (id:${i})"
         }
@@ -53,14 +53,14 @@ object GrpcStreamingTest extends AirSpec {
       }
 
       test("client streaming") {
-        for (i <- 0 to N) {
+        for i <- 0 to N do {
           val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
           result shouldBe "Apple, Banana"
         }
       }
 
       test("bidi streaming") {
-        for (i <- 0 to N) {
+        for i <- 0 to N do {
           val result = stub.helloBidiStreaming(Rx.sequence("Apple", "Banana")).toSeq
           result shouldBe Seq("Hello Apple!", "Hello Banana!")
         }

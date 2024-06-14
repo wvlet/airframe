@@ -67,9 +67,9 @@ class Design(
     var minimizedBindingList = List.empty[Binding]
 
     // Later binding has higher precedence, so traverse bindings from the tail
-    for (b <- binding.reverseIterator) {
+    for b <- binding.reverseIterator do {
       val surface = b.from
-      if (!seenBindingSurrace.contains(surface)) {
+      if !seenBindingSurrace.contains(surface) then {
         minimizedBindingList = b :: minimizedBindingList
         seenBindingSurrace += surface
       }
@@ -78,9 +78,9 @@ class Design(
     var seenHooks      = Set.empty[(LifeCycleHookType, Surface)]
     var minimizedHooks = List.empty[LifeCycleHookDesign]
     // Override hooks for the same surface and event type
-    for (h <- hooks.reverseIterator) {
+    for h <- hooks.reverseIterator do {
       val key: (LifeCycleHookType, Surface) = (h.lifeCycleHookType, h.surface)
-      if (!seenHooks.contains(key)) {
+      if !seenHooks.contains(key) then {
         minimizedHooks = h :: minimizedHooks
         seenHooks += key
       }

@@ -28,7 +28,7 @@ class OkHttpChannel(val destination: ServerAddress, config: HttpClientConfig) ex
       .readTimeout(config.readTimeout.toMillis, TimeUnit.MILLISECONDS)
       .connectTimeout(config.connectTimeout.toMillis, TimeUnit.MILLISECONDS)
 
-    if (config.useHttp1) {
+    if config.useHttp1 then {
       // Enforce using HTTP/1.1
       import scala.jdk.CollectionConverters.*
       builder = builder.protocols(List(okhttp3.Protocol.HTTP_1_1).asJava)
@@ -43,10 +43,9 @@ class OkHttpChannel(val destination: ServerAddress, config: HttpClientConfig) ex
 
   private def prepareClient(channelConfig: HttpChannelConfig): okhttp3.OkHttpClient = {
     var newClient = this.client
-    if (
-      channelConfig.connectTimeout != config.connectTimeout ||
-      channelConfig.readTimeout != config.readTimeout
-    ) {
+    if channelConfig.connectTimeout != config.connectTimeout ||
+    channelConfig.readTimeout != config.readTimeout
+    then {
       newClient = newClient
         .newBuilder()
         .connectTimeout(channelConfig.connectTimeout.toMillis, TimeUnit.MILLISECONDS)
@@ -89,7 +88,7 @@ class OkHttpChannel(val destination: ServerAddress, config: HttpClientConfig) ex
 
   private def convertRequest(request: HttpMessage.Request): okhttp3.Request = {
     val query = request.query
-    val queryParams: String = if (query.isEmpty) {
+    val queryParams: String = if query.isEmpty then {
       null
     } else {
       query.entries

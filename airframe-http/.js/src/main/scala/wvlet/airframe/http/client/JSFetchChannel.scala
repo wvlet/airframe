@@ -49,7 +49,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
       request: HttpMessage.Request,
       channelConfig: HttpChannelConfig
   ): Rx[HttpMessage.Response] = {
-    val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
+    val path = if request.uri.startsWith("/") then request.uri else s"/${request.uri}"
     val uri  = s"${request.dest.getOrElse(destination).uri}${path}"
 
     val req = new org.scalajs.dom.RequestInit {
@@ -90,7 +90,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
           header.add(h(0), h(1))
         }
         r = r.withHeader(header.result())
-        if (r.isContentTypeJson) {
+        if r.isContentTypeJson then {
           resp.text().toFuture.map { body =>
             r.withContent(body)
           }

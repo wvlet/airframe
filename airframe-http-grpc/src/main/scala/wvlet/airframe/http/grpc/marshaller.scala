@@ -75,7 +75,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
     val bytes = IO.readFully(stream)
 
     try {
-      if (RPCEncoding.isJsonObjectMessage(bytes)) {
+      if RPCEncoding.isJsonObjectMessage(bytes) then {
         // Parse {"response": ....}
         ValueCodec.fromJson(bytes) match {
           case m: MapValue =>
@@ -93,7 +93,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
               .asRuntimeException()
         }
       } else {
-        if (codec == UnitCodec) {
+        if codec == UnitCodec then {
           // grpc requires returning non-null value, so return 0 as a dummy value
           0.asInstanceOf[Unit]
         } else {

@@ -142,7 +142,7 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
   }
 
   override def unpackExtValue(extTypeHeader: ExtTypeHeader): Value = {
-    if (extTypeHeader.extType == -1) {
+    if extTypeHeader.extType == -1 then {
       TimestampValue(unpackTimestamp(extTypeHeader))
     } else {
       val extBytes = unpacker.readPayload(extTypeHeader.byteLength)
@@ -180,7 +180,7 @@ object UnpackerImpl {
   private[impl] val conversionTable = {
     import org.msgpack.{core => v8}
     val m = Map.newBuilder[v8.MessageFormat, MessageFormat]
-    for (b <- 0 until 0xff) {
+    for b <- 0 until 0xff do {
       val f1 = v8.MessageFormat.valueOf(b.toByte)
       val f2 = MessageFormat.of(b.toByte)
       m += f1 -> f2
@@ -208,7 +208,7 @@ object UnpackerImpl {
       case v: v8.MapValue =>
         // Use ListMap to maintain key-value pair orders
         val m = ListMap.newBuilder[Value, Value]
-        for (it <- v.getKeyValueArray().sliding(2, 2)) {
+        for it <- v.getKeyValueArray().sliding(2, 2) do {
           val kv = it.toIndexedSeq
           m += fromMsgPackV8Value(kv(0)) -> fromMsgPackV8Value(kv(1))
         }

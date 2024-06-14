@@ -51,7 +51,7 @@ object CName {
   private def isUpcasePrefix(c: Char) = c.isUpper || c.isDigit
 
   def toCanonicalName(paramName: String): String = {
-    if (paramName == null) {
+    if paramName == null then {
       ""
     } else {
       canonicalNameTable.getOrElseUpdate(
@@ -62,7 +62,7 @@ object CName {
   }
 
   def toNaturalName(varName: String): String = {
-    if (varName == null) {
+    if varName == null then {
       ""
     } else {
       def translate(varName: String) = {
@@ -74,7 +74,7 @@ object CName {
           val len = varName.length
 
           def skipUpcasePrefix(i: Int): Int = {
-            if (i < len && isUpcasePrefix(varName(i))) {
+            if i < len && isUpcasePrefix(varName(i)) then {
               skipUpcasePrefix(i + 1)
             } else {
               i
@@ -82,7 +82,7 @@ object CName {
           }
 
           def parseWikiComponent(i: Int): Int =
-            if (i < len && !isSplitChar(varName(i))) {
+            if i < len && !isSplitChar(varName(i)) then {
               parseWikiComponent(i + 1)
             } else {
               i
@@ -90,19 +90,19 @@ object CName {
 
           val start  = index
           var cursor = index
-          if (cursor >= len) {
+          if cursor >= len then {
             Nil
           } else {
             cursor = skipUpcasePrefix(cursor)
             // Upcase prefix length is longer than or equals to 2
-            if (cursor - start >= 2) {
-              if (start == 0 && varName(cursor).isLower) {
+            if cursor - start >= 2 then {
+              if start == 0 && varName(cursor).isLower then {
                 cursor -= 1
               }
               varName.substring(start, cursor) :: findWikiNameComponent(cursor)
             } else {
               cursor = parseWikiComponent(cursor)
-              if (start < cursor) {
+              if start < cursor then {
                 varName.substring(start, cursor).toLowerCase() :: findWikiNameComponent(cursor)
               } else {
                 findWikiNameComponent(cursor + 1)
@@ -146,8 +146,8 @@ class CName(val canonicalName: String, val naturalName: String) extends Comparab
     val sb               = new StringBuilder()
     var prevIsWhitespace = false
     naturalName.toLowerCase.map { c =>
-      if (c != ' ') {
-        if (sb.length == 0 || prevIsWhitespace) {
+      if c != ' ' then {
+        if sb.length == 0 || prevIsWhitespace then {
           sb.append(c.toUpper)
         } else {
           sb.append(c)
@@ -162,8 +162,8 @@ class CName(val canonicalName: String, val naturalName: String) extends Comparab
     val sb               = new StringBuilder()
     var prevIsWhitespace = false
     naturalName.toLowerCase.map { c =>
-      if (c != ' ') {
-        if (prevIsWhitespace) {
+      if c != ' ' then {
+        if prevIsWhitespace then {
           sb.append(c.toUpper)
         } else {
           sb.append(c)

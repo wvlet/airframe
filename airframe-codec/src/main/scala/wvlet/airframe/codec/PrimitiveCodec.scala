@@ -63,10 +63,10 @@ object PrimitiveCodec {
   )
 
   private implicit class RichBoolean(b: Boolean) {
-    def toInt: Int     = if (b) 1 else 0
-    def toChar: Char   = if (b) 1 else 0
-    def toByte: Byte   = if (b) 1 else 0
-    def toShort: Short = if (b) 1 else 0
+    def toInt: Int     = if b then 1 else 0
+    def toChar: Char   = if b then 1 else 0
+    def toByte: Byte   = if b then 1 else 0
+    def toShort: Short = if b then 1 else 0
   }
 
   trait PrimitiveCodec[A] extends MessageCodec[A] {
@@ -160,7 +160,7 @@ object PrimitiveCodec {
         case ValueType.STRING =>
           read {
             val s = u.unpackString
-            if (s.length == 1) {
+            if s.length == 1 then {
               s.charAt(0)
             } else {
               s.toDouble.toChar
@@ -307,7 +307,7 @@ object PrimitiveCodec {
     override def surface: Surface = Primitive.BigInt
 
     override def pack(p: Packer, v: BigInt): Unit = {
-      if (v.compareTo(BigInt(Long.MaxValue)) <= 0) {
+      if v.compareTo(BigInt(Long.MaxValue)) <= 0 then {
         p.packLong(v.longValue)
       } else {
         p.packString(v.toString(10))
@@ -353,7 +353,7 @@ object PrimitiveCodec {
     override def surface: Surface = Primitive.BigInteger
 
     override def pack(p: Packer, v: java.math.BigInteger): Unit = {
-      if (v.compareTo(java.math.BigInteger.valueOf(Long.MaxValue)) <= 0) {
+      if v.compareTo(java.math.BigInteger.valueOf(Long.MaxValue)) <= 0 then {
         p.packLong(v.longValue())
       } else {
         p.packString(v.toString(10))
@@ -399,7 +399,7 @@ object PrimitiveCodec {
     override def surface: Surface = Primitive.String
 
     override def pack(p: Packer, v: String): Unit = {
-      if (v == null) {
+      if v == null then {
         p.packNil
       } else {
         p.packString(v)
@@ -602,7 +602,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           IntCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // TODO report error?
             b += 0
           } else {
@@ -630,12 +630,12 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           IntCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // TODO report error?
             b += 0
           } else {
             val l = v.getShort
-            if (l.isValidInt) {
+            if l.isValidInt then {
               b += l.toShort
             } else {
               // report error?
@@ -663,12 +663,12 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           CharCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // TODO report error?
             b += 0
           } else {
             val l = v.getLong
-            if (l.isValidChar) {
+            if l.isValidChar then {
               b += l.toChar
             } else {
               // report error?
@@ -696,7 +696,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           LongCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // TODO report error?
             b += 0L
           } else {
@@ -724,7 +724,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           val d = FloatCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // report error?
             b += 0
           } else {
@@ -752,7 +752,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           val d = DoubleCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // report error?
             b += 0
           } else {
@@ -779,7 +779,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           BooleanCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             // report error?
             b += false
           } else {
@@ -857,7 +857,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           StringCodec.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             b += "" // or report error?
           } else {
             b += v.getString
@@ -885,7 +885,7 @@ object PrimitiveCodec {
         b.sizeHint(len)
         (0 until len).foreach { i =>
           AnyCodec.default.unpack(u, v)
-          if (v.isNull) {
+          if v.isNull then {
             b += null // or report error?
           } else {
             b += v.getLastValue
@@ -959,24 +959,24 @@ object PrimitiveCodec {
         case v: Array[Char]    => CharArrayCodec.pack(p, v)
         case v: Array[_] =>
           p.packArrayHeader(v.length)
-          for (x <- v) {
+          for x <- v do {
             pack(p, x)
           }
         // Collections
         case v: Option[_] =>
-          if (v.isEmpty) {
+          if v.isEmpty then {
             p.packNil
           } else {
             pack(p, v.get)
           }
         case v: Seq[_] =>
           p.packArrayHeader(v.length)
-          for (x <- v) {
+          for x <- v do {
             pack(p, x)
           }
         case m: Map[_, _] =>
           p.packMapHeader(m.size)
-          for ((k, v) <- m) {
+          for (k, v) <- m do {
             pack(p, k)
             pack(p, v)
           }
@@ -1035,7 +1035,7 @@ object PrimitiveCodec {
           b.sizeHint(len)
           (0 until len).foreach { i =>
             unpack(u, v)
-            if (v.isNull) {
+            if v.isNull then {
               b += null // or report error?
             } else {
               b += v.getLastValue
@@ -1046,7 +1046,7 @@ object PrimitiveCodec {
           val len = u.unpackMapHeader
           val b   = Map.newBuilder[Any, Any]
           b.sizeHint(len)
-          for (i <- 0 until len) {
+          for i <- 0 until len do {
             unpack(u, v)
             val key = v.getLastValue
             unpack(u, v)
@@ -1056,7 +1056,7 @@ object PrimitiveCodec {
           v.setObject(b.result())
         case ValueType.EXTENSION =>
           val ext = u.unpackExtTypeHeader
-          if (ext.extType == -1) {
+          if ext.extType == -1 then {
             v.setObject(u.unpackTimestamp(ext))
           } else {
             val extBody = u.readPayload(ext.byteLength)

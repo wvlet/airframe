@@ -19,7 +19,7 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
 
   // Generate a codec that outputs objects as Map type. This should be enabled for generating JSON data
   def withMapOutput: MessageCodecFactory = {
-    if (mapOutput == true) {
+    if mapOutput == true then {
       this
     } else {
       this.copy(mapOutput = true)
@@ -41,7 +41,7 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
       val codecs = for (p <- surface.params) yield {
         ofSurface(p.surface, seenSet)
       }
-      if (mapOutput) {
+      if mapOutput then {
         ObjectMapCodec(surface, codecs.toIndexedSeq)
       } else {
         ObjectCodec(surface, codecs.toIndexedSeq)
@@ -53,9 +53,9 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
   def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)
     val surfaceName = surface.fullName
-    if (cache.contains(surfaceName)) {
+    if cache.contains(surfaceName) then {
       cache(surfaceName)
-    } else if (seen.contains(surface)) {
+    } else if seen.contains(surface) then {
       LazyCodec(surface, this)
     } else {
       val seenSet = seen + surface

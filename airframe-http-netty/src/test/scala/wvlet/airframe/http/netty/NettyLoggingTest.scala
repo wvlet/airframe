@@ -29,7 +29,7 @@ object NettyLoggingTest extends AirSpec {
     private var requestCount = 0
 
     def hello(): Unit = {
-      if (requestCount == 0) {
+      if requestCount == 0 then {
         RPCContext.current.setThreadLocal("user", "xxxx_yyyy")
       }
       requestCount += 1

@@ -47,11 +47,11 @@ object IOUtil {
   def findPath(path: String): Option[File] = findPath(new File(path))
 
   def findPath(path: File): Option[File] = {
-    if (path.exists()) {
+    if path.exists() then {
       Some(path)
     } else {
       val defaultPath = new File(new File(System.getProperty("prog.home", "")), path.getPath)
-      if (defaultPath.exists()) {
+      if defaultPath.exists() then {
         Some(defaultPath)
       } else {
         None
@@ -74,7 +74,7 @@ object IOUtil {
       .map(readAsString(_))
       .getOrElse {
         val file = findPath(new File(resourcePath))
-        if (file.isEmpty) {
+        if file.isEmpty then {
           throw new FileNotFoundException(s"Not found ${resourcePath}")
         }
         readAsString(new FileInputStream(file.get))
@@ -90,10 +90,10 @@ object IOUtil {
       val buf = new Array[Byte](8192)
       withResource(in) { src =>
         var readBytes = 0
-        while ({
+        while {
           readBytes = src.read(buf);
           readBytes != -1
-        }) {
+        } do {
           b.write(buf, 0, readBytes)
         }
       }

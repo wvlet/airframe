@@ -29,14 +29,14 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
   // Start a poller thread
   executor.submit(new Runnable {
     override def run(): Unit = {
-      while (!closed.get()) {
+      while !closed.get() do {
         val record: jl.LogRecord = guard {
-          if (queue.isEmpty) {
+          if queue.isEmpty then {
             isNotEmpty.await()
           }
           queue.pollFirst()
         }
-        if (record != null) {
+        if record != null then {
           parent.publish(record)
         }
       }
@@ -46,9 +46,9 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
   override def flush(): Unit = {
     val records = Seq.newBuilder[jl.LogRecord]
     guard {
-      while (!queue.isEmpty) {
+      while !queue.isEmpty do {
         val record = queue.pollFirst()
-        if (record != null) {
+        if record != null then {
           records += record
         }
       }
@@ -68,7 +68,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
   override def close(): Unit = {
     flush()
 
-    if (closed.compareAndSet(false, true)) {
+    if closed.compareAndSet(false, true) then {
       // Wake up the poller thread
       guard {
         isNotEmpty.signalAll()
@@ -79,7 +79,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
 
   def closeAndAwaitTermination(timeout: Int = 10, timeUnit: TimeUnit = TimeUnit.MILLISECONDS): Unit = {
     close()
-    while (!executor.awaitTermination(timeout, timeUnit)) {
+    while !executor.awaitTermination(timeout, timeUnit) do {
       Thread.sleep(timeUnit.toMillis(timeout))
     }
   }

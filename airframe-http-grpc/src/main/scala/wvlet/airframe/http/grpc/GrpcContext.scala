@@ -83,7 +83,7 @@ case class GrpcContext(
   override def httpRequest: HttpMessage.Request = {
     import scala.jdk.CollectionConverters.*
     var request = Http.POST(s"/${descriptor.getFullMethodName}")
-    for (k <- metadata.keys().asScala) {
+    for k <- metadata.keys().asScala do {
       request = request.withHeader(k, metadata.get(Metadata.Key.of(k, Metadata.ASCII_STRING_MARSHALLER)))
     }
     request

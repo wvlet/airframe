@@ -129,7 +129,7 @@ object HttpClients extends LogSupport {
     val queryParams    = flattenResourceToQueryParams(resource, resourceSurface)
     val pathWithParams = new StringBuilder()
     pathWithParams.append(path)
-    if (queryParams.nonEmpty) {
+    if queryParams.nonEmpty then {
       val queryParamString = queryParams.entries.map(x => s"${x.key}=${x.value}").mkString("&")
       pathWithParams.append("?")
       pathWithParams.append(queryParamString)
@@ -203,7 +203,7 @@ object HttpClients extends LogSupport {
       resp: Response
   ): Resp = {
     // If the response type is Response, return as is
-    if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
+    if classOf[Response].isAssignableFrom(responseSurface.rawType) then {
       resp.asInstanceOf[Resp]
     } else {
       try {
@@ -258,7 +258,7 @@ object HttpClients extends LogSupport {
       response: Response,
       responseSurface: Surface
   ): Any = {
-    if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
+    if classOf[Response].isAssignableFrom(responseSurface.rawType) then {
       response
     } else {
       try {

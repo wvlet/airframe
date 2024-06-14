@@ -56,14 +56,14 @@ object CrockfordBase32 {
       * `| hi (64-bits) | low (64-bits) |`
       */
     val len = s.length
-    if (len != 26) {
+    if len != 26 then {
       throw new IllegalArgumentException(s"String length must be 26: ${s} (length: ${len})")
     }
     var i         = 0
     var hi        = 0L
     var low       = 0L
     val carryMask = ~(~0L >>> 5)
-    while (i < 26) {
+    while i < 26 do {
       val v     = decode(s.charAt(i))
       val carry = (low & carryMask) >>> (64 - 5)
       low <<= 5
@@ -84,7 +84,7 @@ object CrockfordBase32 {
     var h = hi
     var l = low
     // encode from lower 5-bit
-    while (i < 26) {
+    while i < 26 do {
       s += encode((l & 0x1fL).toInt)
       val carry = (h & 0x1fL) << (64 - 5)
       l >>>= 5
@@ -102,12 +102,12 @@ object CrockfordBase32 {
     */
   def decode48bits(s: String): Long = {
     val len = s.length
-    if (len != 10) {
+    if len != 10 then {
       throw new IllegalArgumentException(s"String size must be 10: ${s} (length:${len})")
     }
     var l: Long = decode(s.charAt(0))
     var i       = 1
-    while (i < len) {
+    while i < len do {
       l <<= 5
       l |= decode(s.charAt(i))
       i += 1

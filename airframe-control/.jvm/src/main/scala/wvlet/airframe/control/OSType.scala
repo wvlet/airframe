@@ -43,11 +43,11 @@ object OS {
 
   val getType: OSType = {
     val osName: String = System.getProperty("os.name", "unknown").toLowerCase
-    if (osName.contains("win")) {
+    if osName.contains("win") then {
       OSType.Windows
-    } else if (osName.contains("mac")) {
+    } else if osName.contains("mac") then {
       OSType.Mac
-    } else if (osName.contains("linux")) {
+    } else if osName.contains("linux") then {
       OSType.Linux
     } else
       OSType.Other

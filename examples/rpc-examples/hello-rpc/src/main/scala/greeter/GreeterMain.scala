@@ -56,7 +56,7 @@ class GreeterMain(
   @command(description = "Make RPC requests")
   def client(@option(prefix = "-n", description = "request count") n: Int = 3): Unit = {
     Using.resource(GreeterRPC.newRPCSyncClient(Http.client.newSyncClient(s"localhost:${port}"))) { client =>
-      for (i <- 0 until n) {
+      for i <- 0 until n do {
         val response = client.GreeterApi.hello(s"RPC${i}")
         info(s"Received: ${response}")
       }

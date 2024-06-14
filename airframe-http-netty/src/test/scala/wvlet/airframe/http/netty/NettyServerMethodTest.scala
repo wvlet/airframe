@@ -28,18 +28,17 @@ class NettyServerMethodTest extends AirSpec {
 
   test("Handle various http methods") { (client: SyncClient) =>
     test("valid methods") {
-      for (
-        m <- Seq(
-          HttpMethod.GET,
-          HttpMethod.POST,
-          HttpMethod.PUT,
-          HttpMethod.DELETE,
-          HttpMethod.PATCH,
-          HttpMethod.TRACE,
-          HttpMethod.OPTIONS,
-          HttpMethod.HEAD
-        )
-      ) {
+      for m <- Seq(
+        HttpMethod.GET,
+        HttpMethod.POST,
+        HttpMethod.PUT,
+        HttpMethod.DELETE,
+        HttpMethod.PATCH,
+        HttpMethod.TRACE,
+        HttpMethod.OPTIONS,
+        HttpMethod.HEAD
+      )
+      do {
         test(s"${m}") {
           val resp = client.sendSafe(Http.request(m, "/get"))
           resp.status shouldBe HttpStatus.NotFound_404
@@ -52,9 +51,9 @@ class NettyServerMethodTest extends AirSpec {
     }
 
     test("reject unsupported methods") {
-      for (m <- Seq("UNKNOWN_METHOD", HttpMethod.CONNECT)) {
+      for m <- Seq("UNKNOWN_METHOD", HttpMethod.CONNECT) do {
         test(m) {
-          if (m == HttpMethod.CONNECT) {
+          if m == HttpMethod.CONNECT then {
             pending("Not sure how to support CONNECT in Netty")
           }
           val resp = client.sendSafe(Http.request(m, "/get"))

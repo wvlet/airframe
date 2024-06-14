@@ -74,7 +74,7 @@ private[airspec] class AirSpecTaskRunner(
     */
   private def findTargetSpecs(spec: AirSpecSpi): Seq[AirSpecDef] = {
     val testDefs = spec.testDefinitions
-    if (testDefs.isEmpty) {
+    if testDefs.isEmpty then {
       val name = specName(None, spec)
       warn(s"No test definition is found in ${name}. Add at least one test(...) method call.")
     }
@@ -110,7 +110,7 @@ private[airspec] class AirSpecTaskRunner(
         (spec, findTargetSpecs(spec))
       }
       .flatMap { case (spec: AirSpecSpi, targetSpecs: Seq[AirSpecDef]) =>
-        if (targetSpecs.nonEmpty) {
+        if targetSpecs.nonEmpty then {
           runSpec(None, spec, targetSpecs)
         } else {
           Future.unit
@@ -228,10 +228,10 @@ private[airspec] class AirSpecTaskRunner(
 
     def startTest: Unit = {
       // Show the inner test name
-      if (isLocal) {
+      if isLocal then {
         parentContext.map { ctx =>
           synchronized {
-            if (!displayedContext.contains(ctxName)) {
+            if !displayedContext.contains(ctxName) then {
               taskLogger.logTestName(ctx.testName, indentLevel = (indentLevel - 1).max(0))
               displayedContext += ctxName
             }
@@ -275,15 +275,15 @@ private[airspec] class AirSpecTaskRunner(
             val p = Promise[Any]()
             val c: Cancelable = RxRunner.run(rx) {
               case OnNext(v) =>
-                if (!p.isCompleted) {
+                if !p.isCompleted then {
                   p.success(v)
                 }
               case OnError(e) =>
-                if (!p.isCompleted) {
+                if !p.isCompleted then {
                   p.failure(e)
                 }
               case OnCompletion =>
-                if (!p.isCompleted) {
+                if !p.isCompleted then {
                   // Set dummy value
                   p.success(())
                 }

@@ -33,7 +33,7 @@ class HttpResponseBodyCodec[Resp: HttpResponseAdapter] extends MessageCodec[Http
         JSONCodec.pack(p, json)
       case _ =>
         val content = v.contentString
-        if (content.startsWith("{") || content.startsWith("[")) {
+        if content.startsWith("{") || content.startsWith("[") then {
           // JSON -> MsgPack
           trace(s"response: ${content}")
           JSONCodec.pack(p, content)

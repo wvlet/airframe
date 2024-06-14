@@ -23,7 +23,7 @@ case class TimeVector(x: Long, offset: Long, unit: TimeWindowUnit) {
   override def toString: String = toDurationString
 
   def toDurationString = {
-    if (offset == 0) {
+    if offset == 0 then {
       s"${x}${unit.symbol}"
     } else {
       s"${x}${unit.symbol}/${offset}${unit.symbol}"
@@ -37,9 +37,9 @@ case class TimeVector(x: Long, offset: Long, unit: TimeWindowUnit) {
     val end         = unit.increment(startOffset, x)
 
     val onGrid = grid.compareTo(context) == 0
-    val start  = if (onGrid) startOffset else context
+    val start  = if onGrid then startOffset else context
 
-    if (start.compareTo(end) <= 0) {
+    if start.compareTo(end) <= 0 then {
       TimeWindow(start, end)
     } else {
       TimeWindow(end, start)
@@ -105,7 +105,7 @@ object TimeVector {
 
     @tailrec
     def loop(unitsToUse: List[TimeWindowUnit]): TimeVector = {
-      if (unitsToUse.isEmpty) {
+      if unitsToUse.isEmpty then {
         TimeVector(endUnixTime - startUnixTime, 0, TimeWindowUnit.Second)
       } else {
         val unit     = unitsToUse.head
@@ -116,7 +116,7 @@ object TimeVector {
         val truncated           = TimeWindow(startTruncated, endTruncated)
         val truncatedSecondDiff = truncated.secondDiff
 
-        if (numUnits > 0 && ((secondDiff - truncatedSecondDiff) / (numUnits * unit.secondsInUnit)).abs <= 0.001) {
+        if numUnits > 0 && ((secondDiff - truncatedSecondDiff) / (numUnits * unit.secondsInUnit)).abs <= 0.001 then {
           TimeVector(numUnits, 0, unit)
         } else {
           loop(unitsToUse.tail)

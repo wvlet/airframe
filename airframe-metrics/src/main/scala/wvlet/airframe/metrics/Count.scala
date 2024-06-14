@@ -26,9 +26,9 @@ import scala.util.{Failure, Success, Try}
   */
 case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   override def toString: String = {
-    if (unit == Count.ONE) {
+    if unit == Count.ONE then {
       f"${value}%,d"
-    } else if (valueOf(unit) == (value / unit.factor)) {
+    } else if valueOf(unit) == (value / unit.factor) then {
       f"${valueOf(unit).toLong}%,d${unit.unitString}"
     } else {
       f"${valueOf(unit)}%.2f${unit.unitString}"
@@ -47,11 +47,11 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   def mostSuccinctCount: Count = {
     @tailrec
     def loop(unit: CountUnit, remaining: List[CountUnit]): CountUnit = {
-      if (remaining.isEmpty) {
+      if remaining.isEmpty then {
         unit
       } else {
         val nextUnit = remaining.head
-        if (math.abs(valueOf(nextUnit)) < 1.0) {
+        if math.abs(valueOf(nextUnit)) < 1.0 then {
           unit
         } else {
           loop(nextUnit, remaining.tail)

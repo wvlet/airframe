@@ -30,8 +30,10 @@ object JSHttpClientBackend extends HttpClientBackend {
 
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
     // Use Fetch API if available
-    if (config.useFetchAPI && js.typeOf(js.Dynamic.global.fetch) != "undefined")
-      new JSFetchChannel(serverAddress, config)
+    if config.useFetchAPI && js.typeOf(js.Dynamic.global.fetch) != "undefined" then new JSFetchChannel(
+      serverAddress,
+      config
+    )
     else
       new JSHttpClientChannel(serverAddress, config)
   }

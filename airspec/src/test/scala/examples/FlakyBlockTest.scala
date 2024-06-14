@@ -21,7 +21,7 @@ import scala.concurrent.Future
 class FlakyBlockTest extends AirSpec {
   test("flaky test") {
     flaky {
-      if (scala.util.Random.nextInt(3) == 0) {
+      if scala.util.Random.nextInt(3) == 0 then {
         throw new IllegalStateException(s"flaky test failed")
       }
     }

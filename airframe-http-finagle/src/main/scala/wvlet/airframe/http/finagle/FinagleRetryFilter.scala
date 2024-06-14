@@ -31,7 +31,7 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
   import com.twitter.conversions.DurationOps.*
 
   private[this] def schedule(d: Duration)(f: => Future[Response]) = {
-    if (d > 0.seconds) {
+    if d > 0.seconds then {
       val promise = new Promise[Response]
       timer.schedule(Time.now + d) {
         promise.become(f)
@@ -60,12 +60,12 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
         case ResultClass.Succeeded =>
           rep
         case ResultClass.Failed(isRetryable, cause, extraWait) => {
-          if (!retryContext.canContinue) {
+          if !retryContext.canContinue then {
             // Reached the max retry
             rep.flatMap { r =>
               Future.exception(HttpClientMaxRetryException(FinagleHttpResponseWrapper(r), retryContext, cause))
             }
-          } else if (!isRetryable) {
+          } else if !isRetryable then {
             // Non-retryable failure
             Future.exception(cause)
           } else {

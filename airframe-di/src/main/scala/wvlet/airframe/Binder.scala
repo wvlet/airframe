@@ -24,7 +24,7 @@ object Binder {
     def sourceCode: SourceCode
   }
   case class ClassBinding(from: Surface, to: Surface, sourceCode: SourceCode) extends Binding {
-    if (from == to) {
+    if from == to then {
       throw new CYCLIC_DEPENDENCY(List(to), sourceCode)
     }
   }
@@ -57,7 +57,7 @@ object Binder {
 
   case class DependencyFactory(from: Surface, dependencyTypes: Seq[Surface], factory: Any) {
     override def toString: String = {
-      val deps = if (dependencyTypes.isEmpty) {
+      val deps = if dependencyTypes.isEmpty then {
         "()"
       } else {
         s"(${dependencyTypes.mkString(",")})"

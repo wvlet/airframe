@@ -63,7 +63,7 @@ class Chatwork extends ULIDBenchmark {
     var newValue: Option[ChatworkULID] = None
     synchronized {
       newValue = ChatworkULID.generateStrictlyMonotonic(lastValue)
-      while (newValue.isEmpty) {
+      while newValue.isEmpty do {
         newValue = ChatworkULID.generateStrictlyMonotonic(lastValue)
       }
       lastValue = newValue.get

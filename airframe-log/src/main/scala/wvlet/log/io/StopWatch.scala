@@ -151,7 +151,7 @@ trait Timer extends Serializable {
   }
 
   protected def reportLog(m: TimeReport, logLevel: LogLevel): Unit = {
-    val l = if (classOf[Logger].isAssignableFrom(this.getClass)) {
+    val l = if classOf[Logger].isAssignableFrom(this.getClass) then {
       this.asInstanceOf[Logger].log(LogRecord(logLevel, None, m.report, None))
     } else {
       Logger(this.getClass.getName)
@@ -197,7 +197,7 @@ trait TimeReport extends Ordered[TimeReport] {
   def executionCount: Int = _executionCount
 
   def measure: TimeReport = {
-    for (i <- 0 until repeat) {
+    for i <- 0 until repeat do {
       s.resume
       try {
         body()
@@ -220,7 +220,7 @@ trait TimeReport extends Ordered[TimeReport] {
   def max: Double = maxInterval
 
   def averageWithoutMinMax = {
-    if (executionCount > 2) {
+    if executionCount > 2 then {
       (s.getElapsedTime - min - max) / (_executionCount - 2)
     } else {
       average
@@ -247,11 +247,11 @@ trait TimeReport extends Ordered[TimeReport] {
     val digits = math.log10(time)
 
     val unitIndex = {
-      if (digits.isNaN || digits.isInfinity || digits >= -2.0) {
+      if digits.isNaN || digits.isInfinity || digits >= -2.0 then {
         0
       } else {
         val u = -((digits - 1) / 3.0).toInt
-        if (u >= symbol.length) symbol.length - 1 else u
+        if u >= symbol.length then symbol.length - 1 else u
       }
     }
     require(
@@ -276,7 +276,7 @@ trait TimeReport extends Ordered[TimeReport] {
 
     val lines = Seq.newBuilder[String]
     lines += indent(0, genReportLine)
-    for ((k, v) <- subMeasure) {
+    for (k, v) <- subMeasure do {
       lines += indent(1, v.genReportLine)
     }
 
@@ -304,7 +304,7 @@ class StopWatch {
     *   the elapsed time in seconds.
     */
   def getElapsedTime: Double = {
-    if (state == State.RUNNING) {
+    if state == State.RUNNING then {
       val now  = System.nanoTime().toDouble
       val diff = now - lastSystemTime
       (elapsedTimeAccumulated + diff) / NANO_UNIT
@@ -329,7 +329,7 @@ class StopWatch {
     *   interval time since the last resume call
     */
   def stop: Double = {
-    if (state == State.STOPPED) {
+    if state == State.STOPPED then {
       return 0.0
     }
 
@@ -347,7 +347,7 @@ class StopWatch {
     * Resume the timer
     */
   def resume: Unit = {
-    if (state == State.RUNNING) {
+    if state == State.RUNNING then {
       return
     }
 

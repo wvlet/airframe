@@ -34,7 +34,7 @@ class StandardCodecTest extends CodecSpec {
   }
 
   test("support Enum") {
-    for (v <- TestEnum.values()) {
+    for v <- TestEnum.values() do {
       roundtrip[TestEnum](Surface.of[TestEnum], v)
     }
 

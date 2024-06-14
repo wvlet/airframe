@@ -327,7 +327,7 @@ object LauncherTest {
         @option(prefix = "-r", description = "repeat times") repeat: Int = 1,
         @argument message: String = "hello!"
     ): Unit = {
-      for (i <- 0 until repeat) print(message)
+      for i <- 0 until repeat do print(message)
     }
   }
 

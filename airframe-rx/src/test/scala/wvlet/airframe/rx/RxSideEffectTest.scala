@@ -34,7 +34,7 @@ class RxSideEffectTest extends AirSpec {
     val observedFailure = Seq.newBuilder[Throwable]
     Rx.fromSeq(Seq(1, 2, 3))
       .map { x =>
-        if (x == 2) throw new Exception("failed")
+        if x == 2 then throw new Exception("failed")
         x
       }
       .tapOn {
@@ -54,7 +54,7 @@ class RxSideEffectTest extends AirSpec {
     val observed = Seq.newBuilder[Throwable]
     Rx.fromSeq(Seq(1, 2, 3))
       .map { x =>
-        if (x == 2) throw new Exception("failed")
+        if x == 2 then throw new Exception("failed")
         x
       }
       .tapOnFailure { e =>
@@ -71,7 +71,7 @@ class RxSideEffectTest extends AirSpec {
     val observed = Seq.newBuilder[Int]
     Rx.fromSeq(Seq(1, 2, 3))
       .tap { x =>
-        if (x == 2) throw new Exception("failed")
+        if x == 2 then throw new Exception("failed")
         observed += x
       }
       .recover {
@@ -88,7 +88,7 @@ class RxSideEffectTest extends AirSpec {
     val observed = Seq.newBuilder[Int]
     Rx.fromSeq(Seq(1, 2, 3))
       .map { x =>
-        if (x == 2) throw new Exception("failed")
+        if x == 2 then throw new Exception("failed")
         observed += x
       }
       .tapOnFailure {

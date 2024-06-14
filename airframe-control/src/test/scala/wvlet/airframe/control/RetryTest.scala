@@ -32,7 +32,7 @@ class RetryTest extends AirSpec {
     val e = r.run {
       count += 1
       logger.info("hello retry")
-      if (count < 3) {
+      if count < 3 then {
         throw new IllegalStateException("retry test")
       } else {
         "success"
@@ -52,7 +52,7 @@ class RetryTest extends AirSpec {
 
     r = r.init()
     var waitTotal = 0
-    while (r.canContinue) {
+    while r.canContinue do {
       waitTotal += r.nextWaitMillis
       r = r.nextRetry(new IllegalStateException())
     }
@@ -68,7 +68,7 @@ class RetryTest extends AirSpec {
         .run {
           count += 1
           logger.info("hello retry")
-          if (count < 2) {
+          if count < 2 then {
             throw new IllegalStateException("retry test")
           } else {
             "success"
@@ -122,7 +122,7 @@ class RetryTest extends AirSpec {
       checked = true
     }
       .runWithContext("hello world") {
-        if (count == 0) {
+        if count == 0 then {
           count += 1
           throw new Exception()
         }

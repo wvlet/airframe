@@ -69,7 +69,7 @@ object RouteMatcher extends LogSupport {
 
     dfa.nodeTable
       .map(_._1).foreach(state =>
-        if (state.size > 1 && state.forall(_.isTerminal)) {
+        if state.size > 1 && state.forall(_.isTerminal) then {
           throw new IllegalArgumentException(
             s"Found multiple matching routes: ${state.map(_.matchedRoute).flatten.map(p => s"${p.path}").mkString(", ")} "
           )
@@ -87,7 +87,7 @@ object RouteMatcher extends LogSupport {
       var params = Map.empty[String, String]
 
       // Traverse the path components and transit the DFA state
-      while (toContinue && pathIndex < pc.length) {
+      while toContinue && pathIndex < pc.length do {
 
         def loop(token: String): Unit = {
           pathIndex += 1
@@ -99,7 +99,7 @@ object RouteMatcher extends LogSupport {
               actions.foreach { action => params = action.updateMatch(params, token) }
 
               // Try to find a match at the last path component
-              if (pathIndex >= pc.length) {
+              if pathIndex >= pc.length then {
                 toContinue = false
                 actions
                   .find(_.isTerminal)
@@ -155,7 +155,7 @@ object RouteMatcher extends LogSupport {
       extends PathMapping {
     override def toString: String = {
       val t = s"${pathPrefix}/$$${varName}"
-      if (isTerminal) s"!${t}" else t
+      if isTerminal then s"!${t}" else t
     }
     override def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = {
       m + (varName -> pathComponent)
@@ -169,7 +169,7 @@ object RouteMatcher extends LogSupport {
       extends PathMapping {
     override def toString: String = {
       val t = s"${pathPrefix}/${name}"
-      if (isTerminal) s"!${t}" else t
+      if isTerminal then s"!${t}" else t
     }
   }
 
@@ -195,20 +195,20 @@ object RouteMatcher extends LogSupport {
   private[http] def buildPathDFA(routes: Seq[Route]): Automaton.DFA[Set[PathMapping], String] = {
     // Convert http path patterns (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int, prefix: String): List[PathMapping] = {
-      if (pathIndex >= r.pathComponents.length) {
+      if pathIndex >= r.pathComponents.length then {
         Nil
       } else {
         val isTerminal = pathIndex == r.pathComponents.length - 1
         r.pathComponents(pathIndex) match {
           case x if x.startsWith(":") =>
             val varName = x.substring(1)
-            VariableMapping(prefix, pathIndex, varName, if (isTerminal) Some(r) else None) :: toPathMapping(
+            VariableMapping(prefix, pathIndex, varName, if isTerminal then Some(r) else None) :: toPathMapping(
               r,
               pathIndex + 1,
               s"${prefix}/${x}"
             )
           case x if x.startsWith("*") =>
-            if (!isTerminal) {
+            if !isTerminal then {
               throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
             }
             val varName = x.substring(1)
@@ -218,7 +218,7 @@ object RouteMatcher extends LogSupport {
               s"${prefix}/${x}"
             )
           case x =>
-            ConstantPathMapping(prefix, pathIndex, x, if (isTerminal) Some(r) else None) :: toPathMapping(
+            ConstantPathMapping(prefix, pathIndex, x, if isTerminal then Some(r) else None) :: toPathMapping(
               r,
               pathIndex + 1,
               s"${prefix}/${x}"
@@ -229,10 +229,10 @@ object RouteMatcher extends LogSupport {
 
     // Build an NFA of path patterns
     var g = Automaton.empty[PathMapping, String]
-    for (r <- routes) {
+    for r <- routes do {
       val pathMappings = Init :: toPathMapping(r, 0, "")
       trace(pathMappings)
-      for (it <- pathMappings.sliding(2)) {
+      for it <- pathMappings.sliding(2) do {
         val pair   = it.toIndexedSeq
         val (a, b) = (pair(0), pair(1))
         b match {

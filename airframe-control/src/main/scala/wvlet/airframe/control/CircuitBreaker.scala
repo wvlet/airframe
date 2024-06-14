@@ -238,7 +238,7 @@ case class CircuitBreaker(
     * Force setting the current state.
     */
   def setState(newState: CircuitBreakerState): this.type = {
-    if (currentState.get() != newState) {
+    if currentState.get() != newState then {
       currentState.set(newState)
       onStateChangeListener(this)
     }
@@ -264,9 +264,9 @@ case class CircuitBreaker(
     * CircuitBreakerOpenException
     */
   def verifyConnection: Unit = {
-    if (!isConnected) {
+    if !isConnected then {
       val currentTime = System.currentTimeMillis()
-      if (currentTime > nextProvingTimeMillis) {
+      if currentTime > nextProvingTimeMillis then {
         halfOpen
       } else {
         onOpenFailureHandler(this)
@@ -309,7 +309,7 @@ case class CircuitBreaker(
     lastFailure = Some(e)
     healthCheckPolicy.recordFailure
     recoveryPolicy.recordFailure
-    if (healthCheckPolicy.isMarkedDead) {
+    if healthCheckPolicy.isMarkedDead then {
       val baseWaitMillis = provingWaitTimeMillis.max(delayAfterMarkedDead.retryPolicyConfig.initialIntervalMillis).toInt
       val nextWaitMillis = delayAfterMarkedDead.nextWait(baseWaitMillis)
       provingWaitTimeMillis = delayAfterMarkedDead.updateBaseWait(baseWaitMillis)
@@ -348,14 +348,14 @@ case class CircuitBreaker(
         result.get
       case ResultClass.Failed(retryable, cause, _) =>
         recordFailure(cause)
-        if (retryable) {
+        if retryable then {
           // If the error is retryable, rethrow as it is then the caller (maybe Retryer) should handle it.
           throw cause
         } else {
           // If the error is not retryable, apply fallbackHandler
           val x     = fallbackHandler(cause)
           val clazz = implicitly[ClassTag[A]].runtimeClass
-          if (clazz.isAssignableFrom(x.getClass)) {
+          if clazz.isAssignableFrom(x.getClass) then {
             x.asInstanceOf[A]
           } else {
             throw new ClassCastException(

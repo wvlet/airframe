@@ -69,7 +69,7 @@ class JMXRegistryTest extends AirSpec {
     attrs.length shouldBe 1
     attrs(0).getName shouldBe "freeMemory"
 
-    if (!JMXUtil.isAtLeastJava9) {
+    if !JMXUtil.isAtLeastJava9 then {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
       debug(m)
 
@@ -88,7 +88,7 @@ class JMXRegistryTest extends AirSpec {
     attrs.length shouldBe 1
     attrs(0).getName shouldBe "memory.free"
 
-    if (!JMXUtil.isAtLeastJava9) {
+    if !JMXUtil.isAtLeastJava9 then {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NamedMBean")
       debug(m)
 
@@ -107,7 +107,7 @@ class JMXRegistryTest extends AirSpec {
     mbeanServer.getAttribute(new ObjectName("wvlet.airframe.jmx:name=FieldMBean"), "a") shouldBe 1
     mbeanServer.getAttribute(new ObjectName("wvlet.airframe.jmx:name=FieldMBean"), "b") shouldBe "apple"
 
-    if (!JMXUtil.isAtLeastJava9) {
+    if !JMXUtil.isAtLeastJava9 then {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
       info(m)
 
@@ -133,7 +133,7 @@ class JMXRegistryTest extends AirSpec {
       "stat.state"
     ) shouldBe "nested JMX bean"
 
-    if (!JMXUtil.isAtLeastJava9) {
+    if !JMXUtil.isAtLeastJava9 then {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
       info(m)
 

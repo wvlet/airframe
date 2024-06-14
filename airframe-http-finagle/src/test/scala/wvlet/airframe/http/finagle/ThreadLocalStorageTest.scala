@@ -63,7 +63,7 @@ class ThreadLocalStorageTest extends AirSpec {
         // Read TLS set by the child MyApp service
         val mydata = context.getThreadLocal("mydata")
 
-        if (request.path == "/get") {
+        if request.path == "/get" then {
           val r = Response()
           r.contentString = mydata.getOrElse("N/A")
           r

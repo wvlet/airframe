@@ -114,7 +114,7 @@ object GrpcServiceBuilder {
 
           val serviceBuilder = ServerServiceDefinition.builder(serviceName)
 
-          for ((r, m) <- routeAndMethods) {
+          for (r, m) <- routeAndMethods do {
             val controller      = session.getInstanceOf(r.controllerSurface)
             val rpcInterfaceCls = Router.findRPCInterfaceCls(r.controllerSurface)
             val rpcMethod = RPCMethod(

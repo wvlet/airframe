@@ -23,7 +23,7 @@ object Control {
     try {
       body(resource)
     } finally {
-      if (resource != null) {
+      if resource != null then {
         resource.close()
       }
     }
@@ -75,11 +75,11 @@ object Control {
   }
 
   def closeResources[R <: AutoCloseable](resources: R*): Unit = {
-    if (resources != null) {
+    if resources != null then {
       var exceptionList = List.empty[Throwable]
       resources.map { x =>
         try {
-          if (x != null) {
+          if x != null then {
             x.close()
           }
         } catch {
@@ -87,7 +87,7 @@ object Control {
             exceptionList = e :: exceptionList
         }
       }
-      if (exceptionList.nonEmpty) {
+      if exceptionList.nonEmpty then {
         throw MultipleExceptions(exceptionList)
       }
     }

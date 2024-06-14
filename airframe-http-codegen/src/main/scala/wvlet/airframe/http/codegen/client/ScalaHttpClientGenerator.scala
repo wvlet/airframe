@@ -31,7 +31,7 @@ object ScalaHttpClientGenerator {
     body
       .split("\n")
       .map { x =>
-        if (x.trim.isEmpty) {
+        if x.trim.isEmpty then {
           ""
         } else {
           s"${"  " * level}${x}"

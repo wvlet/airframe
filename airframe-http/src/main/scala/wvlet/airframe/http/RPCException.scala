@@ -67,8 +67,8 @@ case class RPCException(
       code = status.code,
       codeName = status.name,
       message = message,
-      stackTrace = if (shouldReportStackTrace) Some(GenericException.extractStackTrace(this)) else None,
-      cause = if (shouldReportStackTrace) cause else None,
+      stackTrace = if shouldReportStackTrace then Some(GenericException.extractStackTrace(this)) else None,
+      cause = if shouldReportStackTrace then cause else None,
       appErrorCode = appErrorCode,
       metadata = metadata
     )
@@ -155,7 +155,7 @@ object RPCException {
       .flatMap(x => Try(x.toInt).toOption) match {
       case Some(rpcStatus) =>
         try {
-          if (response.message.isEmpty) {
+          if response.message.isEmpty then {
             val status = RPCStatus.ofCode(rpcStatus)
             status.newException(status.name)
           } else {

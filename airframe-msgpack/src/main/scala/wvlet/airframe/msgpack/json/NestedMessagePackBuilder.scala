@@ -32,13 +32,13 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
 
   def mergedResult: MsgPack = {
     val buffers = result
-    if (buffers.length == 1) {
+    if buffers.length == 1 then {
       buffers.head
     } else {
       val size   = buffers.map(_.length).sum
       val result = new Array[Byte](size)
       var offset = 0
-      for (x <- buffers) {
+      for x <- buffers do {
         Array.copy(x, 0, result, offset, x.length)
         offset += x.length
       }
@@ -49,7 +49,7 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
   private var cachedResult: Option[Seq[MsgPack]] = None
   override def result: Seq[MsgPack] = {
     synchronized {
-      if (cachedResult.isEmpty) {
+      if cachedResult.isEmpty then {
         cachedResult = Some(Seq(packer.toByteArray))
       }
       cachedResult.get
@@ -68,7 +68,7 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
   }
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
-    if (dotIndex >= 0 || expIndex >= 0) {
+    if dotIndex >= 0 || expIndex >= 0 then {
       packer.packDouble(v.toDouble)
     } else {
       Try(v.toLong) match {

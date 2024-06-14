@@ -33,7 +33,7 @@ private[grpc] object StringMarshaller extends Marshaller[String] with LogSupport
     val v        = MessageContext()
 
     StringCodec.unpack(unpacker, v)
-    if (!v.isNull) {
+    if !v.isNull then {
       val s = v.getString
       s
     } else {

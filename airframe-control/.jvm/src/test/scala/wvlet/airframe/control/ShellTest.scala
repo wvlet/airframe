@@ -35,7 +35,7 @@ class ShellTest extends AirSpec {
   }
 
   test("find javaw.exe") {
-    if (OS.isWindows) {
+    if OS.isWindows then {
       val cmd = Shell.findJavaCommand("javaw").get
       cmd shouldNotBe null
       cmd.contains("javaw") shouldBe true
@@ -46,7 +46,7 @@ class ShellTest extends AirSpec {
     val p   = Shell.launchProcess("echo hello world")
     val pid = Shell.getProcessID(p)
     debug(s"process ID:$pid")
-    if (!OS.isWindows) {
+    if !OS.isWindows then {
       pid shouldBe defined
       pid.get > 0 shouldBe true
     }
@@ -94,7 +94,7 @@ class ShellTest extends AirSpec {
   }
 
   test("launch process") {
-    if (OS.isWindows) {
+    if OS.isWindows then {
       Shell.launchCmdExe("echo hello cmd.exe")
     }
   }

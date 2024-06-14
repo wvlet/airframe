@@ -57,7 +57,7 @@ object Value {
     }
   }
   case class BooleanValue(v: Boolean) extends Value {
-    override def toJson               = if (v) "true" else "false"
+    override def toJson               = if v then "true" else "false"
     override def valueType: ValueType = ValueType.BOOLEAN
     override def writeTo(packer: Packer): Unit = {
       packer.packBoolean(v)
@@ -71,13 +71,13 @@ object Value {
     def isValidInt: Boolean
     def isValidLong: Boolean
     def mostSuccinctMessageFormat: MessageFormat = {
-      if (isValidByte) {
+      if isValidByte then {
         MessageFormat.INT8
-      } else if (isValidShort) {
+      } else if isValidShort then {
         MessageFormat.INT16
-      } else if (isValidInt) {
+      } else if isValidInt then {
         MessageFormat.INT32
-      } else if (isValidLong) {
+      } else if isValidLong then {
         MessageFormat.INT64
       } else {
         MessageFormat.UINT64
@@ -96,9 +96,9 @@ object Value {
     def isValidInt: Boolean   = v.isValidInt
     def isValidLong: Boolean  = v.isValidLong
 
-    def asByte: Byte             = if (isValidByte) v.toByte else throw overflowU64(v)
-    def asShort: Short           = if (isValidShort) v.toShort else throw overflowU64(v)
-    def asInt: Int               = if (isValidInt) v.toInt else throw overflowU64(v)
+    def asByte: Byte             = if isValidByte then v.toByte else throw overflowU64(v)
+    def asShort: Short           = if isValidShort then v.toShort else throw overflowU64(v)
+    def asInt: Int               = if isValidInt then v.toInt else throw overflowU64(v)
     def asLong: Long             = v
     def asBigInteger: BigInteger = BigInteger.valueOf(v)
   }
@@ -121,10 +121,10 @@ object Value {
     def isValidInt: Boolean   = within(INT_MIN, INT_MAX)
     def isValidLong: Boolean  = within(LONG_MIN, LONG_MAX)
 
-    def asByte: Byte             = if (isValidByte) v.byteValue() else throw overflow(v)
-    def asShort: Short           = if (isValidShort) v.shortValue() else throw overflow(v)
-    def asInt: Int               = if (isValidInt) v.intValue() else throw overflow(v)
-    def asLong: Long             = if (isValidLong) v.longValue() else throw overflow(v)
+    def asByte: Byte             = if isValidByte then v.byteValue() else throw overflow(v)
+    def asShort: Short           = if isValidShort then v.shortValue() else throw overflow(v)
+    def asInt: Int               = if isValidInt then v.intValue() else throw overflow(v)
+    def asLong: Long             = if isValidLong then v.longValue() else throw overflow(v)
     def asBigInteger: BigInteger = v
     override def writeTo(packer: Packer): Unit = {
       packer.packBigInteger(v)
@@ -132,7 +132,7 @@ object Value {
   }
 
   case class DoubleValue(v: Double) extends Value {
-    override def toJson               = if (v.isNaN || v.isInfinite) "null" else v.toString
+    override def toJson               = if v.isNaN || v.isInfinite then "null" else v.toString
     override def valueType: ValueType = ValueType.FLOAT
     override def writeTo(packer: Packer): Unit = {
       packer.packDouble(v)
@@ -170,7 +170,7 @@ object Value {
     // Produces Base64 encoded strings
     override def toRawString: String = {
       synchronized {
-        if (decodedStringCache == null) {
+        if decodedStringCache == null then {
           decodedStringCache = Base64.getEncoder.encodeToString(v)
         }
       }
@@ -275,9 +275,9 @@ object Value {
   private[spi] def appendJsonString(sb: StringBuilder, string: String): Unit = {
     sb.append("\"")
     var i = 0
-    while (i < string.length) {
+    while i < string.length do {
       val ch = string.charAt(i)
-      if (ch < 0x20) {
+      if ch < 0x20 then {
         ch match {
           case '\n' =>
             sb.append("\\n")
@@ -293,7 +293,7 @@ object Value {
             // control chars
             escapeChar(sb, ch)
         }
-      } else if (ch <= 0x7f) {
+      } else if ch <= 0x7f then {
         ch match {
           case '\\' =>
             sb.append("\\\\")
@@ -302,7 +302,7 @@ object Value {
           case _ =>
             sb.append(ch)
         }
-      } else if (ch >= 0xd800 && ch <= 0xdfff) { // surrogates
+      } else if ch >= 0xd800 && ch <= 0xdfff then { // surrogates
         escapeChar(sb, ch)
       } else {
         sb.append(ch)

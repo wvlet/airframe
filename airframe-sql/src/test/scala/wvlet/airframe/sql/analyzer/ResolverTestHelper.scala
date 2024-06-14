@@ -37,7 +37,7 @@ trait ResolverTestHelper { self: AirSpec =>
   }
 
   private def shouldBeResolved(p: LogicalPlan, sql: String): Unit = {
-    if (!p.resolved) {
+    if !p.resolved then {
       fail(
         s"""Found unresolved expressions in:
            |[sql]
