@@ -253,6 +253,86 @@ private[wvlet] object AirframeMacros {
     h.registerTraitFactory(t)
   }
 
+  def designBindInstanceImpl[A: c.WeakTypeTag](c: sm.Context)(obj: c.Tree): c.Tree = {
+    import c.universe.*
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""${c.prefix}.bind[${t}].toInstance(${obj})"""
+  }
+
+  def designBindSingletonImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe.*
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""${c.prefix}.bind[${t}].toSingleton"""
+  }
+
+  def designBindImplImpl[A: c.WeakTypeTag, B: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe.*
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""${c.prefix}.bind[${t}].to[${implicitly[c.WeakTypeTag[B]].tpe}]"""
+  }
+
+  def designBindProvider1Impl[D1: c.WeakTypeTag, A: c.WeakTypeTag](c: sm.Context)(f: c.Tree): c.Tree = {
+    import c.universe.*
+    val t  = implicitly[c.WeakTypeTag[A]].tpe
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    q"""${c.prefix}.bind[${t}].toProvider[${d1}](${f})"""
+  }
+
+  def designBindProvider2Impl[D1: c.WeakTypeTag, D2: c.WeakTypeTag, A: c.WeakTypeTag](
+      c: sm.Context
+  )(f: c.Tree): c.Tree = {
+    import c.universe.*
+    val t  = implicitly[c.WeakTypeTag[A]].tpe
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
+    q"""${c.prefix}.bind[${t}].toProvider[${d1}, ${d2}](${f})"""
+  }
+
+  def designBindProvider3Impl[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, A: c.WeakTypeTag](
+      c: sm.Context
+  )(f: c.Tree): c.Tree = {
+    import c.universe.*
+    val t  = implicitly[c.WeakTypeTag[A]].tpe
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
+    q"""${c.prefix}.bind[${t}].toProvider[${d1}, ${d2}, ${d3}](${f})"""
+  }
+
+  def designBindProvider4Impl[
+      D1: c.WeakTypeTag,
+      D2: c.WeakTypeTag,
+      D3: c.WeakTypeTag,
+      D4: c.WeakTypeTag,
+      A: c.WeakTypeTag
+  ](c: sm.Context)(f: c.Tree): c.Tree = {
+    import c.universe.*
+    val t  = implicitly[c.WeakTypeTag[A]].tpe
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4 = implicitly[c.WeakTypeTag[D4]].tpe
+    q"""${c.prefix}.bind[${t}].toProvider[${d1}, ${d2}, ${d3}, ${d4}](${f})"""
+  }
+
+  def designBindProvider5Impl[
+      D1: c.WeakTypeTag,
+      D2: c.WeakTypeTag,
+      D3: c.WeakTypeTag,
+      D4: c.WeakTypeTag,
+      D5: c.WeakTypeTag,
+      A: c.WeakTypeTag
+  ](c: sm.Context)(f: c.Tree): c.Tree = {
+    import c.universe.*
+    val t  = implicitly[c.WeakTypeTag[A]].tpe
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4 = implicitly[c.WeakTypeTag[D4]].tpe
+    val d5 = implicitly[c.WeakTypeTag[D5]].tpe
+    q"""${c.prefix}.bind[${t}].toProvider[${d1}, ${d2}, ${d3}, ${d4}, ${d5}](${f})"""
+  }
+
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe

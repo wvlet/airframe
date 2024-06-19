@@ -18,6 +18,23 @@ private[airframe] trait DesignImpl extends LogSupport:
     val target = Surface.of[A]
     new Design(self.designOptions, self.binding.filterNot(_.from == target), self.hooks)
 
+  inline def bindInstance[A](obj: A): Design =
+    bind[A].toInstance(obj)
+  inline def bindSingleton[A]: Design =
+    bind[A].toSingleton
+  inline def bindImpl[A, B <: A]: Design =
+    bind[A].to[B]
+  inline def bindProvider[D1, A](f: D1 => A): Design =
+    bind[A].toProvider[D1](f)
+  inline def bindProvider[D1, D2, A](f: (D1, D2) => A): Design =
+    bind[A].toProvider[D1, D2](f)
+  inline def bindProvider[D1, D2, D3, A](f: (D1, D2, D3) => A): Design =
+    bind[A].toProvider[D1, D2, D3](f)
+  inline def bindProvider[D1, D2, D3, D4, A](f: (D1, D2, D3, D4) => A): Design =
+    bind[A].toProvider[D1, D2, D3, D4](f)
+  inline def bindProvider[D1, D2, D3, D4, D5, A](f: (D1, D2, D3, D4, D5) => A): Design =
+    bind[A].toProvider[D1, D2, D3, D4, D5](f)
+
   /**
     * A helper method of creating a new session and an instance of A. This method is useful when you only need to use A
     * as an entry point of your program. After executing the body, the sesion will be closed.

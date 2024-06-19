@@ -53,6 +53,15 @@ val d = newDesign
   .bind[Y].to[YImpl]
 ```
 
+Alternatively, you can use new bind syntaxes introduced in Airframe 24.6.1:
+
+```scala
+val d = newDesign
+  .bindInstance[X](...)
+  .bindImpl[Y, YImpl]
+```
+
+
 ### Basic Usage
 
 First, create a class that has some parameters as dependencies. For example, the following code defines an App class having X, Y, and Z as its dependencies:
@@ -143,6 +152,21 @@ val design: Design =
 ```
 
 If you define multiple bindings to the same type (e.g., P), the last binding will have the highest precedence.
+
+Single version 24.6.1, Airframe DI supports the following short-hand binding syntaxes:
+
+```scala
+val design: Design =
+  newDesign
+  .bindSingleton[A]          // Bind A to a singleton instance of A
+  .bindInstance[B](new B(1)) // Bind B to a concrete instance of B
+  .bindImpl[A, AImpl]        // Bind A to AImpl
+  .bindProvider{ (d1:D1) => P(d1) } // Bind P using a provider function
+  .bindProvider{ (d1: D1, d2: D2) => P(d1, d2) } // Bind P using a provider function
+  ...
+  .bindProvider{ (d1 D1, ..., d5: D5) => P(d1, ..., d5) } // Up to 5 arguments
+```
+This syntax works well with code formatter tools like [scalafmt](https://scalameta.org/scalafmt/). 
 
 
 ### Design is Immutable
