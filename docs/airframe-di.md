@@ -53,7 +53,7 @@ val d = newDesign
   .bind[Y].to[YImpl]
 ```
 
-Alternatively, you can use a new bind syntaxes introduced in Airframe 24.6.1:
+Alternatively, you can use new bind syntaxes introduced in Airframe 24.6.1:
 
 ```scala
 val d = newDesign
