@@ -130,8 +130,7 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/**
-  * AirSpec build definitions.
+/** AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -376,7 +375,7 @@ lazy val airspec =
       Compile / packageBin / mappings ++= (airspecDeps.native / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDeps.native / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        "org.scala-native" %%% "test-interface" % "0.5.3"
+        "org.scala-native" %%% "test-interface" % "0.5.4"
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
