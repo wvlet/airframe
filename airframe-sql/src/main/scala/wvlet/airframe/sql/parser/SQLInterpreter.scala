@@ -471,9 +471,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
         // TODO Parse decimal-type precision properly
         case "decimal" => DecimalLiteral(v, getLocation(ctx))
         case "char"    => CharLiteral(v, getLocation(ctx))
-        case other =>
-          GenericLiteral(tpe, v, getLocation(ctx))
+        case other     => GenericLiteral(tpe, v, getLocation(ctx))
       }
+    }
+  }
+
+  override def visitAtTimeZone(ctx: AtTimeZoneContext): Expression = {
+    val v = expression(ctx.timeZoneSpecifier()).asInstanceOf[StringLiteral].value
+
+    expression(ctx.valueExpression()) match {
+      case t: TimestampLiteral => TimestampWithTimeZoneLiteral(t.value, v, t.nodeLocation)
+      case other               => other
     }
   }
 
