@@ -186,4 +186,12 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
     sql shouldBe "select * from (select * from a) join a using (id)"
   }
+
+  test("print TIMESTAMP AT TIME ZONE") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("SELECT TIMESTAMP '1992-02-01 00:00 UTC' AT TIME ZONE 'Asia/Tokyo'", "default", demoCatalog)
+
+    val sql = SQLGenerator.print(resolvedPlan)
+    sql shouldBe "SELECT TIMESTAMP '1992-02-01 00:00 UTC' AT TIME ZONE 'Asia/Tokyo'"
+  }
 }

@@ -1157,6 +1157,14 @@ object Expression {
     override def sqlExpr             = s"TIMESTAMP '${value}'"
     override def toString            = s"Literal(TIMESTAMP '${value}')"
   }
+  case class TimestampWithTimeZoneLiteral(value: String, timezone: String, nodeLocation: Option[NodeLocation])
+      extends Literal
+      with LeafExpression {
+    override def dataType: DataType  = DataType.TimestampType(TimestampField.TIMESTAMP, false)
+    override def stringValue: String = value
+    override def sqlExpr             = s"TIMESTAMP '${value}' AT TIME ZONE '${timezone}'"
+    override def toString            = s"Literal(TIMESTAMP '${value}' AT '${timezone}')"
+  }
   case class DecimalLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
     override def dataType: DataType  = DataType.DecimalType(TypeVariable("precision"), TypeVariable("scale"))
     override def stringValue: String = value
