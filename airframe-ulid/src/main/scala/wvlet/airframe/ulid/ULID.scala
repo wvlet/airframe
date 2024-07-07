@@ -15,6 +15,8 @@ package wvlet.airframe.ulid
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
+import java.util.UUID
+import java.nio.ByteBuffer
 import scala.util.Random
 
 /**
@@ -65,6 +67,16 @@ final class ULID(private val ulid: String) extends Ordered[ULID] {
       b(i + 8) = ((low >>> (64 - (i + 1) * 8)) & 0xffL).toByte
     }
     b
+  }
+
+  /**
+    * Convert this ULID to java.util.UUID
+    */
+  def toUUID: UUID = {
+    val buffer               = ByteBuffer.wrap(toBytes)
+    val mostSignificantBits  = buffer.getLong
+    val leastSignificantBits = buffer.getLong
+    new UUID(mostSignificantBits, leastSignificantBits)
   }
 
   override def compare(that: ULID): Int = {
@@ -218,6 +230,16 @@ object ULID {
       i += 1
     }
     new ULID(CrockfordBase32.encode128bits(hi, low))
+  }
+
+  /**
+    * Create a new ULID from a given java.util.UUID
+    */
+  def fromUUID(uuid: UUID): ULID = {
+    val buffer = ByteBuffer.allocate(16)
+    buffer.putLong(uuid.getMostSignificantBits)
+    buffer.putLong(uuid.getLeastSignificantBits)
+    ULID.fromBytes(buffer.array())
   }
 
   def unapply(ulidString: String): Option[ULID] = {
