@@ -129,4 +129,11 @@ class ULIDTest extends AirSpec with PropertyCheck {
     val u        = ULID.ofMillis(unixTime)
     u.epochMillis shouldBe unixTime
   }
+
+  test("convert an ULID to a UUID and vice versa") {
+    val ulid  = ULID.newULID
+    val uuid  = ulid.toUUID
+    val ulid2 = ULID.fromUUID(uuid)
+    ulid shouldBe ulid2
+  }
 }
