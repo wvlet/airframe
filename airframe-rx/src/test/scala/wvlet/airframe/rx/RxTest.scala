@@ -299,6 +299,156 @@ object RxTest extends AirSpec {
     )
   }
 
+  test("zip6") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+    val f = Rx.variable("hello")
+
+    val x  = a.zip(b, c, d, e, f)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+    e := 20
+    f := "world"
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false, 10, "hello"),
+      OnNext(2, "b", false, true, 20, "world")
+    )
+  }
+
+  test("zip7") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+    val f = Rx.variable("hello")
+    val g = Rx.variable(100)
+
+    val x  = a.zip(b, c, d, e, f, g)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+    e := 20
+    f := "world"
+    g := 200
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false, 10, "hello", 100),
+      OnNext(2, "b", false, true, 20, "world", 200)
+    )
+  }
+
+  test("zip8") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+    val f = Rx.variable("hello")
+    val g = Rx.variable(100)
+    val h = Rx.variable(1000)
+
+    val x  = a.zip(b, c, d, e, f, g, h)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+    e := 20
+    f := "world"
+    g := 200
+    h := 2000
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false, 10, "hello", 100, 1000),
+      OnNext(2, "b", false, true, 20, "world", 200, 2000)
+    )
+  }
+
+  test("zip9") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+    val f = Rx.variable("hello")
+    val g = Rx.variable(100)
+    val h = Rx.variable(1000)
+    val i = Rx.variable("world")
+
+    val x  = a.zip(b, c, d, e, f, g, h, i)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+    e := 20
+    f := "world"
+    g := 200
+    h := 2000
+    i := "hello"
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false, 10, "hello", 100, 1000, "world"),
+      OnNext(2, "b", false, true, 20, "world", 200, 2000, "hello")
+    )
+  }
+
+  test("zip10") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+    val f = Rx.variable("hello")
+    val g = Rx.variable(100)
+    val h = Rx.variable(1000)
+    val i = Rx.variable("world")
+    val j = Rx.variable(10000)
+
+    val x  = a.zip(b, c, d, e, f, g, h, i, j)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+    e := 20
+    f := "world"
+    g := 200
+    h := 2000
+    i := "hello"
+    j := 100000
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false, 10, "hello", 100, 1000, "world", 10000),
+      OnNext(2, "b", false, true, 20, "world", 200, 2000, "hello", 100000)
+    )
+  }
+
   test("zip Seq[Rx[A]]") {
     val a = Rx.single(1)
     val b = Rx.single(2)
@@ -424,6 +574,216 @@ object RxTest extends AirSpec {
       OnNext(2, "c", false, 20, false),
       OnNext(2, "d", false, 20, false),
       OnNext(2, "d", false, 20, true)
+    )
+  }
+
+  test("join6") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val v  = Rx.variable(false)
+    val u  = Rx.variable(100)
+    val rx = x.join(y, z, w, v, u)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+    v := true
+    u := 200
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10, false, 100),
+      OnNext(1, "b", true, 10, false, 100),
+      OnNext(1, "c", true, 10, false, 100),
+      OnNext(1, "c", true, 20, false, 100),
+      OnNext(1, "c", false, 20, false, 100),
+      OnNext(2, "c", false, 20, false, 100),
+      OnNext(2, "d", false, 20, false, 100),
+      OnNext(2, "d", false, 20, true, 100),
+      OnNext(2, "d", false, 20, true, 200)
+    )
+  }
+
+  test("join7") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val v  = Rx.variable(false)
+    val u  = Rx.variable(100)
+    val t  = Rx.variable("hello")
+    val rx = x.join(y, z, w, v, u, t)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+    v := true
+    u := 200
+    t := "world"
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10, false, 100, "hello"),
+      OnNext(1, "b", true, 10, false, 100, "hello"),
+      OnNext(1, "c", true, 10, false, 100, "hello"),
+      OnNext(1, "c", true, 20, false, 100, "hello"),
+      OnNext(1, "c", false, 20, false, 100, "hello"),
+      OnNext(2, "c", false, 20, false, 100, "hello"),
+      OnNext(2, "d", false, 20, false, 100, "hello"),
+      OnNext(2, "d", false, 20, true, 100, "hello"),
+      OnNext(2, "d", false, 20, true, 200, "hello"),
+      OnNext(2, "d", false, 20, true, 200, "world")
+    )
+  }
+
+  test("join8") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val v  = Rx.variable(false)
+    val u  = Rx.variable(100)
+    val t  = Rx.variable("hello")
+    val s  = Rx.variable(1000)
+    val rx = x.join(y, z, w, v, u, t, s)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+    v := true
+    u := 200
+    t := "world"
+    s := 2000
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10, false, 100, "hello", 1000),
+      OnNext(1, "b", true, 10, false, 100, "hello", 1000),
+      OnNext(1, "c", true, 10, false, 100, "hello", 1000),
+      OnNext(1, "c", true, 20, false, 100, "hello", 1000),
+      OnNext(1, "c", false, 20, false, 100, "hello", 1000),
+      OnNext(2, "c", false, 20, false, 100, "hello", 1000),
+      OnNext(2, "d", false, 20, false, 100, "hello", 1000),
+      OnNext(2, "d", false, 20, true, 100, "hello", 1000),
+      OnNext(2, "d", false, 20, true, 200, "hello", 1000),
+      OnNext(2, "d", false, 20, true, 200, "world", 1000),
+      OnNext(2, "d", false, 20, true, 200, "world", 2000)
+    )
+  }
+
+  test("join9") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val v  = Rx.variable(false)
+    val u  = Rx.variable(100)
+    val t  = Rx.variable("hello")
+    val s  = Rx.variable(1000)
+    val r  = Rx.variable(10000)
+    val rx = x.join(y, z, w, v, u, t, s, r)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+    v := true
+    u := 200
+    t := "world"
+    s := 2000
+    r := 20000
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10, false, 100, "hello", 1000, 10000),
+      OnNext(1, "b", true, 10, false, 100, "hello", 1000, 10000),
+      OnNext(1, "c", true, 10, false, 100, "hello", 1000, 10000),
+      OnNext(1, "c", true, 20, false, 100, "hello", 1000, 10000),
+      OnNext(1, "c", false, 20, false, 100, "hello", 1000, 10000),
+      OnNext(2, "c", false, 20, false, 100, "hello", 1000, 10000),
+      OnNext(2, "d", false, 20, false, 100, "hello", 1000, 10000),
+      OnNext(2, "d", false, 20, true, 100, "hello", 1000, 10000),
+      OnNext(2, "d", false, 20, true, 200, "hello", 1000, 10000),
+      OnNext(2, "d", false, 20, true, 200, "world", 1000, 10000),
+      OnNext(2, "d", false, 20, true, 200, "world", 2000, 10000),
+      OnNext(2, "d", false, 20, true, 200, "world", 2000, 20000)
+    )
+  }
+
+  test("join10") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val v  = Rx.variable(false)
+    val u  = Rx.variable(100)
+    val t  = Rx.variable("hello")
+    val s  = Rx.variable(1000)
+    val r  = Rx.variable(10000)
+    val q  = Rx.variable(100000)
+    val rx = x.join(y, z, w, v, u, t, s, r, q)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+    v := true
+    u := 200
+    t := "world"
+    s := 2000
+    r := 20000
+    q := 200000
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(1, "b", true, 10, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(1, "c", true, 10, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(1, "c", true, 20, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(1, "c", false, 20, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(2, "c", false, 20, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(2, "d", false, 20, false, 100, "hello", 1000, 10000, 100000),
+      OnNext(2, "d", false, 20, true, 100, "hello", 1000, 10000, 100000),
+      OnNext(2, "d", false, 20, true, 200, "hello", 1000, 10000, 100000),
+      OnNext(2, "d", false, 20, true, 200, "world", 1000, 10000, 100000),
+      OnNext(2, "d", false, 20, true, 200, "world", 2000, 10000, 100000),
+      OnNext(2, "d", false, 20, true, 200, "world", 2000, 20000, 100000),
+      OnNext(2, "d", false, 20, true, 200, "world", 2000, 20000, 200000)
     )
   }
 

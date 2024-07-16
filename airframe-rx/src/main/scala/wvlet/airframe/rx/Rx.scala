@@ -242,6 +242,55 @@ trait Rx[+A] extends RxOps[A] {
   def zip[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Rx.zip(this, b, c, d, e)
 
+  def zip[B, C, D, E, F](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E], f: RxOps[F]): Rx[(A, B, C, D, E, F)] =
+    Rx.zip(this, b, c, d, e, f)
+
+  def zip[B, C, D, E, F, G](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G]
+  ): Rx[(A, B, C, D, E, F, G)] =
+    Rx.zip(this, b, c, d, e, f, g)
+
+  def zip[B, C, D, E, F, G, H](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H]
+  ): Rx[(A, B, C, D, E, F, G, H)] =
+    Rx.zip(this, b, c, d, e, f, g, h)
+
+  def zip[B, C, D, E, F, G, H, I](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I]
+  ): Rx[(A, B, C, D, E, F, G, H, I)] =
+    Rx.zip(this, b, c, d, e, f, g, h, i)
+
+  def zip[B, C, D, E, F, G, H, I, J](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I],
+      j: RxOps[J]
+  ): Rx[(A, B, C, D, E, F, G, H, I, J)] =
+    Rx.zip(this, b, c, d, e, f, g, h, i, j)
+
   /**
     * Emit a new output if one of Rx[A] or Rx[B] is changed.
     *
@@ -288,6 +337,145 @@ trait Rx[+A] extends RxOps[A] {
     */
   def join[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Rx.join(this, b, c, d, e)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], Rx[D], Rx[E], or Rx[F] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @param f
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @tparam F
+    * @return
+    */
+  def join[B, C, D, E, F](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E], f: RxOps[F]): Rx[(A, B, C, D, E, F)] =
+    Rx.join(this, b, c, d, e, f)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], Rx[D], Rx[E], Rx[F], or Rx[G] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @param f
+    * @param g
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @tparam F
+    * @tparam G
+    * @return
+    */
+  def join[B, C, D, E, F, G](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G]
+  ): Rx[(A, B, C, D, E, F, G)] =
+    Rx.join(this, b, c, d, e, f, g)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], Rx[D], Rx[E], Rx[F], Rx[G], or Rx[H] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @param f
+    * @param g
+    * @param h
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @tparam F
+    * @tparam G
+    * @tparam H
+    * @return
+    */
+  def join[B, C, D, E, F, G, H](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H]
+  ): Rx[(A, B, C, D, E, F, G, H)] =
+    Rx.join(this, b, c, d, e, f, g, h)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], Rx[D], Rx[E], Rx[F], Rx[G], Rx[H], or Rx[I] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @param f
+    * @param g
+    * @param h
+    * @param i
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @tparam F
+    * @tparam G
+    * @tparam H
+    * @tparam I
+    * @return
+    */
+  def join[B, C, D, E, F, G, H, I](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I]
+  ): Rx[(A, B, C, D, E, F, G, H, I)] =
+    Rx.join(this, b, c, d, e, f, g, h, i)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], Rx[D], Rx[E], Rx[F], Rx[G], Rx[H], Rx[I], or Rx[J] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @param f
+    * @param g
+    * @param h
+    * @param i
+    * @param j
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @tparam F
+    * @tparam G
+    * @tparam H
+    * @tparam I
+    * @tparam J
+    * @return
+    */
+  def join[B, C, D, E, F, G, H, I, J](
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I],
+      j: RxOps[J]
+  ): Rx[(A, B, C, D, E, F, G, H, I, J)] =
+    Rx.join(this, b, c, d, e, f, g, h, i, j)
 
   /**
     * Combine Rx stream and Future operators.
@@ -459,12 +647,122 @@ object Rx extends LogSupport {
   def join[A, B, C, D](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
   def join[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Join5Op(a, b, c, d, e)
+  def join[A, B, C, D, E, F](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F]
+  ): Rx[(A, B, C, D, E, F)] =
+    Join6Op(a, b, c, d, e, f)
+  def join[A, B, C, D, E, F, G](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G]
+  ): Rx[(A, B, C, D, E, F, G)] =
+    Join7Op(a, b, c, d, e, f, g)
+  def join[A, B, C, D, E, F, G, H](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H]
+  ): Rx[(A, B, C, D, E, F, G, H)] =
+    Join8Op(a, b, c, d, e, f, g, h)
+  def join[A, B, C, D, E, F, G, H, I](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I]
+  ): Rx[(A, B, C, D, E, F, G, H, I)] =
+    Join9Op(a, b, c, d, e, f, g, h, i)
+  def join[A, B, C, D, E, F, G, H, I, J](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I],
+      j: RxOps[J]
+  ): Rx[(A, B, C, D, E, F, G, H, I, J)] =
+    Join10Op(a, b, c, d, e, f, g, h, i, j)
 
   def zip[A, B](a: RxOps[A], b: RxOps[B]): Rx[(A, B)]                                       = ZipOp(a, b)
   def zip[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Zip3Op(a, b, c)
   def zip[A, B, C, D](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Zip4Op(a, b, c, d)
   def zip[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Zip5Op(a, b, c, d, e)
+  def zip[A, B, C, D, E, F](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F]
+  ): Rx[(A, B, C, D, E, F)] =
+    Zip6Op(a, b, c, d, e, f)
+  def zip[A, B, C, D, E, F, G](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G]
+  ): Rx[(A, B, C, D, E, F, G)] =
+    Zip7Op(a, b, c, d, e, f, g)
+  def zip[A, B, C, D, E, F, G, H](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H]
+  ): Rx[(A, B, C, D, E, F, G, H)] =
+    Zip8Op(a, b, c, d, e, f, g, h)
+  def zip[A, B, C, D, E, F, G, H, I](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I]
+  ): Rx[(A, B, C, D, E, F, G, H, I)] =
+    Zip9Op(a, b, c, d, e, f, g, h, i)
+  def zip[A, B, C, D, E, F, G, H, I, J](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I],
+      j: RxOps[J]
+  ): Rx[(A, B, C, D, E, F, G, H, I, J)] =
+    Zip10Op(a, b, c, d, e, f, g, h, i, j)
 
   /**
     * Combine a sequence of Rx[A] into a single Rx[Seq[A]]
@@ -587,6 +885,60 @@ object Rx extends LogSupport {
       extends Rx[(A, B, C, D, E)] {
     override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e)
   }
+  case class Zip6Op[A, B, C, D, E, F](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E], f: RxOps[F])
+      extends Rx[(A, B, C, D, E, F)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f)
+  }
+  case class Zip7Op[A, B, C, D, E, F, G](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G]
+  ) extends Rx[(A, B, C, D, E, F, G)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g)
+  }
+  case class Zip8Op[A, B, C, D, E, F, G, H](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H]
+  ) extends Rx[(A, B, C, D, E, F, G, H)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g, h)
+  }
+  case class Zip9Op[A, B, C, D, E, F, G, H, I](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I]
+  ) extends Rx[(A, B, C, D, E, F, G, H, I)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g, h, i)
+  }
+  case class Zip10Op[A, B, C, D, E, F, G, H, I, J](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I],
+      j: RxOps[J]
+  ) extends Rx[(A, B, C, D, E, F, G, H, I, J)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g, h, i, j)
+  }
 
   case class JoinOp[A, B](a: RxOps[A], b: RxOps[B]) extends Rx[(A, B)] {
     override def parents: Seq[RxOps[_]] = Seq(a, b)
@@ -600,6 +952,60 @@ object Rx extends LogSupport {
   case class Join5Op[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E])
       extends Rx[(A, B, C, D, E)] {
     override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e)
+  }
+  case class Join6Op[A, B, C, D, E, F](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E], f: RxOps[F])
+      extends Rx[(A, B, C, D, E, F)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f)
+  }
+  case class Join7Op[A, B, C, D, E, F, G](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G]
+  ) extends Rx[(A, B, C, D, E, F, G)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g)
+  }
+  case class Join8Op[A, B, C, D, E, F, G, H](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H]
+  ) extends Rx[(A, B, C, D, E, F, G, H)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g, h)
+  }
+  case class Join9Op[A, B, C, D, E, F, G, H, I](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I]
+  ) extends Rx[(A, B, C, D, E, F, G, H, I)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g, h, i)
+  }
+  case class Join10Op[A, B, C, D, E, F, G, H, I, J](
+      a: RxOps[A],
+      b: RxOps[B],
+      c: RxOps[C],
+      d: RxOps[D],
+      e: RxOps[E],
+      f: RxOps[F],
+      g: RxOps[G],
+      h: RxOps[H],
+      i: RxOps[I],
+      j: RxOps[J]
+  ) extends Rx[(A, B, C, D, E, F, G, H, I, J)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e, f, g, h, i, j)
   }
 
   case class ConcatOp[A](first: RxOps[A], next: RxOps[A]) extends Rx[A] {
