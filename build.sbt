@@ -20,7 +20,7 @@ val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.8.0"
 val FINAGLE_VERSION                 = "24.2.0"
-val FLUENCY_VERSION                 = "2.7.0"
+val FLUENCY_VERSION                 = "2.7.2"
 val GRPC_VERSION                    = "1.52.0"
 val JMH_VERSION                     = "1.37"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
@@ -938,6 +938,9 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
           exclude ("junit", "junit"),
+        // Necessary for td-client-java, which is used in fluency-treasuredata
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.16.1" % Provided,
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.16.1" % Provided,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
