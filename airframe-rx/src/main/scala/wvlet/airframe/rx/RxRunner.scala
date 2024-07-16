@@ -399,6 +399,16 @@ class RxRunner(
         zip(z)(effect)
       case z @ Zip5Op(r1, r2, r3, r4, r5) =>
         zip(z)(effect)
+      case z @ Zip6Op(r1, r2, r3, r4, r5, r6) =>
+        zip(z)(effect)
+      case z @ Zip7Op(r1, r2, r3, r4, r5, r6, r7) =>
+        zip(z)(effect)
+      case z @ Zip8Op(r1, r2, r3, r4, r5, r6, r7, r8) =>
+        zip(z)(effect)
+      case z @ Zip9Op(r1, r2, r3, r4, r5, r6, r7, r8, r9) =>
+        zip(z)(effect)
+      case z @ Zip10Op(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10) =>
+        zip(z)(effect)
       case j @ JoinOp(r1, r2) =>
         join(j)(effect)
       case j @ Join3Op(r1, r2, r3) =>
@@ -406,6 +416,16 @@ class RxRunner(
       case j @ Join4Op(r1, r2, r3, r4) =>
         join(j)(effect)
       case j @ Join5Op(r1, r2, r3, r4, r5) =>
+        join(j)(effect)
+      case j @ Join6Op(r1, r2, r3, r4, r5, r6) =>
+        join(j)(effect)
+      case j @ Join7Op(r1, r2, r3, r4, r5, r6, r7) =>
+        join(j)(effect)
+      case j @ Join8Op(r1, r2, r3, r4, r5, r6, r7, r8) =>
+        join(j)(effect)
+      case j @ Join9Op(r1, r2, r3, r4, r5, r6, r7, r8, r9) =>
+        join(j)(effect)
+      case j @ Join10Op(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10) =>
         join(j)(effect)
       case RxOptionOp(in) =>
         run(in) {
@@ -585,8 +605,45 @@ class RxRunner(
                 effect(OnNext((values(0), values(1), values(2), values(3)).asInstanceOf[A]))
               case 5 =>
                 effect(OnNext((values(0), values(1), values(2), values(3), values(4)).asInstanceOf[A]))
+              case 6 =>
+                effect(OnNext((values(0), values(1), values(2), values(3), values(4), values(5)).asInstanceOf[A]))
+              case 7 =>
+                effect(
+                  OnNext((values(0), values(1), values(2), values(3), values(4), values(5), values(6)).asInstanceOf[A])
+                )
+              case 8 =>
+                effect(
+                  OnNext(
+                    (values(0), values(1), values(2), values(3), values(4), values(5), values(6), values(7))
+                      .asInstanceOf[A]
+                  )
+                )
+              case 9 =>
+                effect(
+                  OnNext(
+                    (values(0), values(1), values(2), values(3), values(4), values(5), values(6), values(7), values(8))
+                      .asInstanceOf[A]
+                  )
+                )
+              case 10 =>
+                effect(
+                  OnNext(
+                    (
+                      values(0),
+                      values(1),
+                      values(2),
+                      values(3),
+                      values(4),
+                      values(5),
+                      values(6),
+                      values(7),
+                      values(8),
+                      values(9)
+                    ).asInstanceOf[A]
+                  )
+                )
               case other =>
-                throw new NotImplementedError(s"combining 5+ more Rx operators is not yet supported: ${other}")
+                throw new NotImplementedError(s"combining 10+ more Rx operators is not yet supported: ${other}")
             }
         }
         toContinue
