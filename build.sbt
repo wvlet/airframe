@@ -3,7 +3,7 @@ import xerial.sbt.pack.PackPlugin.{projectSettings, publishPackArchiveTgz}
 
 val SCALA_2_12          = "2.12.19"
 val SCALA_2_13          = "2.13.14"
-val SCALA_3             = "3.3.3"
+val SCALA_3             = sys.env.getOrElse("SCALA_VERSION", "3.3.3")
 val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_3 :: uptoScala2
 
