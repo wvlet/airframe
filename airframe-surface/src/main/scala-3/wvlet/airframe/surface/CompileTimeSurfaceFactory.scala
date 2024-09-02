@@ -527,7 +527,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       // Empty arg is allowed
       lst.isEmpty ||
       // Remove type params or implicit ClassTag evidences as MethodSurface can't pass type parameters
-      !lst.forall(x => x.isTypeParam || (x.flags.is(Flags.Implicit) && x.typeRef <:< TypeRepr.of[ClassTag[_]]))
+      !lst.forall { x =>
+        def hasFlag(flag: Flags) = x.flags.is(flag)
+        def isClassTag           = x.typeRef <:< TypeRepr.of[ClassTag[_]]
+        // Since Scala 3.6 context bounds are mapped to using parameters
+        // In Scala 3.5 and earlier context bounds are mapped to implicit arguments
+        x.isTypeParam ||
+        ((hasFlag(Flags.Implicit) || hasFlag(Flags.Given)) && isClassTag)
+      }
     }
 
     paramss.map { params =>
