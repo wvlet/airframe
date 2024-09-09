@@ -72,4 +72,10 @@ class AirSpecMatcherTest extends AirSpec {
     specs.filter(m.matchWith(_)) shouldBe empty
   }
 
+  test("partial match with a test case name containing / (slash)") {
+    val m = new AirSpecMatcher("file.sql")
+    // The matcher should match with the test case name containing / (slash)
+    m.matchWith(Seq("path/file.sql")) shouldBe true
+  }
+
 }
