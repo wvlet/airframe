@@ -81,23 +81,38 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
       var i                   = 0
       var logLevel: LogLevel  = Logger.getDefaultLogLevel
       val additionalLogLevels = Map.newBuilder[String, LogLevel]
+
+      def parseAdditionalLogLevel(s: String): Unit = {
+        s.split("=") match {
+          case Array(pkg, level) =>
+            additionalLogLevels += pkg -> LogLevel(level)
+          case _ =>
+            warn(s"Ignoring invalid argument: ${s}. Use -L (package)=(log level) to set log levels")
+        }
+      }
+
+      var warnings: Set[String] = Set.empty
+
       while (i < args.length) {
         args(i) match {
           case "-l" if i < args.length - 1 =>
             // Set the default log level for the test spec
             logLevel = LogLevel(args(i + 1))
             i += 1
+          case "-L" if i < args.length - 1 =>
+            parseAdditionalLogLevel(args(i + 1))
+            i += 1
           case arg if arg.startsWith("-L") =>
-            arg.stripPrefix("-L").split("=") match {
-              case Array(pkg, level) =>
-                additionalLogLevels += pkg -> LogLevel(level)
-              case _ =>
-                warn(s"Ignoring invalid argument: ${arg}. Use -L(package)=(log level) to set log levels")
-            }
+            warnings += s"-L(package)=(log level) syntax is deprecated. Use -L (package)=(log level)"
+            parseAdditionalLogLevel(arg.stripPrefix("-L"))
           case other =>
             remaining += other
         }
         i += 1
+      }
+
+      if (warnings.nonEmpty) {
+        warn(warnings.mkString("\n"))
       }
 
       remainingArgs = remaining.result()
