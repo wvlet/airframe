@@ -48,7 +48,7 @@ private[airspec] class AirSpecContextImpl(
   }
 
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
-    val testPath = s"${fullTestName}/${testDef.name}".stripPrefix("/")
+    val testPath = Seq(fullTestName.stripPrefix("/"), testDef.name)
     if (config.specMatcher.matchWith(testPath)) {
       // Lazily generate Futures for child tasks
       val taskResult: () => Future[Unit] = { () =>
