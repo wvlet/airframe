@@ -8,6 +8,8 @@ on:
       - 'docs/**'
       - 'website/**'
       - '.github/workflows/doc.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   doc:
