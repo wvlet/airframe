@@ -18,7 +18,7 @@ val SCALA_2_13          = "2.13.14"
 val SCALA_3             = "3.3.3"
 val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: SCALA_2_12 :: Nil
 
-val SCALACHECK_VERSION           = "1.18.0"
+val SCALACHECK_VERSION           = "1.18.1"
 val JS_JAVA_LOGGING_VERSION      = "1.0.0"
 val JAVAX_ANNOTATION_API_VERSION = "1.3.2"
 
