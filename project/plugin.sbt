@@ -38,7 +38,7 @@ addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.5.5")
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.0.1")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.6.0")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.6.1")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")
