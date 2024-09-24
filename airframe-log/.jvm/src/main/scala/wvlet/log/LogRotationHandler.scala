@@ -17,10 +17,13 @@ import java.io.{File, Flushable}
 import java.nio.charset.StandardCharsets
 import java.util.logging.ErrorManager
 import java.util.{logging => jl}
-
 import ch.qos.logback.core.ContextBase
 import ch.qos.logback.core.encoder.EncoderBase
-import ch.qos.logback.core.rolling.{RollingFileAppender, SizeAndTimeBasedFNATP, TimeBasedRollingPolicy}
+import ch.qos.logback.core.rolling.{
+  RollingFileAppender,
+  SizeAndTimeBasedFileNamingAndTriggeringPolicy,
+  TimeBasedRollingPolicy
+}
 import ch.qos.logback.core.util.FileSize
 import wvlet.log.LogFormatter.AppLogFormatter
 
@@ -78,7 +81,7 @@ class LogRotationHandler(
 
     val fileAppender     = new RollingFileAppender[String]()
     val rollingPolicy    = new TimeBasedRollingPolicy[String]
-    val triggeringPolicy = new SizeAndTimeBasedFNATP[String]
+    val triggeringPolicy = new SizeAndTimeBasedFileNamingAndTriggeringPolicy[String]
 
     rollingPolicy.setContext(context)
     val fileNameStem =

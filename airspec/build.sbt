@@ -228,7 +228,7 @@ lazy val airspecLog =
       airspecJVMBuildSettings,
       libraryDependencies ++= Seq(
         // For rotating log files
-        "ch.qos.logback" % "logback-core" % "1.3.14"
+        "ch.qos.logback" % "logback-core" % "1.5.8"
       )
     )
     .jsSettings(
