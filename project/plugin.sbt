@@ -4,7 +4,7 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 addSbtPlugin("org.xerial.sbt"      % "sbt-sonatype"             % "3.11.3")
 addSbtPlugin("com.github.sbt"      % "sbt-pgp"                  % "2.2.1")
-addSbtPlugin("org.scoverage"       % "sbt-scoverage"            % "2.2.0")
+addSbtPlugin("org.scoverage"       % "sbt-scoverage"            % "2.2.1")
 addSbtPlugin("org.scalameta"       % "sbt-scalafmt"             % "2.5.2")
 addSbtPlugin("org.portable-scala"  % "sbt-scalajs-crossproject" % "1.3.2")
 addSbtPlugin("com.eed3si9n"        % "sbt-buildinfo"            % "0.12.0")
@@ -20,7 +20,7 @@ addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.16.0")
+val SCALAJS_VERSION          = sys.env.getOrElse("SCALAJS_VERSION", "1.16.0")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
