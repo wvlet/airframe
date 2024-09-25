@@ -14,7 +14,7 @@ addCommandAlias(
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val SCALA_2_12          = "2.12.20"
-val SCALA_2_13          = "2.13.14"
+val SCALA_2_13          = "2.13.15"
 val SCALA_3             = "3.3.3"
 val targetScalaVersions = SCALA_3 :: SCALA_2_13 :: SCALA_2_12 :: Nil
 
@@ -130,7 +130,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
