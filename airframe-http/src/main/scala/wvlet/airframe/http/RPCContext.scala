@@ -39,7 +39,8 @@ trait RPCContext {
   def rpcCallContext: Option[RPCCallContext] = {
     getThreadLocal(HttpBackend.TLS_KEY_RPC) match {
       case Some(c: RPCCallContext) => Some(c)
-      case _                       => None
+      case _ =>
+        None
     }
   }
 
@@ -68,6 +69,8 @@ trait RPCContext {
     * @return
     */
   def getThreadLocal(key: String): Option[Any]
+
+  def clearThreadLocal(): Unit = {}
 }
 
 /**

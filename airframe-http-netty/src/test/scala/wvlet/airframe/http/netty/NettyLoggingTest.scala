@@ -78,6 +78,9 @@ object NettyLoggingTest extends AirSpec {
     logEntry shouldContain ("server_name"      -> "log-test-server")
     logEntry shouldContain ("custom_log_entry" -> "test")
     logEntry shouldContain ("user"             -> "xxxx_yyyy")
+    logEntry shouldContain ("rpc_interface"    -> "wvlet.airframe.http.netty.NettyLoggingTest.MyRPC")
+    logEntry shouldContain ("rpc_method"       -> "hello")
+    logEntry shouldContain ("rpc_class"        -> "wvlet.airframe.http.netty.NettyLoggingTest.MyRPC")
 
     test("do not set TLS in the second request") {
       syncClient.send(Http.POST("/wvlet.airframe.http.netty.NettyLoggingTest.MyRPC/hello"))
