@@ -100,6 +100,12 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with TLSSupport w
   }
 
   override def getThreadLocal[A](key: String): Option[A] = {
-    getTLS(key).map(_.asInstanceOf[A])
+    getTLS(key).map { v =>
+      v.asInstanceOf[A]
+    }
+  }
+
+  def clearThreadLocal(): Unit = {
+    clearTLS()
   }
 }

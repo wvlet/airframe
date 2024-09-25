@@ -115,6 +115,9 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     } catch {
       case e: RPCException =>
         writeResponse(msg, ctx, toNettyResponse(e.toResponse))
+    } finally {
+      // Need to clean up the TLS in case the same thread is reused for the next request
+      NettyBackend.clearThreadLocal()
     }
   }
 

@@ -19,7 +19,7 @@ import wvlet.airframe.http.internal.TLSSupport
 
 import scala.collection.mutable
 
-class NettyRPCContext(val httpRequest: Request) extends RPCContext with TLSSupport {
-  override def setThreadLocal[A](key: String, value: A): Unit = setTLS(key, value)
-  override def getThreadLocal(key: String): Option[Any]       = getTLS(key)
+class NettyRPCContext(val httpRequest: Request) extends RPCContext {
+  override def setThreadLocal[A](key: String, value: A): Unit = NettyBackend.setThreadLocal(key, value)
+  override def getThreadLocal(key: String): Option[Any]       = NettyBackend.getThreadLocal(key)
 }

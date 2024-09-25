@@ -24,4 +24,5 @@ private[http] trait TLSSupport {
 
   def setTLS(key: String, value: Any): Unit = tlsStorage().put(key, value)
   def getTLS(key: String): Option[Any]      = tlsStorage().get(key)
+  def clearTLS(): Unit                      = tlsStorage().clear()
 }
