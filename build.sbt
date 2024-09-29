@@ -940,7 +940,7 @@ lazy val fluentd =
           exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.16.2" % Provided,
-        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.16.2" % Provided,
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.0" % Provided,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
