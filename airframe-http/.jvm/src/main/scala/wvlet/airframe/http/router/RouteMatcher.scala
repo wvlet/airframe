@@ -56,7 +56,7 @@ object RouteMatcher extends LogSupport {
     }
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
-      routesByMethod.get(tp.methodOf(request)).flatMap { nextRouter => nextRouter.findRoute(request)(tp) }
+      routesByMethod.get(tp.methodOf(request)).flatMap { nextRouter => nextRouter.findRoute(request)(using tp) }
     }
   }
 

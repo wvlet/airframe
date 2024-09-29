@@ -30,12 +30,20 @@ class PathDependentTypeTest extends AirSpec:
 
   test("pass dependent types") {
     val s = Surface.of[MyProfile#Backend]
-    s.name shouldBe "Backend"
-    s.toString shouldBe "Backend:=MyBackend"
+    if s.name == "MyBackend" then
+      // Scala 3.5.x or later
+      s.toString shouldBe "MyBackend"
+    else
+      s.name shouldBe "Backend"
+      s.toString shouldBe "Backend:=MyBackend"
   }
 
   test("nested path dependent types") {
     val s = Surface.of[MyProfile#Backend#Database]
-    s.name shouldBe "Database"
-    s.toString shouldBe "Database:=DatabaseDef"
+    if s.name == "DatabaseDef" then
+      // Scala 3.5.x or later
+      s.toString shouldBe "DatabaseDef"
+    else
+      s.name shouldBe "Database"
+      s.toString shouldBe "Database:=DatabaseDef"
   }
