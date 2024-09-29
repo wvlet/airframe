@@ -193,7 +193,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val expr     = '{ Alias(${ name }, ${ fullName }, ${ inner }) }
       expr
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
-      // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
       val inner    = extractSymbol(t)
       val s        = t.typeSymbol
       val name     = Expr(s.name)
