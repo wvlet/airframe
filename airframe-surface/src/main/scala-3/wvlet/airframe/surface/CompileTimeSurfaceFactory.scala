@@ -171,14 +171,15 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       '{ UnionSurface(${ surfaceOf(t.left) }, ${ surfaceOf(t.right) }) }
   }
 
-  private def extractSymbol(t: TypeRepr) =
-    val dealiased     = t.dealias
-    val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
-    symbolInOwner.map(_.tree) match
-      case Some(TypeDef(_, b: TypeTree)) if t == dealiased =>
-        // t.dealias does not dealias for path dependent types, so extracting the dealiased type from AST.
-        surfaceOf(b.tpe)
+  private def extractSymbol(t: TypeRepr): Expr[Surface] =
+    // t.dealias may not dealias the refernced type for path dependent types,
+    // so extracting the dealiased type from the type definition in the owner
+    val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name == t.typeSymbol.name)
+    symbolInOwner.map(_.typeRef.dealias) match
+      case Some(tpe) =>
+        surfaceOf(tpe)
       case _ =>
+        val dealiased = t.dealias
         if t != dealiased then surfaceOf(dealiased)
         else surfaceOf(t.simplified)
 
@@ -189,9 +190,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       val inner    = extractSymbol(t)
       val name     = Expr(alias.name)
       val fullName = Expr(fullTypeNameOf(t))
-      '{ Alias(${ name }, ${ fullName }, ${ inner }) }
+      val expr     = '{ Alias(${ name }, ${ fullName }, ${ inner }) }
+      expr
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
-      // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
       val inner    = extractSymbol(t)
       val s        = t.typeSymbol
       val name     = Expr(s.name)

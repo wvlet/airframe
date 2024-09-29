@@ -3,7 +3,7 @@ import xerial.sbt.pack.PackPlugin.{projectSettings, publishPackArchiveTgz}
 
 val SCALA_2_12          = "2.12.20"
 val SCALA_2_13          = "2.13.15"
-val SCALA_3             = "3.3.3"
+val SCALA_3             = sys.env.getOrElse("SCALA_VERSION", "3.3.4")
 val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_3 :: uptoScala2
 
@@ -21,7 +21,7 @@ val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.8.0"
 val FINAGLE_VERSION                 = "24.2.0"
 val FLUENCY_VERSION                 = "2.7.2"
-val GRPC_VERSION                    = "1.52.0"
+val GRPC_VERSION                    = "1.68.0"
 val JMH_VERSION                     = "1.37"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.14.2"
@@ -702,7 +702,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.duckdb"     % "duckdb_jdbc" % "1.1.0",
+        "org.duckdb"     % "duckdb_jdbc" % "1.1.1",
         "org.postgresql" % "postgresql"  % "42.7.4",
         "com.zaxxer"     % "HikariCP"    % "6.0.0",
         // For routing slf4j log to airframe-log
@@ -940,7 +940,7 @@ lazy val fluentd =
           exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.0" % Provided,
-        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.16.2" % Provided,
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.0" % Provided,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
@@ -972,7 +972,7 @@ lazy val parquet =
         "org.apache.hadoop"  % "hadoop-client"  % "3.4.0" % Provided,
         // For S3 support
         "org.apache.hadoop"      % "hadoop-aws" % "3.4.0"   % Provided,
-        "software.amazon.awssdk" % "auth"       % "2.25.70" % Provided,
+        "software.amazon.awssdk" % "auth"       % "2.28.10" % Provided,
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.10.7",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,

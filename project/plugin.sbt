@@ -11,7 +11,7 @@ addSbtPlugin("com.eed3si9n"        % "sbt-buildinfo"            % "0.12.0")
 addSbtPlugin("org.jetbrains.scala" % "sbt-ide-settings"         % "1.1.2")
 
 // For auto-code rewrite
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.12.1")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.13.0")
 
 // For integration testing
 val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "24.2.3")
@@ -20,7 +20,7 @@ addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.16.0")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.17.0")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
