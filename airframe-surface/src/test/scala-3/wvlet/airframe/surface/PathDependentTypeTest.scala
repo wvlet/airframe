@@ -15,24 +15,17 @@ package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
 
-object PathDependentType {
-  class MyService(p: MyProfile#Backend)
-  class MyService2(db: MyProfile#Backend#Database)
-
-  trait MyProfile {
+object PathDependentType:
+  trait MyProfile:
     type Backend = MyBackend
-  }
 
-  trait MyBackend {
+  trait MyBackend:
     type Database = DatabaseDef
-  }
 
-  class DatabaseDef {
+  class DatabaseDef:
     def hello = "hello my"
-  }
-}
 
-class PathDependentTypeTest extends AirSpec {
+class PathDependentTypeTest extends AirSpec:
   import PathDependentType.*
 
   test("pass dependent types") {
@@ -46,4 +39,3 @@ class PathDependentTypeTest extends AirSpec {
     s.name shouldBe "Database"
     s.toString shouldBe "Database:=DatabaseDef"
   }
-}
