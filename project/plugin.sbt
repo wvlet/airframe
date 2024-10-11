@@ -2,7 +2,7 @@
 // sbt-scoverage upgraded to scala-xml 2.1.0, but other sbt-plugins and Scala compilier 2.12 uses scala-xml 1.x.x
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
 
-addSbtPlugin("org.xerial.sbt"      % "sbt-sonatype"             % "3.12.0")
+addSbtPlugin("org.xerial.sbt"      % "sbt-sonatype"             % "3.12.1")
 addSbtPlugin("com.github.sbt"      % "sbt-pgp"                  % "2.3.0")
 addSbtPlugin("org.scoverage"       % "sbt-scoverage"            % "2.2.1")
 addSbtPlugin("org.scalameta"       % "sbt-scalafmt"             % "2.5.2")
