@@ -702,7 +702,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.duckdb"     % "duckdb_jdbc" % "1.1.1",
+        "org.duckdb"     % "duckdb_jdbc" % "1.1.2",
         "org.postgresql" % "postgresql"  % "42.7.4",
         "com.zaxxer"     % "HikariCP"    % "6.0.0",
         // For routing slf4j log to airframe-log
