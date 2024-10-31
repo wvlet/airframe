@@ -17,7 +17,8 @@ private[airframe] trait DesignImpl extends LogSupport {
   def bindSingleton[A]: DesignWithContext[A] = macro AirframeMacros.designBindSingletonImpl[A]
   def bindImpl[A, B <: A]: DesignWithContext[B] = macro AirframeMacros.designBindImplImpl[A, B]
   def bindProvider[D1, A](f: D1 => A): DesignWithContext[A] = macro AirframeMacros.designBindProvider1Impl[D1, A]
-  def bindProvider[D1, D2, A](f: (D1, D2) => A): DesignWithContext[A] = macro AirframeMacros.designBindProvider2Impl[D1, D2, A]
+  def bindProvider[D1, D2, A](f: (D1, D2) => A): DesignWithContext[A] =
+    macro AirframeMacros.designBindProvider2Impl[D1, D2, A]
   def bindProvider[D1, D2, D3, A](f: (D1, D2, D3) => A): DesignWithContext[A] =
     macro AirframeMacros.designBindProvider3Impl[D1, D2, D3, A]
   def bindProvider[D1, D2, D3, D4, A](f: (D1, D2, D3, D4) => A): DesignWithContext[A] =
