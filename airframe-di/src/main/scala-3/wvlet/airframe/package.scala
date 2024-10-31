@@ -42,7 +42,7 @@ val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
 def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any =
   traitFactoryCache.getOrElseUpdate(s, factory)
 
-@deprecated("Instantiating trait is still experimental in Scala 3.3.1", "23.9.1")
+@deprecated("Instantiating trait with DI is still experimental in Scala 3", "23.9.1")
 inline def registerTraitFactory[A]: Unit = {
   // registerTraitFactoryImpl[A]
 }

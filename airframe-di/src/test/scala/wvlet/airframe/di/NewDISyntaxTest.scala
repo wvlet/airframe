@@ -51,4 +51,26 @@ object NewDISyntaxTest extends AirSpec {
       session.build[D5] shouldBe D5(5, 10, "hello", B("hello"), D3(5, 10, "hello"))
     }
   }
+
+  test("new bind syntax with context") {
+    var started = false
+    var closed  = false
+
+    val d = newDesign
+      .bindInstance[String]("hello")
+      .onStart { (s: String) =>
+        started = true
+      }
+      .onShutdown { (s: String) =>
+        closed = true
+      }
+      .noLifeCycleLogging
+      .withSession { session =>
+        started shouldBe true
+        closed shouldBe false
+      }
+
+    started shouldBe true
+    closed shouldBe true
+  }
 }

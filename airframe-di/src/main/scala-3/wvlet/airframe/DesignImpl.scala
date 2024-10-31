@@ -18,21 +18,21 @@ private[airframe] trait DesignImpl extends LogSupport:
     val target = Surface.of[A]
     new Design(self.designOptions, self.binding.filterNot(_.from == target), self.hooks)
 
-  inline def bindInstance[A](obj: A): Design =
+  inline def bindInstance[A](obj: A): DesignWithContext[A] =
     bind[A].toInstance(obj)
-  inline def bindSingleton[A]: Design =
+  inline def bindSingleton[A]: DesignWithContext[A] =
     bind[A].toSingleton
-  inline def bindImpl[A, B <: A]: Design =
+  inline def bindImpl[A, B <: A]: DesignWithContext[B] =
     bind[A].to[B]
-  inline def bindProvider[D1, A](f: D1 => A): Design =
+  inline def bindProvider[D1, A](f: D1 => A): DesignWithContext[A] =
     bind[A].toProvider[D1](f)
-  inline def bindProvider[D1, D2, A](f: (D1, D2) => A): Design =
+  inline def bindProvider[D1, D2, A](f: (D1, D2) => A): DesignWithContext[A] =
     bind[A].toProvider[D1, D2](f)
-  inline def bindProvider[D1, D2, D3, A](f: (D1, D2, D3) => A): Design =
+  inline def bindProvider[D1, D2, D3, A](f: (D1, D2, D3) => A): DesignWithContext[A] =
     bind[A].toProvider[D1, D2, D3](f)
-  inline def bindProvider[D1, D2, D3, D4, A](f: (D1, D2, D3, D4) => A): Design =
+  inline def bindProvider[D1, D2, D3, D4, A](f: (D1, D2, D3, D4) => A): DesignWithContext[A] =
     bind[A].toProvider[D1, D2, D3, D4](f)
-  inline def bindProvider[D1, D2, D3, D4, D5, A](f: (D1, D2, D3, D4, D5) => A): Design =
+  inline def bindProvider[D1, D2, D3, D4, D5, A](f: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] =
     bind[A].toProvider[D1, D2, D3, D4, D5](f)
 
   /**
