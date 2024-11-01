@@ -426,15 +426,15 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-lazy val coreMacros =
+lazy val base =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-core-macros"))
+    .in(file("airframe-base"))
     .settings(buildSettings)
     .settings(scala3Only)
     .settings(
-      name        := "airframe-core-macros",
-      description := "Macro module for airframe-core"
+      name        := "airframe-base",
+      description := "Macro and base module for airframe-core"
     )
     .jsSettings(jsBuildSettings)
     .nativeSettings(nativeBuildSettings)
@@ -451,7 +451,7 @@ lazy val core =
     )
     .jsSettings(jsBuildSettings)
     .nativeSettings(nativeBuildSettings)
-    .dependsOn(coreMacros)
+    .dependsOn(base)
 
 def airframeDIDependencies = Seq(
   "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
