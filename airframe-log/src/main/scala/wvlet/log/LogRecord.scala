@@ -38,7 +38,7 @@ import wvlet.log.LogRecord.*
 case class LogRecord(level: LogLevel, source: Option[LogSource], message: String, cause: Option[Throwable])
     extends jl.LogRecord(level.jlLevel, message) {
   cause.foreach(setThrown(_))
-  
+
   def leafLoggerName: String = {
     val name = getLoggerName()
     leafLoggerNameCache.getOrElseUpdate(
