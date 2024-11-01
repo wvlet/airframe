@@ -449,6 +449,12 @@ lazy val core =
       name        := "airframe-core",
       description := "A new core module of Airframe for Scala 3"
     )
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        // TODO Add pure-Scala/Java code for rotating log files
+        "ch.qos.logback" % "logback-core" % "1.5.8"
+      )
+    )
     .jsSettings(jsBuildSettings)
     .nativeSettings(nativeBuildSettings)
     .dependsOn(base)

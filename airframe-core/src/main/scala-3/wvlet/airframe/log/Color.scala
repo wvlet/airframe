@@ -11,8 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.core.log
+package wvlet.airframe.log
 
-enum LogLevel:
-  def name: String = this.toString
-  case OFF, ERROR, WARN, INFO, DEBUG, TRACE
+import scala.io.AnsiColor
+
+/**
+  */
+trait AnsiColorPalette extends AnsiColor {
+  final val GRAY           = "\u001b[90m"
+  final val BRIGHT_RED     = "\u001b[91m"
+  final val BRIGHT_GREEN   = "\u001b[92m"
+  final val BRIGHT_YELLOW  = "\u001b[93m"
+  final val BRIGHT_BLUE    = "\u001b[94m"
+  final val BRIGHT_MAGENTA = "\u001b[95m"
+  final val BRIGHT_CYAN    = "\u001b[96m"
+  final val BRIGHT_WHITE   = "\u001b[97m"
+}
