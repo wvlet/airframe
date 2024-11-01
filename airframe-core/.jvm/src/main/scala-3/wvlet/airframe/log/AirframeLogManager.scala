@@ -14,25 +14,22 @@
 package wvlet.airframe.log
 import java.util.logging.LogManager
 
-object AirframeLogManager {
+object AirframeLogManager:
   private[log] var instance: Option[AirframeLogManager] = None
 
-  private[wvlet] def resetFinally: Unit = {
+  private[wvlet] def resetFinally: Unit =
     instance.map(_.reset0())
     instance = None
-  }
-}
 
 /**
   * Custom log manager to postpone the reset of loggers This is based on the technique mentioned in:
   * https://stackoverflow.com/questions/13825403/java-how-to-get-logger-to-work-in-shutdown-hook
   */
-class AirframeLogManager extends LogManager {
+class AirframeLogManager extends LogManager:
   AirframeLogManager.instance = Some(this)
 
   override def reset(): Unit = {
     // Don't reset yet
   }
 
-  private[log] def reset0(): Unit = { super.reset }
-}
+  private[log] def reset0(): Unit = super.reset

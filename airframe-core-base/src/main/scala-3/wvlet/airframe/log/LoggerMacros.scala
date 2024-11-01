@@ -11,21 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.core.log
+package wvlet.airframe.log
 
 object LoggerMacros:
   import scala.quoted.*
 
   inline def sourcePos(): LogSource = ${ sourcePos }
 
-  private def sourcePos(using q: Quotes): Expr[wvlet.airframe.core.log.LogSource] =
+  private def sourcePos(using q: Quotes): Expr[wvlet.airframe.log.LogSource] =
     import q.reflect.*
     val pos                         = Position.ofMacroExpansion
     val line                        = Expr(pos.startLine)
     val column                      = Expr(pos.endColumn)
     val src                         = pos.sourceFile
     val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
-    val fileName = Expr(srcPath.getFileName().toString)
-    '{ wvlet.airframe.core.log.LogSource(${ fileName }, ${ line } + 1, ${ column }) }
-
-
+    val fileName                    = Expr(srcPath.getFileName().toString)
+    '{ wvlet.airframe.log.LogSource(${ fileName }, ${ line } + 1, ${ column }) }

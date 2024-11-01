@@ -429,11 +429,11 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
 lazy val base =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-base"))
+    .in(file("airframe-core-base"))
     .settings(buildSettings)
     .settings(scala3Only)
     .settings(
-      name        := "airframe-base",
+      name        := "airframe-core-base",
       description := "Macro and base module for airframe-core"
     )
     .jsSettings(jsBuildSettings)

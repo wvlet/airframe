@@ -19,86 +19,66 @@ import java.nio.charset.StandardCharsets
 
 /**
   */
-object IOUtil {
-  def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
-    try {
+object IOUtil:
+  def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U =
+    try
       body(resource)
-    } finally {
+    finally
       resource.close
-    }
-  }
 
-  def withTempFile[U](name: String, suffix: String = ".tmp", dir: String = "target")(body: File => U) = {
+  def withTempFile[U](name: String, suffix: String = ".tmp", dir: String = "target")(body: File => U) =
     val d = new File(dir)
     d.mkdirs()
     val f = File.createTempFile(name, suffix, d)
-    try {
+    try
       body(f)
-    } finally {
+    finally
       f.delete()
-    }
-  }
 
   def randomPort: Int = unusedPort
-  def unusedPort: Int = {
+  def unusedPort: Int =
     withResource(new ServerSocket(0)) { socket => socket.getLocalPort }
-  }
 
   def findPath(path: String): Option[File] = findPath(new File(path))
 
-  def findPath(path: File): Option[File] = {
-    if (path.exists()) {
-      Some(path)
-    } else {
+  def findPath(path: File): Option[File] =
+    if path.exists() then Some(path)
+    else {
       val defaultPath = new File(new File(System.getProperty("prog.home", "")), path.getPath)
-      if (defaultPath.exists()) {
-        Some(defaultPath)
-      } else {
-        None
-      }
+      if defaultPath.exists() then Some(defaultPath)
+      else None
     }
-  }
 
-  def readAsString(f: File): String = {
+  def readAsString(f: File): String =
     readAsString(f.toURI.toURL)
-  }
 
-  def readAsString(url: URL): String = {
+  def readAsString(url: URL): String =
     withResource(url.openStream()) { in => readAsString(in) }
-  }
 
-  def readAsString(resourcePath: String): String = {
+  def readAsString(resourcePath: String): String =
     require(resourcePath != null, s"resourcePath is null")
     Resource
       .find(resourcePath)
       .map(readAsString(_))
       .getOrElse {
         val file = findPath(new File(resourcePath))
-        if (file.isEmpty) {
-          throw new FileNotFoundException(s"Not found ${resourcePath}")
-        }
+        if file.isEmpty then throw new FileNotFoundException(s"Not found ${resourcePath}")
         readAsString(new FileInputStream(file.get))
       }
-  }
 
-  def readAsString(in: InputStream): String = {
+  def readAsString(in: InputStream): String =
     readFully(in) { data => new String(data, StandardCharsets.UTF_8) }
-  }
 
-  def readFully[U](in: InputStream)(f: Array[Byte] => U): U = {
+  def readFully[U](in: InputStream)(f: Array[Byte] => U): U =
     val byteArray = withResource(new ByteArrayOutputStream) { b =>
       val buf = new Array[Byte](8192)
       withResource(in) { src =>
         var readBytes = 0
-        while ({
+        while {
           readBytes = src.read(buf);
           readBytes != -1
-        }) {
-          b.write(buf, 0, readBytes)
-        }
+        } do b.write(buf, 0, readBytes)
       }
       b.toByteArray
     }
     f(byteArray)
-  }
-}

@@ -11,8 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.core.log
-
+package wvlet.airframe.log
 
 case class LogSource(fileName: String, line: Int, col: Int):
   // We do not include the full path of the source due toe overwhleming log message size

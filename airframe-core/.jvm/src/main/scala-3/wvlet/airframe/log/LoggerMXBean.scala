@@ -15,25 +15,20 @@ package wvlet.airframe.log
 
 /**
   */
-trait LoggerMXBean {
+trait LoggerMXBean:
   def getLogLevel(loggerName: String): String
   def setLogLevel(loggerName: String, logLevel: String): Unit
 
   def getDefaultLogLevel(): String
   def setDefaultLogLevel(logLevel: String): Unit
-}
 
-object LoggerJMX extends LoggerMXBean {
-  def getLogLevel(loggerName: String): String = {
+object LoggerJMX extends LoggerMXBean:
+  def getLogLevel(loggerName: String): String =
     Logger(loggerName).getLogLevel.name
-  }
-  def setLogLevel(loggerName: String, logLevel: String): Unit = {
+  def setLogLevel(loggerName: String, logLevel: String): Unit =
     val l = Logger(loggerName)
     l.setLogLevel(LogLevel(logLevel))
-  }
   override def getDefaultLogLevel(): String = Logger("").getLogLevel.toString
-  override def setDefaultLogLevel(logLevel: String): Unit = {
+  override def setDefaultLogLevel(logLevel: String): Unit =
     val l = Logger("")
     l.setLogLevel(LogLevel(logLevel))
-  }
-}
