@@ -426,6 +426,39 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
+lazy val base =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-core-base"))
+    .settings(buildSettings)
+    .settings(scala3Only)
+    .settings(
+      name        := "airframe-core-base",
+      description := "Macro and base module for airframe-core"
+    )
+    .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
+
+lazy val core =
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-core"))
+    .settings(buildSettings)
+    .settings(scala3Only)
+    .settings(
+      name        := "airframe-core",
+      description := "A new core module of Airframe for Scala 3"
+    )
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        // TODO Add pure-Scala/Java code for rotating log files
+        "ch.qos.logback" % "logback-core" % "1.5.8"
+      )
+    )
+    .jsSettings(jsBuildSettings)
+    .nativeSettings(nativeBuildSettings)
+    .dependsOn(base)
+
 def airframeDIDependencies = Seq(
   "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
 )
