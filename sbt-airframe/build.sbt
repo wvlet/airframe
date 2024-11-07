@@ -61,7 +61,7 @@ lazy val sbtAirframe =
       description      := "sbt plugin for helping programming with Airframe",
       scalaVersion     := SCALA_2_12,
       libraryDependencies ++= Seq(
-        "io.get-coursier"    %% "coursier"              % "2.1.15",
+        "io.get-coursier"    %% "coursier"              % "2.1.16",
         "org.apache.commons"  % "commons-compress"      % "1.27.1",
         "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION,
