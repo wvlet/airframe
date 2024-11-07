@@ -64,3 +64,9 @@ When changing some interfaces, binary compatibility should be checked so as not 
 ## LICENSE
 
 [Apache v2](https://github.com/wvlet/airframe/blob/main/LICENSE)
+
+## Contributors
+
+Many thanks to everyone who has contributed to our progress:
+
+[![Contributors](https://contrib.rocks/image?repo=wvlet/airframe)](https://github.com/wvlet/airframe/graphs/contributors)
