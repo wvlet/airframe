@@ -24,7 +24,7 @@ val FLUENCY_VERSION                 = "2.7.3"
 val GRPC_VERSION                    = "1.68.1"
 val JMH_VERSION                     = "1.37"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
-val PARQUET_VERSION                 = "1.14.3"
+val PARQUET_VERSION                 = "1.14.4"
 val SNAKE_YAML_VERSION              = "2.3"
 
 val AIRFRAME_BINARY_COMPAT_VERSION = "23.6.0"
