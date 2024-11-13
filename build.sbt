@@ -280,7 +280,8 @@ lazy val nativeProjects: Seq[ProjectReference] = Seq(
   ulid.native,
   rx.native,
   control.native,
-  codec.native
+  codec.native,
+  http.native
 )
 
 // Integration test projects
@@ -767,7 +768,7 @@ lazy val rx =
     .dependsOn(log)
 
 lazy val http =
-  crossProject(JVMPlatform, JSPlatform)
+  crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
@@ -796,6 +797,9 @@ lazy val http =
       libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
+    )
+    .nativeSettings(
+      nativeBuildSettings
     )
     .dependsOn(rx, control, surface, json, codec, di)
 

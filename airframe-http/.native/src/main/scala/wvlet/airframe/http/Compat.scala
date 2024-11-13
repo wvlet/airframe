@@ -18,17 +18,15 @@ import wvlet.airframe.http.client.HttpClientBackend
 import scala.concurrent.ExecutionContext
 
 /**
-  * An interface for using different implementation between Scala JVM and Scala.js
+  * Scala Native specific implementation
   */
-private[http] trait CompatApi {
-  def urlEncode(s: String): String
+private object Compat extends CompatApi {
+  override def urlEncode(s: String): String                = ???
+  override def defaultHttpClientBackend: HttpClientBackend = ???
 
-  def hostServerAddress: ServerAddress = ServerAddress.empty
-  def defaultHttpClientBackend: HttpClientBackend
-  def defaultExecutionContext: ExecutionContext
-  def defaultHttpClientLoggerFactory: HttpLoggerConfig => HttpLogger
-
-  def currentRPCContext: RPCContext
-  def attachRPCContext(context: RPCContext): RPCContext
-  def detachRPCContext(previous: RPCContext): Unit
+  override def defaultExecutionContext: ExecutionContext                      = ???
+  override def defaultHttpClientLoggerFactory: HttpLoggerConfig => HttpLogger = ???
+  override def currentRPCContext: RPCContext                                  = ???
+  override def attachRPCContext(context: RPCContext): RPCContext              = ???
+  override def detachRPCContext(previous: RPCContext): Unit                   = ???
 }
