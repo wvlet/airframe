@@ -24,6 +24,10 @@ import scala.concurrent.TimeoutException
 
 object HttpClientFilterTest extends AirSpec {
 
+  if (isScalaNative) {
+    pending(s"Http client is not supported in Scala Native yet")
+  }
+
   private def newDummyClient(config: HttpClientConfig, f: PartialFunction[Request, Response]): AsyncClient =
     new AsyncClientImpl(new DummyHttpChannel(f), config)
 
