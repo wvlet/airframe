@@ -1,8 +1,8 @@
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "24.9.3")
-val AIRSPEC_VERSION  = sys.env.getOrElse("AIRSPEC_VERSION", "24.9.3")
+val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "24.11.0")
+val AIRSPEC_VERSION  = sys.env.getOrElse("AIRSPEC_VERSION", "24.11.0")
 val SCALA_2_12       = "2.12.20"
 
 ThisBuild / organization := "org.wvlet.airframe"
