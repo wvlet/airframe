@@ -19,7 +19,7 @@ libraryDependencies ++= (
 
 // For Scala native
 addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
-addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.5.5")
+addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.5.6")
 
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.0")
