@@ -32,7 +32,7 @@ jobs:
         run: echo ${AIRFRAME_VERSION}
       - name: Post version number to Slack
         id: slack
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           # wvlet dev-snapshot channel
           channel-id: 'C04CC79BZ7A'
@@ -53,7 +53,7 @@ jobs:
           ../sbt publishSnapshots
         working-directory: ./airspec
       - name: Notify the completion to Slack
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           # wvlet dev-snapshot channel
           channel-id: 'C04CC79BZ7A'
