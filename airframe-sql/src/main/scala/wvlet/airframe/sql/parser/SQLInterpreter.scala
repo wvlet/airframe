@@ -992,4 +992,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val ifExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     DropView(viewName, ifExists, getLocation(ctx))
   }
+
+  override def visitPosition(ctx: PositionContext): Expression = {
+    Position(expression(ctx.valueExpression(0)), expression(ctx.valueExpression(1)), getLocation(ctx))
+  }
 }

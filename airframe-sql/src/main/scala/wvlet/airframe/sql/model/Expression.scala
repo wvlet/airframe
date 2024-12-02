@@ -1336,4 +1336,10 @@ object Expression {
     override def toString                  = s"Extract(interval:${interval}, ${expr})"
   }
 
+  case class Position(substring: Expression, string: Expression, nodeLocation: Option[NodeLocation])
+      extends Expression {
+    override def children: Seq[Expression] = Seq(substring, string)
+    override def sqlExpr: String           = s"POSITION(${substring.sqlExpr} IN ${string.sqlExpr})"
+    override def toString                  = sqlExpr
+  }
 }

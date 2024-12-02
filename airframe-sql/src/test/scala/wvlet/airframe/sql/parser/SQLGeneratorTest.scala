@@ -194,4 +194,12 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan)
     sql shouldBe "SELECT TIMESTAMP '1992-02-01 00:00 UTC' AT TIME ZONE 'Asia/Tokyo'"
   }
+
+  test("print POSITION") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("SELECT xid FROM A WHERE POSITION('str' IN xid) > 0", "default", demoCatalog)
+
+    val sql = SQLGenerator.print(resolvedPlan)
+    sql shouldBe "SELECT xid FROM A WHERE POSITION('str' IN xid) > 0"
+  }
 }
