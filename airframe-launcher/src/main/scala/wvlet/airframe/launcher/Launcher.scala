@@ -271,7 +271,7 @@ class CommandLauncher(
         val h            = new MessageContext
         codec.unpack(MessagePack.newUnpacker(parseTree_mp), h)
         h.getError.map { e =>
-          throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}")
+          throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}", e)
         }
         val obj = h.getLastValue
 
