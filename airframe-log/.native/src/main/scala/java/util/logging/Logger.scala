@@ -36,11 +36,19 @@ class Logger(parent: Option[Logger], name: String) {
   def log(record: LogRecord): Unit = {
     if (isLoggable(record.getLevel())) {
       if (record.getLoggerName() == null) record.setLoggerName(name)
-      if (parent.nonEmpty && useParentHandlers) {
-        getParent().log(record)
-      } else {
-        handlers.foreach { h => h.publish(record) }
-      }
+      publish(record)
+    }
+  }
+
+  /**
+    * Publish the log record, regardless of the log level
+    * @param record
+    */
+  private[logging] def publish(record: LogRecord): Unit = {
+    if (useParentHandlers && parent.nonEmpty) {
+      parent.get.publish(record)
+    } else {
+      handlers.foreach { h => h.publish(record) }
     }
   }
 
