@@ -55,9 +55,11 @@ jobs:
       - name: Notify the completion to Slack
         uses: slackapi/slack-github-action@v2.0.0
         with:
+          method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
-          # wvlet dev-snapshot channel
-          channel-id: 'C04CC79BZ7A'
-          # Update the thread
-          update-ts: ${{ steps.slack.outputs.ts }}
-          slack-message: "[done] Published a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
+          payload: |
+            # wvlet dev-snapshot channel
+            channel: C04CC79BZ7A
+            # Update the thread
+            thread_ts: ${{ steps.slack.outputs.ts }}
+            text: "[done] Published a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
