@@ -34,9 +34,12 @@ jobs:
         id: slack
         uses: slackapi/slack-github-action@v2.0.0
         with:
-          # wvlet dev-snapshot channel
-          channel-id: 'C04CC79BZ7A'
-          slack-message: "Publishing a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            # wvlet dev-snapshot channel
+            channel: C04CC79BZ7A
+            text: "Publishing a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Publish snapshots
