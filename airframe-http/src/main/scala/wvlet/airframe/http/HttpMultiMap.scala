@@ -105,7 +105,7 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
         .map { entry =>
           val newValue = entry._2 match {
             case s: String                   => Seq(s, value)
-            case lst: Seq[String @unchecked] => lst +: value
+            case lst: Seq[String @unchecked] => lst :+ value
           }
           // Use the already existing key for avoid case-insensitive key duplication
           underlying + (entry._1 -> newValue)
