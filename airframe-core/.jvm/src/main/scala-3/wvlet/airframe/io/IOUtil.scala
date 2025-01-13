@@ -43,11 +43,10 @@ object IOUtil:
 
   def findPath(path: File): Option[File] =
     if path.exists() then Some(path)
-    else {
+    else
       val defaultPath = new File(new File(System.getProperty("prog.home", "")), path.getPath)
       if defaultPath.exists() then Some(defaultPath)
       else None
-    }
 
   def readAsString(f: File): String =
     readAsString(f.toURI.toURL)

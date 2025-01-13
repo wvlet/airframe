@@ -19,7 +19,7 @@ import scala.language.implicitConversions
 /**
   * This code is from com.softwaremill.tagging
   *
-  * Tag instances with arbitrary types. The tags are usually empty `trait`s. Tags have no runtime overhead and are only
+  * Tag instances with arbitrary types. The tags are usually empty `trait` s. Tags have no runtime overhead and are only
   * used at compile-time for additional type safety.
   *
   * For example:

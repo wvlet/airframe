@@ -16,7 +16,7 @@ package wvlet.airframe.log
 import java.io.{File, Flushable}
 import java.nio.charset.StandardCharsets
 import java.util.logging.ErrorManager
-import java.util.{logging as jl}
+import java.util.logging as jl
 import ch.qos.logback.core.ContextBase
 import ch.qos.logback.core.encoder.EncoderBase
 import ch.qos.logback.core.rolling.{
