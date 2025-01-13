@@ -220,8 +220,7 @@ object Router extends router.RouterObjectBase with LogSupport {
 
   private[http] def isFuture(s: Surface): Boolean = {
     s match {
-      case h: HigherKindedTypeSurface
-          if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
+      case h: HigherKindedTypeSurface if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
         true
       case s: Surface
           if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>
@@ -233,8 +232,7 @@ object Router extends router.RouterObjectBase with LogSupport {
 
   private[http] def unwrapFuture(s: Surface): Surface = {
     s match {
-      case h: HigherKindedTypeSurface
-          if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
+      case h: HigherKindedTypeSurface if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
         h.typeArgs.head
       case s: Surface
           if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>

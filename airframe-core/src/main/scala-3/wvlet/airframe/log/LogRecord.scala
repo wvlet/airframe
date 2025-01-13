@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.log
 
-import java.util.{logging as jl}
+import java.util.logging as jl
 
 object LogRecord:
   def apply(record: jl.LogRecord): LogRecord =

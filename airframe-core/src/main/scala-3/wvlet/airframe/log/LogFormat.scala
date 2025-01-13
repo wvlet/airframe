@@ -18,7 +18,7 @@ import wvlet.airframe.log.AnsiColorPalette
 import java.io.{PrintWriter, StringWriter}
 import java.util.logging.Formatter
 import java.util.regex.Pattern
-import java.util.{logging as jl}
+import java.util.logging as jl
 import wvlet.airframe.log.LogLevel.{DEBUG, ERROR, INFO, TRACE, WARN}
 
 /**

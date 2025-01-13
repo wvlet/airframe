@@ -1,6 +1,6 @@
 package wvlet.airframe.log
 
-import java.util.{logging as jl}
+import java.util.logging as jl
 
 import wvlet.airframe.log.JSConsoleLogHandler.JSLogColorPalette
 

@@ -77,9 +77,7 @@ trait GlobalAttrs {
     * Specifies the text direction for the content in an element. The valid values are:
     *
     *   - `ltr` Default. Left-to-right text direction
-    *
     *   - `rtl` Right-to-left text direction
-    *
     *   - `auto` Let the browser figure out the text direction, based on the content, (only recommended if the text
     *     direction is unknown)
     */
@@ -759,7 +757,6 @@ trait InputAttrs extends GlobalAttrs {
     *
     *   - post: Corresponds to the HTTP POST method ; form data are included in the body of the form and sent to the
     *     server.
-    *
     *   - get: Corresponds to the HTTP GET method; form data are appended to the action attribute URI with a '?' as a
     *     separator, and the resulting URI is sent to the server. Use this method when the form has no side-effects and
     *     contains only ASCII characters.

@@ -1,7 +1,7 @@
 package wvlet.airframe.log
 
 import java.io.{PrintStream, PrintWriter}
-import java.util.{logging as jl}
+import java.util.logging as jl
 
 /**
   * Output log to stderr
