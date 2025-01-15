@@ -737,7 +737,7 @@ lazy val jdbc =
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
         "org.duckdb"     % "duckdb_jdbc" % "1.1.3",
-        "org.postgresql" % "postgresql"  % "42.7.4",
+        "org.postgresql" % "postgresql"  % "42.7.5",
         "com.zaxxer"     % "HikariCP"    % "6.2.1",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
@@ -974,7 +974,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
-        exclude ("junit", "junit"),
+          exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.2" % Provided,
         "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.2" % Provided,
