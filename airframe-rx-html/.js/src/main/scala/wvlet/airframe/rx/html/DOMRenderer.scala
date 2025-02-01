@@ -166,7 +166,7 @@ object DOMRenderer extends LogSupport {
                 c1 = traverse(value, Some(start), ctx)
                 ctx.onFinish()
               case OnError(e) =>
-                warn(s"An unhandled error occurred while rendering ${rx}", e)
+                warn(s"An unhandled error occurred while rendering ${rx}:\n${e.getMessage}", e)
                 c1 = Cancelable.empty
               case other =>
                 c1 = Cancelable.empty
@@ -191,7 +191,7 @@ object DOMRenderer extends LogSupport {
               localContext.addOnRenderHook(() => rx.onMount)
               Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
             case Failure(e) =>
-              warn(s"Failed to render ${rx}", e)
+              warn(s"Failed to render ${rx}:\n${e.getMessage}", e)
               Cancelable(() => rx.beforeUnmount)
           }
         case s: String =>
