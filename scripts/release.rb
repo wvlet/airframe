@@ -10,12 +10,12 @@ puts "last version: #{last_version}"
 now = Time.new
 (year, month, patch) = last_version.split('.').map{|x| x.to_i}
 
-if year == now.year-2000 && month == now.month
+if year == now.year
   patch = patch + 1
 else
   patch = 0
 end
-default_version = "#{now.year-2000}.#{now.month}.#{patch}"
+default_version = "#{now.year}.#{now.month}.#{patch}"
 print "next version (default: #{default_version})? "
 next_version = STDIN.gets.chomp
 
