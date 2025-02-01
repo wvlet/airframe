@@ -188,7 +188,7 @@ object DOMRenderer extends LogSupport {
               val c1   = renderToInternal(localContext, node, r)
               val elem = node.lastChild
               val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
-              if (rx.onMount ne RxElement.NoOp) {
+              if ((rx.onMount _) ne RxElement.NoOp) {
                 val observer: MutationObserver = new MutationObserver({ (mut, obs) =>
                   mut.foreach { m =>
                     m.addedNodes.find(_ eq elem).foreach { n =>
