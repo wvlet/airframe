@@ -37,6 +37,9 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
   /**
     * Called right after mounting this RxElement to the document. Override this method to define a custom event hook
     * after rendering.
+    *
+    * @param node
+    *   the mounted DOM node (org.scalajs.dom.Node in Scala.js)
     */
   def onMount(node: Any): Unit = RxElement.NoOp
 
