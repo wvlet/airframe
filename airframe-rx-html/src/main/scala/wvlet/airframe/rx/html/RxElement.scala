@@ -37,8 +37,11 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
   /**
     * Called right after mounting this RxElement to the document. Override this method to define a custom event hook
     * after rendering.
+    *
+    * @param node
+    *   the mounted DOM node (org.scalajs.dom.Node in Scala.js)
     */
-  def onMount: Unit = {}
+  def onMount(node: Any): Unit = RxElement.NoOp
 
   /**
     * Called right before unmounting (deleting) this RxElement from DOM.
@@ -88,6 +91,9 @@ object RxElement {
     new RxElement() {
       override def render: RxElement = LazyRxElement(() => a)
     }
+
+  private[html] val NoOp = { (n: Any) => }
+
 }
 
 case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement() with LogSupport {

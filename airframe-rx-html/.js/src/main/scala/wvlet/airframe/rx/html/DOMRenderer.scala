@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
+import org.scalajs.dom.{MutationObserver, MutationObserverInit}
 import wvlet.airframe.rx.{Cancelable, OnError, OnNext, Rx, RxOps, RxRunner}
 import wvlet.log.LogSupport
 
@@ -80,7 +81,7 @@ object DOMRenderer extends LogSupport {
         case Success(r) =>
           traverse(r)
         case Failure(e) =>
-          warn(s"Failed to render ${rx}", e)
+          warn(s"Failed to render ${rx}: ${e.getMessage}", e)
           // Embed an empty node
           (dom.document.createElement("span"), Cancelable.empty)
       }
@@ -98,7 +99,7 @@ object DOMRenderer extends LogSupport {
         case r: RxElement =>
           r.beforeRender
           val (n, c) = render(r)
-          r.onMount
+          r.onMount(n)
           (n, Cancelable.merge(Cancelable(() => r.beforeUnmount), c))
         case d: dom.Node =>
           (d, Cancelable.empty)
@@ -166,7 +167,7 @@ object DOMRenderer extends LogSupport {
                 c1 = traverse(value, Some(start), ctx)
                 ctx.onFinish()
               case OnError(e) =>
-                warn(s"An unhandled error occurred while rendering ${rx}:\n${e.getMessage}", e)
+                warn(s"An unhandled error occurred while rendering ${rx}: ${e.getMessage}", e)
                 c1 = Cancelable.empty
               case other =>
                 c1 = Cancelable.empty
@@ -187,11 +188,27 @@ object DOMRenderer extends LogSupport {
               val c1   = renderToInternal(localContext, node, r)
               val elem = node.lastChild
               val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
+              if ((rx.onMount _) ne RxElement.NoOp) {
+                val observer: MutationObserver = new MutationObserver({ (mut, obs) =>
+                  mut.foreach { m =>
+                    m.addedNodes.find(_ eq elem).foreach { n =>
+                      rx.onMount(elem)
+                    }
+                  }
+                  obs.disconnect()
+                })
+                observer.observe(
+                  node,
+                  new MutationObserverInit {
+                    attributes = node.nodeType == dom.Node.ATTRIBUTE_NODE
+                    childList = node.nodeType != dom.Node.ATTRIBUTE_NODE
+                  }
+                )
+              }
               node.mountHere(elem, anchor)
-              localContext.addOnRenderHook(() => rx.onMount)
               Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
             case Failure(e) =>
-              warn(s"Failed to render ${rx}:\n${e.getMessage}", e)
+              warn(s"Failed to render ${rx}: ${e.getMessage}", e)
               Cancelable(() => rx.beforeUnmount)
           }
         case s: String =>
@@ -310,7 +327,7 @@ object DOMRenderer extends LogSupport {
               case OnNext(value) =>
                 c1 = traverse(value)
               case OnError(e) =>
-                warn(s"An unhandled error occurred while rendering ${rx}", e)
+                warn(s"An unhandled error occurred while rendering ${rx}: ${e.getMessage}", e)
                 c1 = Cancelable.empty
               case other =>
                 c1 = Cancelable.empty

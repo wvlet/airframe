@@ -268,7 +268,7 @@ object Logger {
       }.foreach { level =>
         l.setLogLevel(level)
       }
-    l
+    ()
   }
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
