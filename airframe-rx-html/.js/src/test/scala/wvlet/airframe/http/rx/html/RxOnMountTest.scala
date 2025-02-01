@@ -43,7 +43,7 @@ class RxOnMountTest extends AirSpec {
         a += 1
       }
 
-      override def onMount(n: dom.Node) = {
+      override def onMount(n: Any) = {
         afterRenderCount += 1
       }
 
@@ -91,7 +91,7 @@ class RxOnMountTest extends AirSpec {
         a1 = true
       }
 
-      override def onMount(n: dom.Node) = {
+      override def onMount(n: Any) = {
         debug("afterMount: nested")
         afterRenderFlag = true
         rendered := true
@@ -111,7 +111,7 @@ class RxOnMountTest extends AirSpec {
         a = true
       }
 
-      override def onMount(n: dom.Node) = {
+      override def onMount(n: Any) = {
         debug(s"afterMount: r")
         afterRenderFlag1 = true
       }

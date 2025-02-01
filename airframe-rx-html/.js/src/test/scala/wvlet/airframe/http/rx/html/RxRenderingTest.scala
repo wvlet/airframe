@@ -79,7 +79,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def onMount(node: dom.Node): Unit = {
+      override def onMount(node: Any): Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -121,7 +121,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def onMount(n: dom.Node): Unit = {
+      override def onMount(n: Any): Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -230,7 +230,7 @@ object RxRenderingTest extends AirSpec {
     def findSpan000 = Option(document.getElementById("span000"))
 
     val label = new RxElement() {
-      override def onMount(n: dom.Node): Unit = {
+      override def onMount(n: Any): Unit = {
         logger.debug(s"onRender span: ${findSpan000}")
         findSpan000.foreach { e =>
           e.setAttribute("class", "active")
@@ -245,7 +245,7 @@ object RxRenderingTest extends AirSpec {
     }
 
     val main = new RxElement {
-      override def onMount(n: dom.Node): Unit = {
+      override def onMount(n: Any): Unit = {
         logger.debug("onRender main")
       }
 
@@ -271,7 +271,7 @@ object RxRenderingTest extends AirSpec {
     val foundElement             = Rx.variable(false)
 
     object infoPage extends RxElement {
-      override def onMount(n: dom.Node): Unit = {
+      override def onMount(n: Any): Unit = {
         nestedOnMountCallCount += 1
         Option(org.scalajs.dom.document.getElementById("id001")).collect { case e: HTMLElement =>
           foundElement := true
@@ -282,7 +282,7 @@ object RxRenderingTest extends AirSpec {
     }
 
     object nestedPage extends RxElement() {
-      override def onMount(n: dom.Node): Unit = {
+      override def onMount(n: Any): Unit = {
         topLevelOnMountCallCount += 1
       }
 
