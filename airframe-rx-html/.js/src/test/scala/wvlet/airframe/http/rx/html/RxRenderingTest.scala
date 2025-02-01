@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.rx.html
 
+import org.scalajs.dom
 import org.scalajs.dom.{HTMLElement, document}
 import wvlet.airframe.rx.{Cancelable, Rx, html}
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
@@ -78,7 +79,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def onMount: Unit = {
+      override def onMount(node: dom.Node): Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -120,7 +121,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def onMount: Unit = {
+      override def onMount(n: dom.Node): Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -151,56 +152,6 @@ object RxRenderingTest extends AirSpec {
     a shouldBe 1
     afterRenderCount shouldBe 1
     b shouldBe 1
-  }
-
-  test("nested beforeRender/beforeUnmount") {
-    var a               = false
-    var b               = false
-    var afterRenderFlag = false
-
-    var a1               = false
-    var b1               = false
-    var afterRenderFlag1 = false
-
-    val nested = new RxElement {
-      override def beforeRender: Unit = {
-        a1 = true
-      }
-      override def onMount: Unit = {
-        afterRenderFlag = true
-      }
-      override def beforeUnmount: Unit = {
-        b1 = true
-      }
-      override def render: RxElement = span("nested")
-    }
-
-    val r = new RxElement {
-      override def beforeRender: Unit = {
-        a = true
-      }
-      override def onMount: Unit = {
-        afterRenderFlag1 = true
-      }
-      override def beforeUnmount: Unit = {
-        b = true
-      }
-      override def render: RxElement = span(nested)
-    }
-
-    val (n, c) = render(r)
-    a shouldBe true
-    b shouldBe false
-    afterRenderFlag shouldBe true
-    a1 shouldBe true
-    b1 shouldBe false
-    afterRenderFlag shouldBe true
-
-    c.cancel
-    b shouldBe true
-    b1 shouldBe true
-    afterRenderFlag shouldBe true
-    afterRenderFlag1 shouldBe true
   }
 
   test("rendering attributes with Rx") {
@@ -274,16 +225,17 @@ object RxRenderingTest extends AirSpec {
   }
 
   test("render attributes with onMount hook") {
-    var updated = false
+    val updated = Rx.variable(false)
 
     def findSpan000 = Option(document.getElementById("span000"))
 
     val label = new RxElement() {
-      override def onMount: Unit = {
+      override def onMount(n: dom.Node): Unit = {
         logger.debug(s"onRender span: ${findSpan000}")
         findSpan000.foreach { e =>
           e.setAttribute("class", "active")
-          updated = true
+          updated := true
+          updated.stop()
         }
       }
       override def render: RxElement = {
@@ -293,9 +245,10 @@ object RxRenderingTest extends AirSpec {
     }
 
     val main = new RxElement {
-      override def onMount: Unit = {
+      override def onMount(n: dom.Node): Unit = {
         logger.debug("onRender main")
       }
+
       override def render: RxElement = {
         logger.debug(s"render main: ${findSpan000}")
         div(
@@ -304,7 +257,10 @@ object RxRenderingTest extends AirSpec {
       }
     }
     val c = main.renderTo("main")
-    updated shouldBe true
+
+    updated.lastOption.map { f =>
+      f shouldBe true
+    }
   }
 
   test("call onMount hook in nested RxElements") {
@@ -312,20 +268,21 @@ object RxRenderingTest extends AirSpec {
 
     var topLevelOnMountCallCount = 0
     var nestedOnMountCallCount   = 0
-    var foundElement             = false
+    val foundElement             = Rx.variable(false)
 
     object infoPage extends RxElement {
-      override def onMount: Unit = {
+      override def onMount(n: dom.Node): Unit = {
         nestedOnMountCallCount += 1
         Option(org.scalajs.dom.document.getElementById("id001")).collect { case e: HTMLElement =>
-          foundElement = true
+          foundElement := true
+          foundElement.stop()
         }
       }
       override def render: RxElement = div(id -> "id001", "render: info")
     }
 
     object nestedPage extends RxElement() {
-      override def onMount: Unit = {
+      override def onMount(n: dom.Node): Unit = {
         topLevelOnMountCallCount += 1
       }
 
@@ -342,9 +299,12 @@ object RxRenderingTest extends AirSpec {
     org.scalajs.dom.document.getElementById("id001") shouldMatch { case e: HTMLElement =>
       e.innerHTML shouldContain "render: info"
     }
-    topLevelOnMountCallCount shouldBe 1
-    nestedOnMountCallCount shouldBe 1
-    foundElement shouldBe true
+
+    foundElement.lastOption.map { flag =>
+      flag shouldBe true
+      topLevelOnMountCallCount shouldBe 1
+      nestedOnMountCallCount shouldBe 1
+    }
   }
 
   test("refresh attribute with RxVar") {

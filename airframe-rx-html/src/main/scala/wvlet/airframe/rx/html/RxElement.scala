@@ -16,6 +16,7 @@ package wvlet.airframe.rx.html
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 import wvlet.airframe.rx.html.RxEmbedding.*
+import org.scalajs.dom
 
 /**
   */
@@ -38,7 +39,7 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     * Called right after mounting this RxElement to the document. Override this method to define a custom event hook
     * after rendering.
     */
-  def onMount: Unit = {}
+  def onMount(node: dom.Node): Unit = RxElement.NoOp
 
   /**
     * Called right before unmounting (deleting) this RxElement from DOM.
@@ -88,6 +89,9 @@ object RxElement {
     new RxElement() {
       override def render: RxElement = LazyRxElement(() => a)
     }
+
+  private[html] val NoOp = { (n: dom.Node) => () }
+
 }
 
 case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement() with LogSupport {
