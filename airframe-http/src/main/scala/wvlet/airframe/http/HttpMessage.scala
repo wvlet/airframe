@@ -326,4 +326,7 @@ object HttpMessage {
     override protected def adapter: HttpResponseAdapter[Response] = HttpMessageResponseAdapter
     override def toRaw: Response                                  = raw
   }
+
+  case class ServerSentEvent(id: Option[String], event: Option[String], data: String)
+
 }

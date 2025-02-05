@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.HttpMessage.{Request, Response, ServerSentEvent, ServerSentEvents}
 import wvlet.airframe.http.ServerAddress
 import wvlet.airframe.rx.Rx
 
@@ -55,4 +55,12 @@ trait HttpChannel extends AutoCloseable {
     * @return
     */
   def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response]
+
+  /**
+    * Send a request to receive Server-Sent Events (SSE)
+    * @param req
+    * @param channelConfig
+    * @return
+    */
+  def connectSSE[U](req: Request, handler: Rx[ServerSentEvent] => U, channelConfig: HttpChannelConfig): Rx[Response]
 }

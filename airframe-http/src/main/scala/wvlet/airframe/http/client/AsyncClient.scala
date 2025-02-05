@@ -14,7 +14,7 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.control.CircuitBreaker
-import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.HttpMessage.{Request, Response, ServerSentEvent, ServerSentEvents, ServerStreamOpen}
 import wvlet.airframe.http.{HttpClientException, HttpLogger, RPCException, RPCMethod}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
@@ -93,6 +93,50 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     send(req, context).toRx.recover { case e: HttpClientException =>
       e.response.toHttpResponse
     }
+  }
+
+  /**
+    * Send a request to receive Server-Sent Events (SSE). The client needs to subscribe changes of the returned
+    * Rx[ServerSentEvent] to receive SSE events.
+    * @param req
+    * @param context
+    * @return
+    */
+  def connectSSE[U](
+      req: Request,
+      handler: Rx[ServerSentEvent] => U,
+      context: HttpClientContext = HttpClientContext.empty
+  ): Rx[Response] = {
+    val request                        = config.requestFilter(req)
+    var lastResponse: Option[Response] = None
+
+    // Follow the same flow with send(req), but use HttpChannel.connectSSE instead
+
+    def requestPipeline =
+      loggingFilter(context)
+        .andThen { req =>
+          channel
+            .connectSSE(req, handler, config)
+            .tap { resp =>
+              lastResponse = Some(resp)
+            }
+        }
+
+    val rx =
+      config.clientFilter.andThen { req =>
+        config.retryContext
+          .runAsyncWithContext(req, circuitBreaker) {
+            requestPipeline(req)
+          }
+          .map { resp =>
+            config.responseFilter(resp)
+          }
+          .recover {
+            HttpClients.defaultHttpClientErrorHandler(() => lastResponse.map(config.responseFilter(_)))
+          }
+      }
+
+    rx.apply(request)
   }
 
   def readAsInternal[Resp](
