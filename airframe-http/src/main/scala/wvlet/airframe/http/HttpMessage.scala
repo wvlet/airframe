@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.http.Http.formatInstant
-import wvlet.airframe.http.HttpMessage.{Message, StringMessage}
+import wvlet.airframe.http.HttpMessage.{Message, ServerSentEvent, StringMessage}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.Rx
 
@@ -125,6 +125,10 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def isContentTypeMsgPack: Boolean = {
     contentType.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/x-msgpack")
   }
+  def isContentTypeEventStream: Boolean = {
+    contentType.exists(x => x.startsWith("text/event-stream"))
+  }
+
   def acceptsJson: Boolean = {
     accept.exists(x => x == HttpHeader.MediaType.ApplicationJson || x.startsWith("application/json"))
   }

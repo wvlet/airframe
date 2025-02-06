@@ -34,7 +34,7 @@ class FetchTest extends AirSpec:
           .newAsyncClient(PUBLIC_REST_SERVICE)
       }
 
-  test("js http sync client") { (client: AsyncClient) =>
+  test("js http async client") { (client: AsyncClient) =>
     test("GET") {
       client
         .send(Http.GET("/posts/1"))
@@ -84,4 +84,5 @@ class FetchTest extends AirSpec:
             fail(s"should not reach here")
         }
     }
+
   }
