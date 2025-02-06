@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.HttpMessage.{Request, Response, SSEConnection}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.{OnNext, Rx}
 import wvlet.log.LogSupport
 

@@ -16,11 +16,11 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.*
-import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.HttpMessage.{Request, Response, ServerSentEvent}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
-import java.io.InputStream
+import java.io.{BufferedReader, InputStream, InputStreamReader}
 import java.net.URI
 import java.net.http.HttpClient.{Redirect, Version}
 import java.net.http.HttpRequest.BodyPublishers
@@ -28,7 +28,9 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import java.util.function.Consumer
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
+import scala.annotation.tailrec
 import scala.jdk.CollectionConverters.*
+import scala.util.Try
 
 /**
   * Http connection implementation using Http Client of Java 11
@@ -138,23 +140,109 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
       h.result()
     }
 
-    // Decompress contents
-    val body: Array[Byte] = withResource {
-      header.get(HttpHeader.ContentEncoding).map(_.toLowerCase()) match {
-        case Some("gzip") =>
-          new GZIPInputStream(httpResponse.body())
-        case Some("deflate") =>
-          new InflaterInputStream(httpResponse.body())
-        case _ =>
-          httpResponse.body()
-      }
-    } { (in: InputStream) =>
-      IO.readFully(in)
+    val status = HttpStatus.ofCode(httpResponse.statusCode())
+    val isEventStream = header.get(HttpHeader.ContentType).exists(_.startsWith("text/event-stream"))
+    if(isEventStream) {
+      HttpMessage.Response(
+        status = status,
+        header = header,
+        events = readServerSentEventStream(httpResponse)
+      )
     }
-
-    Http
-      .response(HttpStatus.ofCode(httpResponse.statusCode()))
-      .withHeader(header)
-      .withContent(HttpMessage.byteArrayMessage(body))
+    else {      // Decompress contents
+      val body: Array[Byte] = withResource {
+        header.get(HttpHeader.ContentEncoding).map(_.toLowerCase()) match {
+          case Some("gzip") =>
+            new GZIPInputStream(httpResponse.body())
+          case Some("deflate") =>
+            new InflaterInputStream(httpResponse.body())
+          case _ =>
+            httpResponse.body()
+        }
+      } { (in: InputStream) =>
+        IO.readFully(in)
+      }
+      Http
+        .response(status)
+        .withHeader(header)
+        .withContent(HttpMessage.byteArrayMessage(body))
+    }
   }
+
+  private def readServerSentEventStream(httpResponse: java.net.http.HttpResponse[InputStream]): Rx[ServerSentEvent] = {
+    // Create Rx[ServerSentEvent] for reading the event stream
+    val rx = Rx.variable[Option[ServerSentEvent]](None)
+
+    // Read the event stream in a separate thread
+    val executor = compat.defaultExecutionContext
+    executor.execute(new Runnable
+    {
+      override def run(): Unit =
+      {
+        withResource(BufferedReader(InputStreamReader(httpResponse.body()))) { reader =>
+          var id: Option[String] = None
+          var eventType: Option[String] = None
+          var retry: Option[Long] = None
+          val data = List.newBuilder[String]
+
+          def emit(): Unit =
+          {
+            val event = ServerSentEvent(
+              id = id,
+              event = eventType,
+              retry = retry,
+              data = data.result()
+            )
+            data.clear()
+            rx.set(Some(event))
+          }
+
+          @tailrec
+          def processLine(): Unit =
+          {
+            val line = reader.readLine()
+            line match
+              case null =>
+              // no more line
+              case l if l.isEmpty =>
+                emit()
+                processLine()
+              case l if l.startsWith(":") =>
+              // skip comments
+              case _ =>
+                val kv = line.split(":", 2)
+                if (kv.length == 2) {
+                  val key = kv(0).trim
+                  val value = kv(1).trim
+                  key match {
+                    case "id" =>
+                      id = Some(value)
+                    case "event" =>
+                      eventType = Some(value)
+                    case "data" =>
+                      data += value
+                    case "retry" =>
+                      retry = Try(value.toLong).toOption
+                    case _ =>
+                    // Ignore unknown fields
+                  }
+                }
+                else {
+                  // Ignore invalid lines
+                  // Send the last event {
+                  emit()
+                }
+                processLine()
+          }
+
+          processLine()
+        }
+
+        rx.stop()
+      }
+    })
+
+    rx.filter(_.nonEmpty).map(_.get)
+  }
+
 }
