@@ -140,16 +140,15 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
       h.result()
     }
 
-    val status = HttpStatus.ofCode(httpResponse.statusCode())
+    val status        = HttpStatus.ofCode(httpResponse.statusCode())
     val isEventStream = header.get(HttpHeader.ContentType).exists(_.startsWith("text/event-stream"))
-    if(isEventStream) {
+    if (isEventStream) {
       HttpMessage.Response(
         status = status,
         header = header,
         events = readServerSentEventStream(httpResponse)
       )
-    }
-    else {      // Decompress contents
+    } else { // Decompress contents
       val body: Array[Byte] = withResource {
         header.get(HttpHeader.ContentEncoding).map(_.toLowerCase()) match {
           case Some("gzip") =>
@@ -175,33 +174,32 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
 
     // Read the event stream in a separate thread
     val executor = compat.defaultExecutionContext
-    executor.execute(new Runnable
-    {
-      override def run(): Unit =
-      {
-        withResource(BufferedReader(InputStreamReader(httpResponse.body()))) { reader =>
-          var id: Option[String] = None
+    executor.execute(new Runnable {
+      override def run(): Unit = {
+        withResource(new BufferedReader(new InputStreamReader(httpResponse.body()))) { reader =>
+          var id: Option[String]        = None
           var eventType: Option[String] = None
-          var retry: Option[Long] = None
-          val data = List.newBuilder[String]
+          var retry: Option[Long]       = None
+          val data                      = List.newBuilder[String]
 
-          def emit(): Unit =
-          {
-            val event = ServerSentEvent(
-              id = id,
-              event = eventType,
-              retry = retry,
-              data = data.result()
-            )
+          def emit(): Unit = {
+            val eventData = data.result()
             data.clear()
-            rx.set(Some(event))
+            if (eventData.nonEmpty) {
+              val ev = ServerSentEvent(
+                id = id,
+                event = eventType,
+                retry = retry,
+                data = eventData.mkString("\n")
+              )
+              rx := Some(ev)
+            }
           }
 
           @tailrec
-          def processLine(): Unit =
-          {
+          def processLine(): Unit = {
             val line = reader.readLine()
-            line match
+            line match {
               case null =>
               // no more line
               case l if l.isEmpty =>
@@ -212,7 +210,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
               case _ =>
                 val kv = line.split(":", 2)
                 if (kv.length == 2) {
-                  val key = kv(0).trim
+                  val key   = kv(0).trim
                   val value = kv(1).trim
                   key match {
                     case "id" =>
@@ -226,13 +224,13 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
                     case _ =>
                     // Ignore unknown fields
                   }
-                }
-                else {
+                } else {
                   // Ignore invalid lines
                   // Send the last event {
                   emit()
                 }
                 processLine()
+            }
           }
 
           processLine()
