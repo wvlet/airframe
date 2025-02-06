@@ -616,7 +616,8 @@ object Rx extends LogSupport {
   }
 
   /**
-    * Create a lazily evaluated single value
+    * Create a lazily evaluated single value. A difference from Rx.const is that the value will be evaluated only when
+    * the value is requested.
     */
   def single[A](v: => A): Rx[A]         = SingleOp(LazyF0.apply(v))
   def exception[A](e: Throwable): Rx[A] = fromTry(Failure[A](e))

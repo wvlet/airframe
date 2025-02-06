@@ -545,26 +545,40 @@ class RxRunner(
           lastResult = RxResult.Stop
         }
       case source: RxSource[_] =>
-        var toContinue = true
+        var toContinue     = true
+        var c1: Cancelable = Cancelable.empty
         @tailrec
         def loop: Unit = {
           if (continuous || toContinue) {
-            val ev = source.next
-            ev match {
-              case OnNext(_) =>
-                effect(ev)
-                loop
+            val evRx = source.next
+            c1.cancel
+            c1 = run(evRx) {
+              case OnNext(ev: RxEvent) =>
+                ev match {
+                  case OnNext(v) =>
+                    effect(OnNext(v.asInstanceOf[A]))
+                  case other =>
+                    toContinue = false
+                    effect(other)
+                }
+              case OnCompletion =>
+                // ok. Successfully received a single event from the source
+                RxResult.Continue
               case other =>
                 toContinue = false
                 effect(other)
             }
+            loop
           }
         }
         loop
-        Cancelable { () =>
-          toContinue = false
-          source.add(OnError(new InterruptedException("cancelled")))
-        }
+        Cancelable.merge(
+          c1,
+          Cancelable { () =>
+            toContinue = false
+            source.add(OnError(new InterruptedException("cancelled")))
+          }
+        )
     }
   }
 
