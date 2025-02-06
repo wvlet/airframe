@@ -34,7 +34,7 @@ class FetchTest extends AirSpec:
           .newAsyncClient(PUBLIC_REST_SERVICE)
       }
 
-  test("js http sync client") { (client: AsyncClient) =>
+  test("js http async client") { (client: AsyncClient) =>
     test("GET") {
       client
         .send(Http.GET("/posts/1"))
@@ -83,5 +83,26 @@ class FetchTest extends AirSpec:
           case _ =>
             fail(s"should not reach here")
         }
+    }
+
+    test("event-stream") {
+      client
+        .send(
+          Http
+            .POST("/posts")
+            .withAccept("text/event-stream")
+            .withContent(s"""data: hello
+             |
+             |data: stream
+             |""".stripMargin)
+        ).transform {
+          case Success(resp) =>
+            resp.status shouldBe HttpStatus.Created_201
+            info(resp.contentType)
+            resp.isContentTypeEventStream shouldBe true
+          case _ =>
+            fail(s"should not reach here")
+        }
+
     }
   }

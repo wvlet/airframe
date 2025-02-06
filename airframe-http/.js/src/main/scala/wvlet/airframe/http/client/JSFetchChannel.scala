@@ -14,14 +14,22 @@
 package wvlet.airframe.http.client
 
 import org.scalajs.dom.{Headers, RequestRedirect}
-import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, Request, Response, StringMessage}
+import wvlet.airframe.http.HttpMessage.{
+  ByteArrayMessage,
+  EmptyMessage,
+  Request,
+  Response,
+  ServerSentEvent,
+  StringMessage
+}
 import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, HttpMultiMap, HttpStatus, ServerAddress}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx, RxVar}
 import wvlet.log.LogSupport
 
-import scala.concurrent.{ExecutionContext, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters.*
+import scala.scalajs.js.typedarray.Uint8Array
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -94,6 +102,9 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
           resp.text().toFuture.map { body =>
             r.withContent(body)
           }
+        } else if (r.isContentTypeEventStream) {
+          val events = readStream(resp)
+          Future.apply(r.copy(events = events))
         } else {
           resp.arrayBuffer().toFuture.map { body =>
             r.withContent(new Int8Array(body).toArray)
@@ -102,6 +113,98 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
       }
 
     Rx.future(future)
+  }
+
+  private def readStream(resp: org.scalajs.dom.Response): Rx[ServerSentEvent] = {
+    val decoder        = js.Dynamic.newInstance(js.Dynamic.global.TextDecoder)("utf-8")
+    val decoderOptions = js.Dynamic.literal(stream = true)
+
+    val rx: RxVar[Option[ServerSentEvent]] = Rx.variable[Option[ServerSentEvent]](None)
+    var fragment                           = ""
+
+    def process(): Future[Unit] = {
+
+      var id: Option[String]    = None
+      var event: Option[String] = None
+      var retry: Option[Long]   = None
+      val data                  = List.newBuilder[String]
+
+      def emit(): Unit = {
+        val eventData = data.result()
+        if (eventData.nonEmpty) {
+          val ev = ServerSentEvent(
+            id = id,
+            event = event,
+            retry = retry,
+            data = eventData.mkString("\n")
+          )
+          rx := Some(ev)
+        }
+
+        id = None
+        event = None
+        retry = None
+        data.clear()
+      }
+
+      def processLine(line: String): Unit = {
+        line match {
+          case null =>
+            emit()
+          case l if l.isEmpty() =>
+            emit()
+          case l if l.startsWith(":") =>
+          // Skip comments
+          case _ =>
+            val kv = line.split(":", 2)
+            if (kv.length == 2) {
+              val key   = kv(0).trim
+              val value = kv(1).trim
+              key match {
+                case "id" =>
+                  id = Some(value)
+                case "event" =>
+                  event = Some(value)
+                case "retry" =>
+                  retry = Try(value.toLong).toOption
+                case "data" =>
+                  data += value
+                case _ =>
+                // Ignore unknown fields
+              }
+            } else {
+              // Ignore invalid line
+              emit()
+            }
+        }
+      }
+
+      resp.body.getReader().read().toFuture.flatMap { result =>
+        if (result.done) {
+          if (fragment.nonEmpty) {
+            processLine(fragment)
+          }
+          rx.stop()
+          Future.unit
+        } else {
+          val arr: Uint8Array = result.value
+          fragment += decoder.decode(arr, decoderOptions)
+          val lines = fragment.split("\n")
+          // Keep the last fragment to the buffer
+          fragment = lines.last
+
+          lines.dropRight(1).foreach { line =>
+            processLine(line)
+          }
+
+          // Continue reading the next chunk
+          process()
+        }
+      }
+    }
+
+    process()
+    rx.filter(_.isDefined).map(_.get)
   }
 
 }
