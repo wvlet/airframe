@@ -15,6 +15,7 @@ package wvlet.airframe.http
 import wvlet.airframe.http.Http.formatInstant
 import wvlet.airframe.http.HttpMessage.{Message, StringMessage}
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.rx.Rx
 
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -278,7 +279,8 @@ object HttpMessage {
   case class Response(
       status: HttpStatus = HttpStatus.Ok_200,
       header: HttpMultiMap = HttpMultiMap.empty,
-      message: Message = EmptyMessage
+      message: Message = EmptyMessage,
+      events: Rx[ServerSentEvent] = Rx.empty
   ) extends HttpMessage[Response] {
     override def toString: String = s"Response(${status},${header})"
 

@@ -14,7 +14,14 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.control.CircuitBreaker
-import wvlet.airframe.http.HttpMessage.{Request, Response, ServerSentEvent, ServerSentEvents, ServerStreamOpen}
+import wvlet.airframe.http.HttpMessage.{
+  Request,
+  Response,
+  SSEConnection,
+  ServerSentEvent,
+  ServerSentEvents,
+  ServerStreamOpen
+}
 import wvlet.airframe.http.{HttpClientException, HttpLogger, RPCException, RPCMethod}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
@@ -104,7 +111,6 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     */
   def connectSSE[U](
       req: Request,
-      handler: Rx[ServerSentEvent] => U,
       context: HttpClientContext = HttpClientContext.empty
   ): Rx[Response] = {
     val request                        = config.requestFilter(req)
@@ -116,7 +122,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
       loggingFilter(context)
         .andThen { req =>
           channel
-            .connectSSE(req, handler, config)
+            .connectSSE(req, config)
             .tap { resp =>
               lastResponse = Some(resp)
             }
