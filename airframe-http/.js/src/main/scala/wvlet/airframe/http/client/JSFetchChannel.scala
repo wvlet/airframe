@@ -120,10 +120,8 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
     val decoderOptions = js.Dynamic.literal(stream = true)
 
     val rx: RxVar[Option[ServerSentEvent]] = Rx.variable[Option[ServerSentEvent]](None)
-    var fragment                           = ""
 
     def process(): Future[Unit] = {
-
       var id: Option[String]    = None
       var event: Option[String] = None
       var retry: Option[Long]   = None
@@ -181,19 +179,14 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
 
       resp.body.getReader().read().toFuture.flatMap { result =>
         if (result.done) {
-          if (fragment.nonEmpty) {
-            processLine(fragment)
-          }
+          emit()
           rx.stop()
           Future.unit
         } else {
           val arr: Uint8Array = result.value
-          fragment += decoder.decode(arr, decoderOptions)
-          val lines = fragment.split("\n")
-          // Keep the last fragment to the buffer
-          fragment = lines.last
-
-          lines.dropRight(1).foreach { line =>
+          val buf: String     = decoder.decode(arr, decoderOptions).asInstanceOf[String]
+          val lines           = buf.split("\n")
+          lines.foreach { line =>
             processLine(line)
           }
 

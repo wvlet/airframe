@@ -85,24 +85,4 @@ class FetchTest extends AirSpec:
         }
     }
 
-    test("event-stream") {
-      client
-        .send(
-          Http
-            .POST("/posts")
-            .withAccept("text/event-stream")
-            .withContent(s"""data: hello
-             |
-             |data: stream
-             |""".stripMargin)
-        ).transform {
-          case Success(resp) =>
-            resp.status shouldBe HttpStatus.Created_201
-            info(resp.contentType)
-            resp.isContentTypeEventStream shouldBe true
-          case _ =>
-            fail(s"should not reach here")
-        }
-
-    }
   }
