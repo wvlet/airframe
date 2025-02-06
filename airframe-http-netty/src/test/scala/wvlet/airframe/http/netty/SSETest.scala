@@ -19,7 +19,7 @@ import wvlet.airframe.http.client.AsyncClient
 import wvlet.airspec.AirSpec
 
 class SSEApi {
-  @Endpoint("/v1/sse")
+  @Endpoint(path = "/v1/sse")
   def sse(): Response = {
     Http
       .response()
