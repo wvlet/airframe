@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.{Endpoint, Http, RxRouter}
-import wvlet.airframe.http.HttpMessage.Response
+import wvlet.airframe.http.HttpMessage.{Response, ServerSentEvent}
 import wvlet.airframe.http.client.AsyncClient
 import wvlet.airspec.AirSpec
 
@@ -28,6 +28,21 @@ class SSEApi {
            |
            |data: another stream message
            |data: with two lines
+           |
+           |event: custom-event
+           |data: hello custom event
+           |
+           |: this is a comment
+           |
+           |id: 123
+           |data: hello again
+           |
+           |id: 1234
+           |event: custom-event
+           |data: hello again 2
+           |
+           |retry: 1000
+           |data: need to retry
            |""".stripMargin)
   }
 }
@@ -45,14 +60,26 @@ class SSETest extends AirSpec {
     val rx = client.send(
       Http.GET("/v1/sse")
     )
-    rx.flatMap { resp =>
+    rx.map { resp =>
       resp.statusCode shouldBe 200
 
-      resp.events.map { e =>
-        val data = e.data
-        debug(data)
-        data
-      }
+      val events = resp.events.map { e =>
+        debug(e)
+        e
+      }.toSeq
+
+      val expected = List(
+        ServerSentEvent(data = "hello stream"),
+        ServerSentEvent(data = "another stream message\nwith two lines"),
+        ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
+        ServerSentEvent(id = Some("123"), data = "hello again"),
+        ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
+        ServerSentEvent(retry = Some(1000), data = "need to retry")
+      )
+
+      trace(events.mkString("\n"))
+      trace(expected.mkString("\n"))
+      events shouldBe expected
     }
   }
 }

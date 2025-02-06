@@ -17,7 +17,7 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.*
 import wvlet.airframe.http.HttpMessage.{Request, Response, ServerSentEvent}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxBlockingQueue}
 import wvlet.log.LogSupport
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
@@ -170,77 +170,90 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
 
   private def readServerSentEventStream(httpResponse: java.net.http.HttpResponse[InputStream]): Rx[ServerSentEvent] = {
     // Create Rx[ServerSentEvent] for reading the event stream
-    val rx = Rx.variable[Option[ServerSentEvent]](None)
+    val rx = new RxBlockingQueue[ServerSentEvent]()
 
     // Read the event stream in a separate thread
     val executor = compat.defaultExecutionContext
     executor.execute(new Runnable {
       override def run(): Unit = {
-        withResource(new BufferedReader(new InputStreamReader(httpResponse.body()))) { reader =>
-          var id: Option[String]        = None
-          var eventType: Option[String] = None
-          var retry: Option[Long]       = None
-          val data                      = List.newBuilder[String]
+        try {
+          withResource(new BufferedReader(new InputStreamReader(httpResponse.body()))) { reader =>
+            var id: Option[String]        = None
+            var eventType: Option[String] = None
+            var retry: Option[Long]       = None
+            val data                      = List.newBuilder[String]
 
-          def emit(): Unit = {
-            val eventData = data.result()
-            data.clear()
-            if (eventData.nonEmpty) {
-              val ev = ServerSentEvent(
-                id = id,
-                event = eventType,
-                retry = retry,
-                data = eventData.mkString("\n")
-              )
-              rx := Some(ev)
+            def emit(): Unit = {
+              val eventData = data.result()
+              if (eventData.nonEmpty) {
+                val ev = ServerSentEvent(
+                  id = id,
+                  event = eventType,
+                  retry = retry,
+                  data = eventData.mkString("\n")
+                )
+                rx.add(OnNext(ev))
+              }
+
+              // clear the data
+              id = None
+              eventType = None
+              retry = None
+              data.clear()
             }
-          }
 
-          @tailrec
-          def processLine(): Unit = {
-            val line = reader.readLine()
-            line match {
-              case null =>
-              // no more line
-              case l if l.isEmpty =>
-                emit()
-                processLine()
-              case l if l.startsWith(":") =>
-              // skip comments
-              case _ =>
-                val kv = line.split(":", 2)
-                if (kv.length == 2) {
-                  val key   = kv(0).trim
-                  val value = kv(1).trim
-                  key match {
-                    case "id" =>
-                      id = Some(value)
-                    case "event" =>
-                      eventType = Some(value)
-                    case "data" =>
-                      data += value
-                    case "retry" =>
-                      retry = Try(value.toLong).toOption
-                    case _ =>
-                    // Ignore unknown fields
-                  }
-                } else {
-                  // Ignore invalid lines
-                  // Send the last event {
+            @tailrec
+            def processLine(): Unit = {
+              val line = reader.readLine()
+              line match {
+                case null =>
                   emit()
-                }
-                processLine()
+                // no more line
+                case l if l.isEmpty =>
+                  emit()
+                  processLine()
+                case l if l.startsWith(":") =>
+                  // skip comments
+                  processLine()
+                case _ =>
+                  val kv = line.split(":", 2)
+                  if (kv.length == 2) {
+                    val key   = kv(0).trim
+                    val value = kv(1).trim
+                    key match {
+                      case "id" =>
+                        id = Some(value)
+                      case "event" =>
+                        eventType = Some(value)
+                      case "data" =>
+                        data += value
+                      case "retry" =>
+                        retry = Try(value.toLong).toOption
+                      case _ =>
+                      // Ignore unknown fields
+                    }
+                  } else {
+                    // Ignore invalid lines
+                    // Send the last event {
+                    emit()
+                  }
+                  processLine()
+              }
             }
+
+            processLine()
           }
 
-          processLine()
+          // Report the completion
+          rx.add(OnCompletion)
+        } catch {
+          case e: Throwable =>
+            rx.add(OnError(e))
         }
-
-        rx.stop()
       }
     })
 
-    rx.filter(_.nonEmpty).map(_.get)
+    rx
   }
 
 }

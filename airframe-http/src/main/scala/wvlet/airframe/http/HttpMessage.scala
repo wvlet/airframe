@@ -329,6 +329,12 @@ object HttpMessage {
     override def toRaw: Response                                  = raw
   }
 
-  case class ServerSentEvent(id: Option[String], event: Option[String], retry: Option[Long], data: String)
+  case class ServerSentEvent(
+      id: Option[String] = None,
+      event: Option[String] = None,
+      retry: Option[Long] = None,
+      // event data string. If multiple data entries are reported, concatenated with newline
+      data: String
+  )
 
 }
