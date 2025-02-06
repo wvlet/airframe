@@ -13,13 +13,15 @@
  */
 package wvlet.airframe.rx
 
+import wvlet.log.LogSupport
+
 import scala.concurrent.{ExecutionContext, Promise}
 
 /**
   * JVM/JS compatible RxQueue implementation
   * @tparam A
   */
-class RxQueue[A] extends RxSource[A] {
+class RxQueue[A]() extends RxSource[A] with LogSupport {
   private implicit val ec: ExecutionContext = compat.defaultExecutionContext
   override def parents: Seq[Rx[_]]          = Seq.empty
 
@@ -49,6 +51,8 @@ class RxQueue[A] extends RxSource[A] {
         val (e, newQueue) = queue.dequeue
         queue = newQueue
         Rx.const(e)
+      } else if (waiting.nonEmpty) {
+        Rx.future(waiting.get.future)
       } else {
         val p = Promise[RxEvent]()
         waiting = Some(p)
