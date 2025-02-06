@@ -169,11 +169,11 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
   }
 
   private def readServerSentEventStream(httpResponse: java.net.http.HttpResponse[InputStream]): Rx[ServerSentEvent] = {
-    // Create Rx[ServerSentEvent] for reading the event stream
-    val rx = new RxBlockingQueue[ServerSentEvent]()
-
     // Read the event stream in a separate thread
     val executor = compat.defaultExecutionContext
+
+    // Create Rx[ServerSentEvent] for reading the event stream
+    val rx = new RxBlockingQueue[ServerSentEvent]()
     executor.execute(new Runnable {
       override def run(): Unit = {
         try {

@@ -23,7 +23,7 @@ import wvlet.airframe.http.HttpMessage.{
   StringMessage
 }
 import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, HttpMultiMap, HttpStatus, ServerAddress}
-import wvlet.airframe.rx.{Rx, RxVar}
+import wvlet.airframe.rx.{OnNext, Rx, RxSource, RxVar}
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -119,7 +119,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
     val decoder        = js.Dynamic.newInstance(js.Dynamic.global.TextDecoder)("utf-8")
     val decoderOptions = js.Dynamic.literal(stream = true)
 
-    val rx: RxVar[Option[ServerSentEvent]] = Rx.variable[Option[ServerSentEvent]](None)
+    val rx: RxSource[ServerSentEvent] = Rx.queue[ServerSentEvent]()
 
     def process(): Future[Unit] = {
       var id: Option[String]    = None
@@ -136,7 +136,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
             retry = retry,
             data = eventData.mkString("\n")
           )
-          rx := Some(ev)
+          rx.add(OnNext(ev))
         }
 
         id = None
@@ -197,7 +197,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
     }
 
     process()
-    rx.filter(_.isDefined).map(_.get)
+    rx
   }
 
 }
