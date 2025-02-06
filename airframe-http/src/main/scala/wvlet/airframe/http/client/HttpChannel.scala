@@ -50,9 +50,13 @@ trait HttpChannel extends AutoCloseable {
   /**
     * Send an async request as is to the destination. Until the returned Rx is evaluated (e.g., by calling Rx.run), the
     * request is not sent.
+    *
+    * For SSE (Server-Sent Events) requests, the returned [[Response.events]] will have an Rx stream of
+    * [[ServerSentEvent]]
     * @param req
     * @param channelConfig
     * @return
     */
   def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response]
+
 }
