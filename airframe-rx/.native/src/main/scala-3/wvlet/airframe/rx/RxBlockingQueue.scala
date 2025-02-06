@@ -24,5 +24,5 @@ class RxBlockingQueue[A] extends RxSource[A]:
 
   override def add(event: RxEvent): Unit =
     blockingQueue.add(event)
-  override def next: RxEvent =
-    blockingQueue.take()
+  override def next: Rx[RxEvent] =
+    Rx.const(blockingQueue.take())
