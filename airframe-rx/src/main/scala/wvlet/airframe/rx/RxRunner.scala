@@ -550,8 +550,8 @@ class RxRunner(
         @tailrec
         def loop: Unit = {
           if (continuous || toContinue) {
-            val evRx = source.next
             c1.cancel
+            val evRx = source.next
             c1 = run(evRx) {
               case OnNext(ev: RxEvent) =>
                 ev match {

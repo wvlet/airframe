@@ -14,9 +14,11 @@
 package wvlet.airframe.test
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.HttpMessage.ServerSentEvent
 import wvlet.airframe.http.{Http, HttpClientException, HttpStatus}
 import wvlet.airframe.http.client.{AsyncClient, JSHttpClientBackend}
 import wvlet.airframe.json.JSON
+import wvlet.airframe.rx.RxQueue
 import wvlet.airspec.AirSpec
 
 import scala.util.{Failure, Success}
@@ -84,5 +86,4 @@ class FetchTest extends AirSpec:
             fail(s"should not reach here")
         }
     }
-
   }

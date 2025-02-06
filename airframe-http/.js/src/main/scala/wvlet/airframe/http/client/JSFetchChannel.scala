@@ -23,7 +23,7 @@ import wvlet.airframe.http.HttpMessage.{
   StringMessage
 }
 import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, HttpMultiMap, HttpStatus, ServerAddress}
-import wvlet.airframe.rx.{OnNext, Rx, RxSource, RxVar}
+import wvlet.airframe.rx.{OnError, OnNext, Rx, RxQueue, RxSource, RxVar}
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -103,8 +103,14 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
             r.withContent(body)
           }
         } else if (r.isContentTypeEventStream) {
-          val events = readStream(resp)
-          Future.apply(r.copy(events = events))
+          val queue = Rx.queue[ServerSentEvent]()
+          val f     = readStream(resp, queue)
+          // We must concatenate Future instances of the current fetch request and the stream reader
+          // in order to avoid deadlock in the JS event loop
+          f.map { _ =>
+            r = r.copy(events = queue)
+            r
+          }
         } else {
           resp.arrayBuffer().toFuture.map { body =>
             r.withContent(new Int8Array(body).toArray)
@@ -115,36 +121,37 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
     Rx.future(future)
   }
 
-  private def readStream(resp: org.scalajs.dom.Response): Rx[ServerSentEvent] = {
+  private def readStream(resp: org.scalajs.dom.Response, queue: RxSource[ServerSentEvent]): Future[Unit] = {
     val decoder        = js.Dynamic.newInstance(js.Dynamic.global.TextDecoder)("utf-8")
     val decoderOptions = js.Dynamic.literal(stream = true)
 
-    val rx: RxSource[ServerSentEvent] = Rx.queue[ServerSentEvent]()
+    val reader                        = resp.body.getReader()
+    val rx: RxSource[ServerSentEvent] = queue
 
-    def process(): Future[Unit] = {
-      var id: Option[String]    = None
-      var event: Option[String] = None
-      var retry: Option[Long]   = None
-      val data                  = List.newBuilder[String]
+    var id: Option[String]    = None
+    var event: Option[String] = None
+    var retry: Option[Long]   = None
+    val data                  = List.newBuilder[String]
 
-      def emit(): Unit = {
-        val eventData = data.result()
-        if (eventData.nonEmpty) {
-          val ev = ServerSentEvent(
-            id = id,
-            event = event,
-            retry = retry,
-            data = eventData.mkString("\n")
-          )
-          rx.add(OnNext(ev))
-        }
-
-        id = None
-        event = None
-        retry = None
-        data.clear()
+    def emit(): Unit = {
+      val eventData = data.result()
+      if (eventData.nonEmpty) {
+        val ev = ServerSentEvent(
+          id = id,
+          event = event,
+          retry = retry,
+          data = eventData.mkString("\n")
+        )
+        rx.add(OnNext(ev))
       }
 
+      id = None
+      event = None
+      retry = None
+      data.clear()
+    }
+
+    def process(): Future[Unit] = {
       def processLine(line: String): Unit = {
         line match {
           case null =>
@@ -177,27 +184,42 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
         }
       }
 
-      resp.body.getReader().read().toFuture.flatMap { result =>
-        if (result.done) {
-          emit()
-          rx.stop()
-          Future.unit
-        } else {
-          val arr: Uint8Array = result.value
-          val buf: String     = decoder.decode(arr, decoderOptions).asInstanceOf[String]
-          val lines           = buf.split("\n")
-          lines.foreach { line =>
-            processLine(line)
+      reader.read().toFuture.transformWith {
+        case Failure(e) =>
+          warn(e)
+          reader.releaseLock()
+          rx.add(OnError(e))
+          Future.successful(())
+        case Success(result) =>
+          if (result.done) {
+            reader.releaseLock()
+            emit()
+            rx.stop()
+            Future.successful(())
+          } else {
+            try {
+              val arr: Uint8Array = result.value
+              val buf: String     = decoder.decode(arr, decoderOptions).asInstanceOf[String]
+              val lines           = buf.split("\n")
+              lines.foreach { line =>
+                processLine(line)
+              }
+              emit()
+              // Continue reading the next chunk
+              process()
+            } catch {
+              case e: Throwable =>
+                warn(e)
+                reader.releaseLock()
+                rx.add(OnError(e))
+                Future.successful(())
+            }
           }
-
-          // Continue reading the next chunk
-          process()
-        }
       }
     }
 
-    process()
-    rx
+    val future = process()
+    future
   }
 
 }
