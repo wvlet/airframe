@@ -18,5 +18,6 @@ package wvlet.airframe.rx
   */
 trait RxSource[A] extends Rx[A] {
   def add(ev: RxEvent): Unit
-  def next: RxEvent
+  def next: Rx[RxEvent]
+  def stop(): Unit = add(OnCompletion)
 }

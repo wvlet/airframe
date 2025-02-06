@@ -616,7 +616,8 @@ object Rx extends LogSupport {
   }
 
   /**
-    * Create a lazily evaluated single value
+    * Create a lazily evaluated single value. A difference from Rx.const is that the value will be evaluated only when
+    * the value is requested.
     */
   def single[A](v: => A): Rx[A]         = SingleOp(LazyF0.apply(v))
   def exception[A](e: Throwable): Rx[A] = fromTry(Failure[A](e))
@@ -641,6 +642,8 @@ object Rx extends LogSupport {
   def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
   def some[A](v: => A): RxOption[A]                   = option(Some(v))
   val none: RxOption[Nothing]                         = option(None)
+
+  def queue[A](): RxSource[A] = new RxQueue[A]
 
   def join[A, B](a: RxOps[A], b: RxOps[B]): Rx[(A, B)]                                       = JoinOp(a, b)
   def join[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Join3Op(a, b, c)
