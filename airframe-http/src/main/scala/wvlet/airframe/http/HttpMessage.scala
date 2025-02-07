@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.http.Http.formatInstant
-import wvlet.airframe.http.HttpMessage.{Message, ServerSentEvent, StringMessage}
+import wvlet.airframe.http.HttpMessage.{Message, StringMessage}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.Rx
 
@@ -218,7 +218,8 @@ object HttpMessage {
       // [optional] Destination address for sending the request. HttpChannel implementation should use this address
       dest: Option[ServerAddress] = None,
       // Remote address of the HTTP server, which is used for server-side logging purpose
-      remoteAddress: Option[ServerAddress] = None
+      remoteAddress: Option[ServerAddress] = None,
+      eventHandler: ServerSentEventHandler = ServerSentEventHandler.empty
   ) extends HttpMessage[Request] {
     override def toString: String = s"Request(${method},${uri},${header})"
 
@@ -249,6 +250,7 @@ object HttpMessage {
       */
     def withDest(dest: ServerAddress): Request                   = this.copy(dest = Some(dest))
     def withRemoteAddress(remoteAddress: ServerAddress): Request = this.copy(remoteAddress = Some(remoteAddress))
+    def withEventHandler(f: ServerSentEventHandler): Request     = this.copy(eventHandler = f)
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
@@ -283,8 +285,7 @@ object HttpMessage {
   case class Response(
       status: HttpStatus = HttpStatus.Ok_200,
       header: HttpMultiMap = HttpMultiMap.empty,
-      message: Message = EmptyMessage,
-      events: Rx[ServerSentEvent] = Rx.empty
+      message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
     override def toString: String = s"Response(${status},${header})"
 
@@ -332,13 +333,5 @@ object HttpMessage {
     override protected def adapter: HttpResponseAdapter[Response] = HttpMessageResponseAdapter
     override def toRaw: Response                                  = raw
   }
-
-  case class ServerSentEvent(
-      id: Option[String] = None,
-      event: Option[String] = None,
-      retry: Option[Long] = None,
-      // event data string. If multiple data entries are reported, concatenated with newline
-      data: String
-  )
 
 }

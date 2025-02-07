@@ -16,7 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.*
-import wvlet.airframe.http.HttpMessage.{Request, Response, ServerSentEvent}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxBlockingQueue}
 import wvlet.log.LogSupport
 
@@ -69,7 +69,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     val httpResponse: HttpResponse[InputStream] =
       javaHttpClient.send(httpRequest, BodyHandlers.ofInputStream())
 
-    readResponse(httpResponse)
+    readResponse(req, httpResponse)
   }
 
   override def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response] = {
@@ -80,7 +80,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
         .sendAsync(httpRequest, BodyHandlers.ofInputStream())
         .thenAccept(new Consumer[HttpResponse[InputStream]] {
           override def accept(r: HttpResponse[InputStream]): Unit = {
-            val resp = readResponse(r)
+            val resp = readResponse(req, r)
             v.set(Some(resp))
             // Close the variable as it will have no further update
             v.stop()
@@ -126,7 +126,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     requestBuilder.build()
   }
 
-  private def readResponse(httpResponse: java.net.http.HttpResponse[InputStream]): Response = {
+  private def readResponse(req: Request, httpResponse: java.net.http.HttpResponse[InputStream]): Response = {
     // Read HTTP response headers
     val header: HttpMultiMap = {
       val h = HttpMultiMap.newBuilder
@@ -143,11 +143,15 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     val status        = HttpStatus.ofCode(httpResponse.statusCode())
     val isEventStream = header.get(HttpHeader.ContentType).exists(_.startsWith("text/event-stream"))
     if (isEventStream) {
-      HttpMessage.Response(
+      val resp = HttpMessage.Response(
         status = status,
-        header = header,
-        events = readServerSentEventStream(httpResponse)
+        header = header
       )
+      req.eventHandler.onConnect(resp)
+      if (resp.status.isSuccessful) {
+        readServerSentEventStream(httpResponse, req.eventHandler)
+      }
+      resp
     } else { // Decompress contents
       val body: Array[Byte] = withResource {
         header.get(HttpHeader.ContentEncoding).map(_.toLowerCase()) match {
@@ -168,12 +172,13 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     }
   }
 
-  private def readServerSentEventStream(httpResponse: java.net.http.HttpResponse[InputStream]): Rx[ServerSentEvent] = {
+  private def readServerSentEventStream(
+      httpResponse: java.net.http.HttpResponse[InputStream],
+      handler: ServerSentEventHandler
+  ): Unit = {
     // Read the event stream in a separate thread
     val executor = compat.defaultExecutionContext
 
-    // Create Rx[ServerSentEvent] for reading the event stream
-    val rx = new RxBlockingQueue[ServerSentEvent]()
     executor.execute(new Runnable {
       override def run(): Unit = {
         try {
@@ -192,7 +197,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
                   retry = retry,
                   data = eventData.mkString("\n")
                 )
-                rx.add(OnNext(ev))
+                handler.onEvent(ev)
               }
 
               // clear the data
@@ -245,15 +250,13 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
           }
 
           // Report the completion
-          rx.add(OnCompletion)
+          handler.onCompletion()
         } catch {
           case e: Throwable =>
-            rx.add(OnError(e))
+            handler.onError(e)
         }
       }
     })
-
-    rx
   }
 
 }

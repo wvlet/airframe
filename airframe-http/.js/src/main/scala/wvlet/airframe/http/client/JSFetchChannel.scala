@@ -14,16 +14,18 @@
 package wvlet.airframe.http.client
 
 import org.scalajs.dom.{Headers, RequestRedirect}
-import wvlet.airframe.http.HttpMessage.{
-  ByteArrayMessage,
-  EmptyMessage,
-  Request,
-  Response,
+import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, Request, Response, StringMessage}
+import wvlet.airframe.http.{
+  Compat,
+  HttpMessage,
+  HttpMethod,
+  HttpMultiMap,
+  HttpStatus,
+  ServerAddress,
   ServerSentEvent,
-  StringMessage
+  ServerSentEventHandler
 }
-import wvlet.airframe.http.{Compat, HttpMessage, HttpMethod, HttpMultiMap, HttpStatus, ServerAddress}
-import wvlet.airframe.rx.{OnError, OnNext, Rx, RxQueue, RxSource, RxVar}
+import wvlet.airframe.rx.{OnError, OnNext, Rx, RxEvent, RxQueue, RxSource, RxVar}
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -103,14 +105,14 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
             r.withContent(body)
           }
         } else if (r.isContentTypeEventStream) {
-          val queue = Rx.queue[ServerSentEvent]()
-          val f     = readStream(resp, queue)
-          // We must concatenate Future instances of the current fetch request and the stream reader
-          // in order to avoid deadlock in the JS event loop
-          f.map { _ =>
-            r = r.copy(events = queue)
-            r
-          }
+          request.eventHandler.onConnect(r)
+          if (r.status.isSuccessful) {
+            val future = readStream(resp, request.eventHandler)
+            // We must concatenate Future instances of the current fetch request and the stream reader
+            // in order to avoid deadlock in the JS event loop
+            future.map { _ => r }
+          } else
+            Future.successful(r)
         } else {
           resp.arrayBuffer().toFuture.map { body =>
             r.withContent(new Int8Array(body).toArray)
@@ -121,12 +123,11 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
     Rx.future(future)
   }
 
-  private def readStream(resp: org.scalajs.dom.Response, queue: RxSource[ServerSentEvent]): Future[Unit] = {
+  private def readStream(resp: org.scalajs.dom.Response, handler: ServerSentEventHandler): Future[Unit] = {
     val decoder        = js.Dynamic.newInstance(js.Dynamic.global.TextDecoder)("utf-8")
     val decoderOptions = js.Dynamic.literal(stream = true)
 
-    val reader                        = resp.body.getReader()
-    val rx: RxSource[ServerSentEvent] = queue
+    val reader = resp.body.getReader()
 
     var id: Option[String]    = None
     var event: Option[String] = None
@@ -142,7 +143,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
           retry = retry,
           data = eventData.mkString("\n")
         )
-        rx.add(OnNext(ev))
+        handler.onEvent(ev)
       }
 
       id = None
@@ -188,13 +189,13 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
         case Failure(e) =>
           warn(e)
           reader.releaseLock()
-          rx.add(OnError(e))
+          handler.onError(e)
           Future.successful(())
         case Success(result) =>
           if (result.done) {
             reader.releaseLock()
             emit()
-            rx.stop()
+            handler.onCompletion()
             Future.successful(())
           } else {
             try {
@@ -211,7 +212,7 @@ class JSFetchChannel(val destination: ServerAddress, config: HttpClientConfig) e
               case e: Throwable =>
                 warn(e)
                 reader.releaseLock()
-                rx.add(OnError(e))
+                handler.onError(e)
                 Future.successful(())
             }
           }
