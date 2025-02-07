@@ -79,88 +79,78 @@ class SSETest extends AirSpec {
     )
   }
 
-  test("read sse events") { (client: AsyncClient) =>
-    val buf       = List.newBuilder[ServerSentEvent]
-    val completed = Rx.variable(false)
+  test("read sse-events") { (client: AsyncClient) =>
+    val queue = new RxBlockingQueue[ServerSentEvent]()
     val rx = client.send(
       Http
         .GET("/v1/sse")
         .withEventHandler(new ServerSentEventHandler {
           override def onError(e: Throwable): Unit = {
-            completed := true
+            queue.stop()
           }
           override def onCompletion(): Unit = {
-            completed := true
+            queue.stop()
           }
           override def onEvent(e: ServerSentEvent): Unit = {
-            buf += e
+            queue.add(e)
           }
         })
     )
-    rx.join(completed)
-      .filter(_._2 == true)
-      .map(_._1)
-      .map { resp =>
-        resp.statusCode shouldBe 200
 
-        val events = buf.result()
-        val expected = List(
-          ServerSentEvent(data = "hello stream"),
-          ServerSentEvent(data = "another stream message\nwith two lines"),
-          ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
-          ServerSentEvent(id = Some("123"), data = "hello again"),
-          ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
-          ServerSentEvent(retry = Some(1000), data = "need to retry")
-        )
+    rx.map { resp =>
+      resp.statusCode shouldBe 200
 
-        trace(events.mkString("\n"))
-        trace(expected.mkString("\n"))
-        events shouldBe expected
-      }
+      val events = queue.toSeq.toList
+      val expected = List(
+        ServerSentEvent(data = "hello stream"),
+        ServerSentEvent(data = "another stream message\nwith two lines"),
+        ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
+        ServerSentEvent(id = Some("123"), data = "hello again"),
+        ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
+        ServerSentEvent(retry = Some(1000), data = "need to retry")
+      )
+
+      trace(events.mkString("\n"))
+      events shouldBe expected
+    }
   }
 
   test("read sse-stream") { (client: AsyncClient) =>
-    val buf       = List.newBuilder[ServerSentEvent]
-    val completed = Rx.variable(false)
+    val queue = new RxBlockingQueue[ServerSentEvent]()
     val rx = client.send(
       Http
         .POST("/v1/sse-stream")
         .withEventHandler(new ServerSentEventHandler {
           override def onError(e: Throwable): Unit = {
-            completed := true
+            queue.stop()
           }
           override def onCompletion(): Unit = {
-            completed := true
+            queue.stop()
           }
           override def onEvent(e: ServerSentEvent): Unit = {
-            info(e)
-            buf += e
+            debug(e)
+            queue.add(e)
           }
         })
     )
 
-    rx.join(completed)
-      .filter(_._2 == true)
-      .map(_._1)
-      .map { resp =>
-        resp.statusCode shouldBe 200
-        debug(resp)
+    rx.map { resp =>
+      resp.statusCode shouldBe 200
 
-        val events = buf.result()
-        val expected = List(
-          ServerSentEvent(data = "hello stream"),
-          ServerSentEvent(data = "another stream message\nwith two lines"),
-          ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
-          ServerSentEvent(id = Some("123"), data = "hello again"),
-          ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
-          ServerSentEvent(retry = Some(1000), data = "need to retry")
-        )
+      val events = queue.toSeq.toList
+      val expected = List(
+        ServerSentEvent(data = "hello stream"),
+        ServerSentEvent(data = "another stream message\nwith two lines"),
+        ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
+        ServerSentEvent(id = Some("123"), data = "hello again"),
+        ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
+        ServerSentEvent(retry = Some(1000), data = "need to retry")
+      )
 
-        trace(events.mkString("\n"))
-        // trace(expected.mkString("\n"))
-        events shouldBe expected
-      }
-
+      trace(events.mkString("\n"))
+      // trace(expected.mkString("\n"))
+      events shouldBe expected
+    }
   }
 
 }

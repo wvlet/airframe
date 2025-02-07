@@ -28,7 +28,7 @@ case class ServerSentEvent(
     event.foreach(x => b += s"event: $x")
     retry.foreach(x => b += s"retry: $x")
     data.split("\n").foreach(x => b += s"data: $x")
-    b.result().mkString("\n")
+    s"${b.result().mkString("\n")}\n\n"
   }
 }
 

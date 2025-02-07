@@ -182,7 +182,8 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     executor.execute(new Runnable {
       override def run(): Unit = {
         try {
-          withResource(new BufferedReader(new InputStreamReader(httpResponse.body()))) { reader =>
+          val body = httpResponse.body()
+          withResource(new BufferedReader(new InputStreamReader(body))) { reader =>
             var id: Option[String]        = None
             var eventType: Option[String] = None
             var retry: Option[Long]       = None

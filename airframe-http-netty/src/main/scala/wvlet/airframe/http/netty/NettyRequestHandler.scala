@@ -108,17 +108,18 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
 
-          if (resp.isContentTypeEventStream) {
+          if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Read SSE stream
             val c = RxRunner.runContinuously(resp.events) {
               case OnNext(e: ServerSentEvent) =>
-                warn(e)
+                info(e)
                 val event = e.toContent
-                val buf   = Unpooled.wrappedBuffer(event.getBytes("UTF-8"))
+                val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                 ctx.writeAndFlush(new DefaultHttpContent(buf))
               case _ =>
                 warn(s"completed")
-                ctx.channel().closeFuture().addListener(ChannelFutureListener.CLOSE)
+                val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                f.addListener(ChannelFutureListener.CLOSE)
             }
           }
         case OnError(ex) =>
@@ -160,9 +161,12 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
 object NettyRequestHandler {
   def toNettyResponse(response: Response): DefaultHttpResponse = {
-    val r = if (response.isContentTypeEventStream) {
+    val r = if (response.isContentTypeEventStream && response.message.isEmpty) {
       val res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
+      res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/event-stream")
+      res.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED)
       res.headers().set(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
+      res.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
       res
     } else if (response.message.isEmpty) {
       val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
