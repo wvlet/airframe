@@ -15,7 +15,7 @@ if year == now.year
 else
   patch = 0
 end
-default_version = "#{now.year}.#{now.month}.#{patch}"
+default_version = "#{now.year}.#{month}.#{patch}"
 print "next version (default: #{default_version})? "
 next_version = STDIN.gets.chomp
 
