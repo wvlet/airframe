@@ -148,7 +148,9 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
         header = header
       )
       req.eventHandler.onConnect(resp)
-      readServerSentEventStream(httpResponse, req.eventHandler)
+      if (resp.status.isSuccessful) {
+        readServerSentEventStream(httpResponse, req.eventHandler)
+      }
       resp
     } else { // Decompress contents
       val body: Array[Byte] = withResource {

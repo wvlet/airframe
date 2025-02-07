@@ -16,6 +16,7 @@ package wvlet.airframe.http.netty
 import wvlet.airframe.http.{Endpoint, Http, RxRouter, ServerSentEvent, ServerSentEventHandler}
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.client.AsyncClient
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 class SSEApi {
@@ -57,32 +58,42 @@ class SSETest extends AirSpec {
   }
 
   test("read sse events") { (client: AsyncClient) =>
-    val buf = List.newBuilder[ServerSentEvent]
+    val buf       = List.newBuilder[ServerSentEvent]
+    val completed = Rx.variable(false)
     val rx = client.send(
       Http
         .GET("/v1/sse")
         .withEventHandler(new ServerSentEventHandler {
+          override def onError(e: Throwable): Unit = {
+            completed := true
+          }
+          override def onCompletion(): Unit = {
+            completed := true
+          }
           override def onEvent(e: ServerSentEvent): Unit = {
             buf += e
           }
         })
     )
-    rx.map { resp =>
-      resp.statusCode shouldBe 200
+    rx.join(completed)
+      .filter(_._2 == true)
+      .map(_._1)
+      .map { resp =>
+        resp.statusCode shouldBe 200
 
-      val events = buf.result()
-      val expected = List(
-        ServerSentEvent(data = "hello stream"),
-        ServerSentEvent(data = "another stream message\nwith two lines"),
-        ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
-        ServerSentEvent(id = Some("123"), data = "hello again"),
-        ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
-        ServerSentEvent(retry = Some(1000), data = "need to retry")
-      )
+        val events = buf.result()
+        val expected = List(
+          ServerSentEvent(data = "hello stream"),
+          ServerSentEvent(data = "another stream message\nwith two lines"),
+          ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
+          ServerSentEvent(id = Some("123"), data = "hello again"),
+          ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
+          ServerSentEvent(retry = Some(1000), data = "need to retry")
+        )
 
-      trace(events.mkString("\n"))
-      trace(expected.mkString("\n"))
-      events shouldBe expected
-    }
+        trace(events.mkString("\n"))
+        trace(expected.mkString("\n"))
+        events shouldBe expected
+      }
   }
 }
