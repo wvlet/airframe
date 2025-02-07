@@ -145,7 +145,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     if (isEventStream) {
       val resp = HttpMessage.Response(
         status = status,
-        header = header,
+        header = header
       )
       req.eventHandler.onConnect(resp)
       readServerSentEventStream(httpResponse, req.eventHandler)
@@ -170,7 +170,10 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
     }
   }
 
-  private def readServerSentEventStream(httpResponse: java.net.http.HttpResponse[InputStream], handler: ServerSentEventHandler): Unit = {
+  private def readServerSentEventStream(
+      httpResponse: java.net.http.HttpResponse[InputStream],
+      handler: ServerSentEventHandler
+  ): Unit = {
     // Read the event stream in a separate thread
     val executor = compat.defaultExecutionContext
 
