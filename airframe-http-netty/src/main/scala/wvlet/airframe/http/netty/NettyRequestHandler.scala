@@ -26,7 +26,8 @@ import wvlet.airframe.http.{
   HttpStatus,
   RPCException,
   RPCStatus,
-  ServerAddress
+  ServerAddress,
+  ServerSentEvent
 }
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
@@ -103,8 +104,23 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
       RxRunner.run(rxResponse) {
         case OnNext(v) =>
-          val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
+          val resp          = v.asInstanceOf[Response]
+          val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
+
+          if (resp.isContentTypeEventStream) {
+            // Read SSE stream
+            val c = RxRunner.runContinuously(resp.events) {
+              case OnNext(e: ServerSentEvent) =>
+                warn(e)
+                val event = e.toContent
+                val buf   = Unpooled.wrappedBuffer(event.getBytes("UTF-8"))
+                ctx.writeAndFlush(new DefaultHttpContent(buf))
+              case _ =>
+                warn(s"completed")
+                ctx.channel().closeFuture().addListener(ChannelFutureListener.CLOSE)
+            }
+          }
         case OnError(ex) =>
           // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
@@ -122,7 +138,11 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
   }
 
   private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    val keepAlive = HttpStatus.ofCode(resp.status().code()).isSuccessful && HttpUtil.isKeepAlive(req)
+    val isEventStream = resp.headers().get(HttpHeader.ContentType).contains("text/event-stream")
+
+    val keepAlive: Boolean =
+      HttpStatus.ofCode(resp.status().code()).isSuccessful && (HttpUtil.isKeepAlive(req) || isEventStream)
+
     if (keepAlive) {
       if (!req.protocolVersion().isKeepAliveDefault) {
         resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
@@ -139,8 +159,12 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 }
 
 object NettyRequestHandler {
-  def toNettyResponse(response: Response): DefaultFullHttpResponse = {
-    val r = if (response.message.isEmpty) {
+  def toNettyResponse(response: Response): DefaultHttpResponse = {
+    val r = if (response.isContentTypeEventStream) {
+      val res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
+      res.headers().set(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
+      res
+    } else if (response.message.isEmpty) {
       val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
       // Need to set the content length properly to return the response in Netty
       HttpUtil.setContentLength(res, 0)

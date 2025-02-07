@@ -15,10 +15,11 @@ package wvlet.airframe.http.netty
 
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpStatus}
+import wvlet.airframe.http.{Http, HttpStatus, ServerSentEvent}
 import wvlet.airframe.http.router.{ResponseHandler, Route}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{Primitive, Surface}
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
@@ -36,6 +37,10 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
       case s: String if !request.acceptsMsgPack =>
         newResponse(route, request, responseSurface)
           .withContent(s)
+      case r: Rx[_] if responseSurface.typeArgs(0).rawType == classOf[ServerSentEvent] =>
+        val resp = newResponse(route, request, responseSurface).withContentType("text/event-stream")
+        resp.events = r.asInstanceOf[Rx[ServerSentEvent]]
+        resp
       case _ =>
         val rs = codecFactory.of(responseSurface)
         val msgpack: Array[Byte] = rs match {

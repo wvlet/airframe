@@ -28,7 +28,7 @@ class RxQueue[A]() extends RxSource[A] with LogSupport {
   private var queue                             = scala.collection.immutable.Queue.empty[RxEvent]
   private var waiting: Option[Promise[RxEvent]] = None
 
-  override def add(event: RxEvent): Unit = {
+  override def addEvent(event: RxEvent): Unit = {
     synchronized {
       queue = queue.enqueue(event)
       waiting match {

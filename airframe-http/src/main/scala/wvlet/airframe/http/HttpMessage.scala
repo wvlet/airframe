@@ -285,7 +285,8 @@ object HttpMessage {
   case class Response(
       status: HttpStatus = HttpStatus.Ok_200,
       header: HttpMultiMap = HttpMultiMap.empty,
-      message: Message = EmptyMessage
+      message: Message = EmptyMessage,
+      private[http] var events: Rx[ServerSentEvent] = Rx.empty
   ) extends HttpMessage[Response] {
     override def toString: String = s"Response(${status},${header})"
 
