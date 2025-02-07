@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.http.{Endpoint, Http, RxRouter}
-import wvlet.airframe.http.HttpMessage.{Response, ServerSentEvent}
+import wvlet.airframe.http.{Endpoint, Http, RxRouter, ServerSentEvent, ServerSentEventHandler}
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.client.AsyncClient
 import wvlet.airspec.AirSpec
 
@@ -57,17 +57,20 @@ class SSETest extends AirSpec {
   }
 
   test("read sse events") { (client: AsyncClient) =>
+    val buf = List.newBuilder[ServerSentEvent]
     val rx = client.send(
-      Http.GET("/v1/sse")
+      Http
+        .GET("/v1/sse")
+        .withEventHandler(new ServerSentEventHandler {
+          override def onEvent(e: ServerSentEvent): Unit = {
+            buf += e
+          }
+        })
     )
     rx.map { resp =>
       resp.statusCode shouldBe 200
 
-      val events = resp.events.map { e =>
-        debug(e)
-        e
-      }.toSeq
-
+      val events = buf.result()
       val expected = List(
         ServerSentEvent(data = "hello stream"),
         ServerSentEvent(data = "another stream message\nwith two lines"),
