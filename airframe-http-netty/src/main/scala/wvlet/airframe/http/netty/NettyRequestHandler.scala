@@ -137,7 +137,10 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
   }
 
   private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    val isEventStream = resp.headers().get(HttpHeader.ContentType).contains("text/event-stream")
+    val isEventStream =
+      Option(resp.headers())
+        .flatMap(h => Option(h.get(HttpHeader.ContentType)))
+        .exists(_.contains("text/event-stream"))
 
     val keepAlive: Boolean =
       HttpStatus.ofCode(resp.status().code()).isSuccessful && (HttpUtil.isKeepAlive(req) || isEventStream)

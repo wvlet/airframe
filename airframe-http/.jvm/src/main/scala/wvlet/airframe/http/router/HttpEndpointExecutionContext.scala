@@ -63,7 +63,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
             result.asInstanceOf[F[Resp]]
           case valueCls if valueCls == classOf[ServerSentEvent] =>
             // Rx[ServerSentEvent]
-            backend.toFuture(responseHandler.toHttpResponse(route, request, route.returnTypeSurface, result))            
+            backend.toFuture(responseHandler.toHttpResponse(route, request, route.returnTypeSurface, result))
           case other =>
             // If X is other type, convert X into an HttpResponse
             backend.mapF(
