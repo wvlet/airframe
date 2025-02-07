@@ -576,7 +576,7 @@ class RxRunner(
           c1,
           Cancelable { () =>
             toContinue = false
-            source.addEvent(OnError(new InterruptedException("cancelled")))
+            source.add(OnError(new InterruptedException("cancelled")))
           }
         )
     }

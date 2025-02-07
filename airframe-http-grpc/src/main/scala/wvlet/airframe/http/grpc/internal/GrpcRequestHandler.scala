@@ -195,21 +195,21 @@ class GrpcRequestHandler(
         invokeServerMethod
         Try(readStreamingInput(grpcContext, codec, value)) match {
           case Success(v) =>
-            rx.addEvent(OnNext(v))
+            rx.add(OnNext(v))
           case Failure(e) =>
             reportError(e)
-            rx.addEvent(OnError(e))
+            rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
         reportError(t)
         requestLogger.logError(t, grpcContext, rpcContext)
-        rx.addEvent(OnError(t))
+        rx.add(OnError(t))
         responseObserver.onError(GrpcException.wrap(t))
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
-        rx.addEvent(OnCompletion)
+        rx.add(OnCompletion)
         promise.future.onComplete {
           case Success(value) =>
             requestLogger.logRPC(grpcContext, rpcContext)
@@ -261,19 +261,19 @@ class GrpcRequestHandler(
         Try(readStreamingInput(grpcContext, codec, value)) match {
           case Success(v) =>
             // Add a log for each client-side stream message
-            rx.addEvent(OnNext(v))
+            rx.add(OnNext(v))
           case Failure(e) =>
-            rx.addEvent(OnError(e))
+            rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
         reportError(t)
-        rx.addEvent(OnError(t))
+        rx.add(OnError(t))
         responseObserver.onError(t)
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
-        rx.addEvent(OnCompletion)
+        rx.add(OnCompletion)
         promise.future.onComplete {
           case Success(v) =>
             v match {

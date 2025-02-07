@@ -52,17 +52,17 @@ class SSEApi {
     val queue = new RxBlockingQueue[ServerSentEvent]()
     new Thread(new Runnable {
       override def run(): Unit = {
-        queue.add(ServerSentEvent(data = "hello stream"))
+        queue.put(ServerSentEvent(data = "hello stream"))
         // Thread.sleep(100)
-        queue.add(ServerSentEvent(data = "another stream message\nwith two lines"))
+        queue.put(ServerSentEvent(data = "another stream message\nwith two lines"))
         // Thread.sleep(50)
-        queue.add(ServerSentEvent(event = Some("custom-event"), data = "hello custom event"))
+        queue.put(ServerSentEvent(event = Some("custom-event"), data = "hello custom event"))
         Thread.sleep(20)
-        queue.add(ServerSentEvent(id = Some("123"), data = "hello again"))
+        queue.put(ServerSentEvent(id = Some("123"), data = "hello again"))
         Thread.sleep(10)
-        queue.add(ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"))
+        queue.put(ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"))
         Thread.sleep(30)
-        queue.add(ServerSentEvent(retry = Some(1000), data = "need to retry"))
+        queue.put(ServerSentEvent(retry = Some(1000), data = "need to retry"))
         queue.stop()
       }
     }).start()
@@ -92,7 +92,7 @@ class SSETest extends AirSpec {
             queue.stop()
           }
           override def onEvent(e: ServerSentEvent): Unit = {
-            queue.add(e)
+            queue.put(e)
           }
         })
     )
@@ -129,7 +129,7 @@ class SSETest extends AirSpec {
           }
           override def onEvent(e: ServerSentEvent): Unit = {
             debug(e)
-            queue.add(e)
+            queue.put(e)
           }
         })
     )
