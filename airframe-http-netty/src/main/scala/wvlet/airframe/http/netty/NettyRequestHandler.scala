@@ -112,12 +112,10 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
             // Read SSE stream
             val c = RxRunner.runContinuously(resp.events) {
               case OnNext(e: ServerSentEvent) =>
-                info(e)
                 val event = e.toContent
                 val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                 ctx.writeAndFlush(new DefaultHttpContent(buf))
               case _ =>
-                warn(s"completed")
                 val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                 f.addListener(ChannelFutureListener.CLOSE)
             }
