@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.http.{Endpoint, Http, RxRouter, ServerSentEvent, ServerSentEventHandler}
+import wvlet.airframe.http.{Endpoint, Http, HttpMethod, RxRouter, ServerSentEvent, ServerSentEventHandler}
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.client.AsyncClient
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx, RxBlockingQueue}
 import wvlet.airspec.AirSpec
 
 class SSEApi {
@@ -46,6 +46,28 @@ class SSEApi {
            |data: need to retry
            |""".stripMargin)
   }
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/sse-stream")
+  def sseStream(): Rx[ServerSentEvent] = {
+    val queue = new RxBlockingQueue[ServerSentEvent]()
+    new Thread(new Runnable {
+      override def run(): Unit = {
+        queue.put(ServerSentEvent(data = "hello stream"))
+        // Thread.sleep(100)
+        queue.put(ServerSentEvent(data = "another stream message\nwith two lines"))
+        // Thread.sleep(50)
+        queue.put(ServerSentEvent(event = Some("custom-event"), data = "hello custom event"))
+        Thread.sleep(20)
+        queue.put(ServerSentEvent(id = Some("123"), data = "hello again"))
+        Thread.sleep(10)
+        queue.put(ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"))
+        Thread.sleep(30)
+        queue.put(ServerSentEvent(retry = Some(1000), data = "need to retry"))
+        queue.stop()
+      }
+    }).start()
+    queue
+  }
 }
 
 class SSETest extends AirSpec {
@@ -57,43 +79,78 @@ class SSETest extends AirSpec {
     )
   }
 
-  test("read sse events") { (client: AsyncClient) =>
-    val buf       = List.newBuilder[ServerSentEvent]
-    val completed = Rx.variable(false)
+  test("read sse-events") { (client: AsyncClient) =>
+    val queue = new RxBlockingQueue[ServerSentEvent]()
     val rx = client.send(
       Http
         .GET("/v1/sse")
         .withEventHandler(new ServerSentEventHandler {
           override def onError(e: Throwable): Unit = {
-            completed := true
+            queue.stop()
           }
           override def onCompletion(): Unit = {
-            completed := true
+            queue.stop()
           }
           override def onEvent(e: ServerSentEvent): Unit = {
-            buf += e
+            queue.put(e)
           }
         })
     )
-    rx.join(completed)
-      .filter(_._2 == true)
-      .map(_._1)
-      .map { resp =>
-        resp.statusCode shouldBe 200
 
-        val events = buf.result()
-        val expected = List(
-          ServerSentEvent(data = "hello stream"),
-          ServerSentEvent(data = "another stream message\nwith two lines"),
-          ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
-          ServerSentEvent(id = Some("123"), data = "hello again"),
-          ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
-          ServerSentEvent(retry = Some(1000), data = "need to retry")
-        )
+    rx.map { resp =>
+      resp.statusCode shouldBe 200
 
-        trace(events.mkString("\n"))
-        trace(expected.mkString("\n"))
-        events shouldBe expected
-      }
+      val events = queue.toSeq.toList
+      val expected = List(
+        ServerSentEvent(data = "hello stream"),
+        ServerSentEvent(data = "another stream message\nwith two lines"),
+        ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
+        ServerSentEvent(id = Some("123"), data = "hello again"),
+        ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
+        ServerSentEvent(retry = Some(1000), data = "need to retry")
+      )
+
+      trace(events.mkString("\n"))
+      events shouldBe expected
+    }
   }
+
+  test("read sse-stream") { (client: AsyncClient) =>
+    val queue = new RxBlockingQueue[ServerSentEvent]()
+    val rx = client.send(
+      Http
+        .POST("/v1/sse-stream")
+        .withEventHandler(new ServerSentEventHandler {
+          override def onError(e: Throwable): Unit = {
+            queue.stop()
+          }
+          override def onCompletion(): Unit = {
+            queue.stop()
+          }
+          override def onEvent(e: ServerSentEvent): Unit = {
+            debug(e)
+            queue.put(e)
+          }
+        })
+    )
+
+    rx.map { resp =>
+      resp.statusCode shouldBe 200
+
+      val events = queue.toSeq.toList
+      val expected = List(
+        ServerSentEvent(data = "hello stream"),
+        ServerSentEvent(data = "another stream message\nwith two lines"),
+        ServerSentEvent(event = Some("custom-event"), data = "hello custom event"),
+        ServerSentEvent(id = Some("123"), data = "hello again"),
+        ServerSentEvent(id = Some("1234"), event = Some("custom-event"), data = "hello again 2"),
+        ServerSentEvent(retry = Some(1000), data = "need to retry")
+      )
+
+      trace(events.mkString("\n"))
+      // trace(expected.mkString("\n"))
+      events shouldBe expected
+    }
+  }
+
 }

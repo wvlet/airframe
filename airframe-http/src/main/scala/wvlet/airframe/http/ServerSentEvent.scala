@@ -21,7 +21,16 @@ case class ServerSentEvent(
     retry: Option[Long] = None,
     // event data string. If multiple data entries are reported, concatenated with newline
     data: String
-)
+) {
+  def toContent: String = {
+    val b = Seq.newBuilder[String]
+    id.foreach(x => b += s"id: $x")
+    event.foreach(x => b += s"event: $x")
+    retry.foreach(x => b += s"retry: $x")
+    data.split("\n").foreach(x => b += s"data: $x")
+    s"${b.result().mkString("\n")}\n\n"
+  }
+}
 
 object ServerSentEventHandler {
   def empty: ServerSentEventHandler = new ServerSentEventHandler {

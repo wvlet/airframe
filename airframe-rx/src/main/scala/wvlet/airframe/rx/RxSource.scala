@@ -17,6 +17,7 @@ package wvlet.airframe.rx
   * Rx implementation where the data is provided from an external process.
   */
 trait RxSource[A] extends Rx[A] {
+  def put(e: A): Unit = add(OnNext(e))
   def add(ev: RxEvent): Unit
   def next: Rx[RxEvent]
   def stop(): Unit = add(OnCompletion)

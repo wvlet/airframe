@@ -16,7 +16,7 @@ package wvlet.airframe.http.router
 import java.lang.reflect.InvocationTargetException
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ThreadUtil
-import wvlet.airframe.http.{HttpBackend, HttpContext, HttpRequestAdapter}
+import wvlet.airframe.http.{Http, HttpBackend, HttpContext, HttpMethod, HttpRequestAdapter, HttpStatus, ServerSentEvent}
 import wvlet.log.LogSupport
 
 import java.util.concurrent.Executors
@@ -61,6 +61,9 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
           case valueCls if backend.isRawResponseType(valueCls) =>
             // Use Backend Future (e.g., Finagle Future or Rx)
             result.asInstanceOf[F[Resp]]
+          case valueCls if valueCls == classOf[ServerSentEvent] =>
+            // Rx[ServerSentEvent]
+            backend.toFuture(responseHandler.toHttpResponse(route, request, route.returnTypeSurface, result))
           case other =>
             // If X is other type, convert X into an HttpResponse
             backend.mapF(
