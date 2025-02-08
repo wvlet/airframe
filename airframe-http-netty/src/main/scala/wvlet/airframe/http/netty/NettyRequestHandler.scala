@@ -110,7 +110,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Read SSE stream
-            val c = RxRunner.runContinuously(resp.events) {
+            val c = RxRunner.run(resp.events) {
               case OnNext(e: ServerSentEvent) =>
                 val event = e.toContent
                 val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
