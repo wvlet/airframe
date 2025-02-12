@@ -175,6 +175,13 @@ object HttpClientIR extends LogSupport {
   ) extends ClientCodeIR {
     def typeArgString =
       typeArgs
+        .map(arg =>
+          if (arg.rawType.isAssignableFrom(classOf[Rx[_]]) && arg.typeArgs.size > 0)
+            // Extract Rx element type
+            arg.typeArgs(0)
+          else
+            arg
+        )
         .map(arg => HttpClientGenerator.fullTypeNameOf(arg))
         .mkString(", ")
     def clientMethodName = {
