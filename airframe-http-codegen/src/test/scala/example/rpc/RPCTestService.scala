@@ -13,6 +13,7 @@
  */
 package example.rpc
 import wvlet.airframe.http.{RPC, RxRouter, RxRouterProvider}
+import wvlet.airframe.rx.Rx
 
 /**
   */
@@ -41,6 +42,8 @@ trait RPCExample {
   def rpcWithOption(p1: Option[String]): Unit
   def rpcWithPrimitiveAndOption(p1: String, p2: Option[String]): Unit
   def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
+
+  def rpcWithRxResponse(p1: Int): Rx[RPCResponse]
 }
 
 object RPCExample extends RxRouterProvider {

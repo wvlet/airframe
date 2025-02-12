@@ -16,6 +16,7 @@ import wvlet.airframe.http.{Http, HttpMethod}
 import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef}
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.RichSurface
+import wvlet.airframe.rx.Rx
 
 /**
   * The default RPC client generator using Http.client.Sync/AsyncClient
@@ -141,7 +142,19 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
-          val returnType = if (isAsync) s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
+          val isRxResponse = m.returnType.rawType.isAssignableFrom(classOf[Rx[_]]) && m.returnType.typeArgs.size == 1
+          val returnElementType = if (isRxResponse) {
+            // for methods returning Rx[A], extract A
+            m.returnType.typeArgs(0).fullTypeName
+          } else {
+            m.returnType.fullTypeName
+          }
+          val returnType =
+            if (isAsync)
+              s"Rx[${returnElementType}]"
+            else
+              returnElementType
+
           if (m.isRPC) {
             s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
                |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
