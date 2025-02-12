@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.test.api
 
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.test.api.HelloRPC.VariousParams
 import wvlet.log.LogSupport
 
@@ -28,3 +29,6 @@ class HelloRPCImpl extends HelloRPC with LogSupport:
   override def variousParams(params: VariousParams): VariousParams =
     info(s"received: ${params}")
     params
+
+  override def ackStatusAsync(name: String): Rx[Status] =
+    Rx.const(Status.OK)

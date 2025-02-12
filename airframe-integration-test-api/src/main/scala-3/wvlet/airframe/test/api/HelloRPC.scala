@@ -14,6 +14,7 @@
 package wvlet.airframe.test.api
 
 import wvlet.airframe.http.*
+import wvlet.airframe.rx.Rx
 
 @RPC
 trait HelloRPC:
@@ -23,6 +24,7 @@ trait HelloRPC:
   def serverStatus: Status
   def ackStatus(status: Status): Status
   def variousParams(params: VariousParams): VariousParams
+  def ackStatusAsync(name: String): Rx[Status]
 
 object HelloRPC extends RxRouterProvider:
   override def router: RxRouter = RxRouter.of[HelloRPC]
