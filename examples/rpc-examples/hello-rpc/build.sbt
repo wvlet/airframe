@@ -1,4 +1,4 @@
-val AIRFRAME_VERSION = "2025.1.5"
+val AIRFRAME_VERSION = "2025.1.6"
 ThisBuild / scalaVersion := "3.2.2"
 
 // RPC API definition. This project should contain only RPC interfaces
