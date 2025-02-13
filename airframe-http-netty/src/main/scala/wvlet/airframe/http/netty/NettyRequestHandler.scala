@@ -29,12 +29,12 @@ import wvlet.airframe.http.{
   ServerAddress,
   ServerSentEvent
 }
-import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
 import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters.*
-import NettyRequestHandler.*
+import NettyRequestHandler.toNettyResponse
 
 import java.io.ByteArrayOutputStream
 
@@ -152,7 +152,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     } else {
       resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
     }
-    val f = ctx.write(resp)
+    val f = ctx.writeAndFlush(resp)
     if (!keepAlive) {
       f.addListener(ChannelFutureListener.CLOSE)
     }
@@ -160,7 +160,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
 }
 
-object NettyRequestHandler {
+object NettyRequestHandler extends LogSupport {
   def toNettyResponse(response: Response): DefaultHttpResponse = {
     val r = if (response.isContentTypeEventStream && response.message.isEmpty) {
       val res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
