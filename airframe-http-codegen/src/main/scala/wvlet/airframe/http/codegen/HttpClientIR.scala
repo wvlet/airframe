@@ -184,6 +184,17 @@ object HttpClientIR extends LogSupport {
         )
         .map(arg => HttpClientGenerator.fullTypeNameOf(arg))
         .mkString(", ")
+
+    def rpcReturnElementType: Surface = {
+      val isRxResponse = returnType.rawType.isAssignableFrom(classOf[Rx[_]]) && returnType.typeArgs.size == 1
+      if (isRxResponse) {
+        // for methods returning Rx[A], extract A
+        returnType.typeArgs(0)
+      } else {
+        returnType
+      }
+    }
+
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
       if (isOpsRequest) s"${methodName}Ops"

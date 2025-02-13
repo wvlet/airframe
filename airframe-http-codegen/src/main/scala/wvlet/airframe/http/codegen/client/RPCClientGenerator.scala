@@ -17,6 +17,7 @@ import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef}
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.RichSurface
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.surface.Surface
 
 /**
   * The default RPC client generator using Http.client.Sync/AsyncClient
@@ -71,7 +72,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     def rpcMethodDefs(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          s"""lazy val __m_${m.name} = RPCMethod("${m.path}", "${svc.interfaceName}", "${m.name}", Surface.of[${m.requestModelClassType}], Surface.of[${m.returnType.fullTypeName}])"""
+          s"""lazy val __m_${m.name} = RPCMethod("${m.path}", "${svc.interfaceName}", "${m.name}", Surface.of[${m.requestModelClassType}], Surface.of[${m.rpcReturnElementType.fullTypeName}])"""
         }.mkString("\n")
     }
 
@@ -142,13 +143,7 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
-          val isRxResponse = m.returnType.rawType.isAssignableFrom(classOf[Rx[_]]) && m.returnType.typeArgs.size == 1
-          val returnElementType = if (isRxResponse) {
-            // for methods returning Rx[A], extract A
-            m.returnType.typeArgs(0).fullTypeName
-          } else {
-            m.returnType.fullTypeName
-          }
+          val returnElementType = m.rpcReturnElementType.fullTypeName
           val returnType =
             if (isAsync)
               s"Rx[${returnElementType}]"
