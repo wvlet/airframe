@@ -34,7 +34,7 @@ import wvlet.log.LogSupport
 
 import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters.*
-import NettyRequestHandler.*
+import NettyRequestHandler.toNettyResponse
 
 import java.io.ByteArrayOutputStream
 
