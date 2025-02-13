@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.{Http, RPC, RxRouter}
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
+
+import java.util.concurrent.TimeUnit
 
 object NettyRxResponseTest extends AirSpec {
 
@@ -24,6 +26,10 @@ object NettyRxResponseTest extends AirSpec {
   class RxApi {
     def helloRx(message: String): Rx[String] = {
       Rx.single(s"Hello ${message}!")
+    }
+
+    def helloAsyncRx(message: String): Rx[String] = {
+      Rx.delay(100, TimeUnit.MILLISECONDS).map(_ => s"Hello ${message}!")
     }
   }
 
@@ -33,6 +39,9 @@ object NettyRxResponseTest extends AirSpec {
         .withRouter(RxRouter.of[RxApi])
         .designWithSyncClient
     )
+      .bind[AsyncClient].toProvider { (server: NettyServer) =>
+        Http.client.newAsyncClient(server.localAddress)
+      }
   }
 
   test("hello rx") { (client: SyncClient) =>
@@ -44,6 +53,20 @@ object NettyRxResponseTest extends AirSpec {
 
     resp.statusCode shouldBe 200
     resp.contentString shouldBe "Hello Rx!"
+  }
+
+  test("hello rx async") { (client: AsyncClient) =>
+    client
+      .withRetryContext(_.noRetry)
+      .send(
+        Http
+          .POST("/wvlet.airframe.http.netty.NettyRxResponseTest.RxApi/helloAsyncRx")
+          .withJson("""{"message":"Rx"}""")
+      ).map { resp =>
+        debug(resp)
+        resp.statusCode shouldBe 200
+        resp.contentString shouldBe "Hello Rx!"
+      }
   }
 
 }
