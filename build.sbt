@@ -15,7 +15,7 @@ val SCALACHECK_VERSION              = "1.18.1"
 val MSGPACK_VERSION                 = "0.9.9"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
 val SQLITE_JDBC_VERSION             = "3.49.0.0"
-val SLF4J_VERSION                   = "2.0.16"
+val SLF4J_VERSION                   = "2.0.17"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.8.0"
@@ -974,7 +974,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
-        exclude ("junit", "junit"),
+          exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.2" % Provided,
         "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.2" % Provided,
