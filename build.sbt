@@ -974,7 +974,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
-        exclude ("junit", "junit"),
+          exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.2" % Provided,
         "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.2" % Provided,
@@ -988,7 +988,7 @@ def sqlRefLib = { scalaVersion: String =>
   if (scalaVersion.startsWith("2.13")) {
     Seq(
       // Include Spark just as a reference implementation
-      "org.apache.spark" %% "spark-sql" % "3.5.4" % Test,
+      "org.apache.spark" %% "spark-sql" % "3.5.5" % Test,
       // Include Trino as a reference implementation
       "io.trino" % "trino-main" % "471" % Test
     )
