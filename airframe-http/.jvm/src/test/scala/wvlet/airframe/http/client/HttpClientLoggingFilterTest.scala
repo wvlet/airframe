@@ -66,6 +66,15 @@ class HttpClientLoggingFilterTest extends AirSpec {
     test("switch dest") {
       client.send(Http.GET("/").withDest(ServerAddress("localhost:8081")))
     }
+
+    test("with logParameters") {
+      client.send(
+        Http.GET("/"),
+        context = HttpClientContext(
+          logParameters = Map("k1" -> "v1")
+        )
+      )
+    }
   }
 
 }

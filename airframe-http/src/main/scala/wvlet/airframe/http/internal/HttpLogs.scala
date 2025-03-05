@@ -50,8 +50,9 @@ object HttpLogs extends LogSupport {
       m ++= requestHeaderLogs(request, httpLogger.excludeHeaders)
 
       // Log RPC context in the client side
-      clientContext.foreach {
-        _.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
+      clientContext.foreach { ctx =>
+        ctx.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
+        m ++= ctx.logParameters
       }
       // Log RPC context in the server side
       rpcContext.flatMap(_.rpcCallContext).foreach { rcc =>
