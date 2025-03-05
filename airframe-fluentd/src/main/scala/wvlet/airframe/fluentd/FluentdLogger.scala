@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.fluentd
 import java.time.Instant
-
 import org.komamitsu.fluency.{EventTime, Fluency}
+import wvlet.airframe.codec.MessageCodec
 import wvlet.log.LogSupport
 
 class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: Boolean, fluency: Fluency)
@@ -45,12 +45,9 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
   }
 
   override def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
-    if (useExtendedEventTime) {
-      fluency.emit(fullTag, getEventTime, toJavaMap(event))
-    } else {
-      fluency.emit(fullTag, toJavaMap(event))
-    }
+    emitRawMsgPack(fullTag, toMsgPack(event))
   }
+
   override def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
     if (useExtendedEventTime) {
       fluency.emit(tag, getEventTime, event, 0, event.length)
@@ -59,6 +56,10 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
     }
   }
 
+  private val mapCodec = MessageCodec.of[Map[String, Any]]
+  private def toMsgPack(event: Map[String, Any]): Array[Byte] = {
+    mapCodec.toMsgPack(event)
+  }
   private def toJavaMap(event: Map[String, Any]): java.util.Map[String, AnyRef] = {
     import scala.jdk.CollectionConverters.*
     (for ((k, v) <- event) yield {
