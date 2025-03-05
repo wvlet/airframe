@@ -13,16 +13,17 @@
  */
 package wvlet.airframe.http.codegen
 
-import java.util.Locale
 import wvlet.airframe.http.Router.unwrapFuture
-import wvlet.airframe.http.{HttpMethod, Router, RxRouter}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.codegen.client.HttpClientGenerator
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
+import wvlet.airframe.http.router.Route
+import wvlet.airframe.http.{HttpMethod, Router, RxRouter, ServerSentEvent}
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface, TypeName}
+import wvlet.airframe.surface.*
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{HttpRequestMapper, Route}
+
+import java.util.Locale
 
 /**
   * Generate an intermediate representation (IR) of Scala HTTP client code from a given airframe-http interface
@@ -189,7 +190,12 @@ object HttpClientIR extends LogSupport {
       val isRxResponse = returnType.rawType.isAssignableFrom(classOf[Rx[_]]) && returnType.typeArgs.size == 1
       if (isRxResponse) {
         // for methods returning Rx[A], extract A
-        returnType.typeArgs(0)
+        val tpe = returnType.typeArgs(0)
+        if (tpe.rawType == classOf[ServerSentEvent]) {
+          // For SSE, return empty result as the events will be handled by the event handler
+          Surface.of[Unit]
+        } else
+          tpe
       } else {
         returnType
       }
