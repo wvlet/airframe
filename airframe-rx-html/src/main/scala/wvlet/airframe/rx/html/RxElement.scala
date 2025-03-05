@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.rx.html
 
+import wvlet.airframe.rx.html.RxEmbedding.*
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
-import wvlet.airframe.rx.html.RxEmbedding.*
 
 /**
   */

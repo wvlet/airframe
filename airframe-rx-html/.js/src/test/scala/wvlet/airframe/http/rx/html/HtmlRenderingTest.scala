@@ -131,4 +131,9 @@ class HtmlRenderingTest extends AirSpec {
     val d = div("1.23", EntityRef("amp"), "0.5")
     render(d).contains("&amp;") shouldBe true
   }
+
+  test("raw html") {
+    val d = div(RawHtml("<b>hello</b>"))
+    render(d) shouldBe "<div><b>hello</b></div>"
+  }
 }
