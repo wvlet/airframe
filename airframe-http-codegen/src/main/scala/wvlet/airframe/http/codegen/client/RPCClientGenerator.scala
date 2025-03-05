@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
-import wvlet.airframe.http.{Http, HttpMethod}
+import wvlet.airframe.http.HttpMessage.Response
+import wvlet.airframe.http.{Http, HttpMethod, ServerSentEvent}
 import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef}
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.RichSurface
