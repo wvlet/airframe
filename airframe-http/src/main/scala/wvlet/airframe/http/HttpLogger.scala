@@ -107,7 +107,7 @@ object HttpLogger extends LogSupport {
     HttpHeader.SetCookie,
     HttpHeader.SetCookie2,
     "X-XSRF-Token",
-    "X-Auth-Token",
+    "X-Auth-Token"
   )
 
   def emptyLogger(inputConfig: HttpLoggerConfig): HttpLogger = new HttpLogger {
