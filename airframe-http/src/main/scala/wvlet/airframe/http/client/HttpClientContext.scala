@@ -25,7 +25,11 @@ case class HttpClientContext(
     rpcInput: Option[Any] = None,
     // Extra parameters used for logging
     logParameters: Map[String, Any] = Map.empty
-)
+) {
+  def withClientName(name: String): HttpClientContext = {
+    this.copy(clientName = name)
+  }
+}
 
 object HttpClientContext {
   object empty extends HttpClientContext("default", None, None)
