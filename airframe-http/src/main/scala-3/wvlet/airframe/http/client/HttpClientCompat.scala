@@ -36,22 +36,24 @@ trait SyncClientCompat:
     * @throws HttpClientException
     *   if failed to read or process the response
     */
-  inline def readAs[Resp](req: Request): Resp =
-    self.readAsInternal[Resp](req, Surface.of[Resp])
+  inline def readAs[Resp](req: Request, context: HttpClientContext = HttpClientContext.empty): Resp =
+    self.readAsInternal[Resp](req, Surface.of[Resp], context)
 
   inline def call[Req, Resp](
       req: Request,
-      requestContent: Req
+      requestContent: Req,
+      context: HttpClientContext = HttpClientContext.empty
   ): Resp =
-    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, context)
 
 trait AsyncClientCompat:
   self: AsyncClient =>
-  inline def readAs[Resp](req: Request): Rx[Resp] =
-    self.readAsInternal[Resp](req, Surface.of[Resp])
+  inline def readAs[Resp](req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Resp] =
+    self.readAsInternal[Resp](req, Surface.of[Resp], context)
 
   inline def call[Req, Resp](
       req: Request,
-      requestContent: Req
+      requestContent: Req,
+      context: HttpClientContext = HttpClientContext.empty
   ): Rx[Resp] =
-    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, context)

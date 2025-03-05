@@ -51,7 +51,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     var lastResponse: Option[Response] = None
     // Build a chain of request filters
     def requestPipeline =
-      loggingFilter(context)
+      loggingFilter(context.withClientName(config.name))
         .andThen { req =>
           channel
             .sendAsync(req, config)
@@ -97,9 +97,10 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
 
   def readAsInternal[Resp](
       req: Request,
-      responseSurface: Surface
+      responseSurface: Surface,
+      context: HttpClientContext = HttpClientContext.empty
   ): Rx[Resp] = {
-    send(req).toRx.map { resp =>
+    send(req, context).toRx.map { resp =>
       HttpClients.parseResponse[Resp](config, responseSurface, resp)
     }
   }
@@ -108,12 +109,13 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
-      requestContent: Req
+      requestContent: Req,
+      context: HttpClientContext = HttpClientContext.empty
   ): Rx[Resp] = {
     Rx
       .const(HttpClients.prepareRequest(config, req, requestSurface, requestContent))
       .flatMap { (newRequest: Request) =>
-        send(newRequest, HttpClientContext(config.name)).toRx.map { resp =>
+        send(newRequest, context).toRx.map { resp =>
           HttpClients.parseResponse[Resp](config, responseSurface, resp)
         }
       }
@@ -129,17 +131,17 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     */
   def rpc[Req, Resp](
       method: RPCMethod,
-      requestContent: Req
+      requestContent: Req,
+      context: HttpClientContext = HttpClientContext.empty
   ): Rx[Resp] = {
     Rx
       .const(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
       .flatMap { (request: Request) =>
-        val context = HttpClientContext(
-          clientName = config.name,
+        val ctx = context.copy(
           rpcMethod = Some(method),
           rpcInput = Some(requestContent)
         )
-        sendSafe(request, context).toRx
+        sendSafe(request, ctx).toRx
           .map { (response: Response) =>
             if (response.status.isSuccessful) {
               val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)

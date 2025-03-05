@@ -53,7 +53,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
 
     // Build a chain of request filters
     def requestPipeline: RxHttpEndpoint = {
-      loggingFilter(context)
+      loggingFilter(context.withClientName(config.name))
         .andThen { req =>
           Rx.single(channel.send(req, config))
             .tap { resp =>
@@ -102,9 +102,10 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
 
   def readAsInternal[Resp](
       req: Request,
-      responseSurface: Surface
+      responseSurface: Surface,
+      context: HttpClientContext = HttpClientContext.empty
   ): Resp = {
-    val resp: Response = send(req, HttpClientContext(config.name))
+    val resp: Response = send(req, context)
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
@@ -112,10 +113,11 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
-      requestContent: Req
+      requestContent: Req,
+      context: HttpClientContext = HttpClientContext.empty
   ): Resp = {
     val newRequest     = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
-    val resp: Response = send(newRequest, HttpClientContext(config.name))
+    val resp: Response = send(newRequest, context)
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
@@ -129,17 +131,20 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     * @throws RPCException
     *   when RPC request fails
     */
-  def rpc[Req, Resp](method: RPCMethod, requestContent: Req): Resp = {
+  def rpc[Req, Resp](
+      method: RPCMethod,
+      requestContent: Req,
+      context: HttpClientContext = HttpClientContext.empty
+  ): Resp = {
     val request: Request =
       HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
-    val context = HttpClientContext(
-      clientName = config.name,
+    val ctx = context.copy(
       rpcMethod = Some(method),
       rpcInput = Some(requestContent)
     )
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
-    val response: Response = sendSafe(request, context = context)
+    val response: Response = sendSafe(request, context = ctx)
 
     // Parse the RPC response
     if (response.status.isSuccessful) {
