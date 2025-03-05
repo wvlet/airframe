@@ -98,7 +98,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
   def readAsInternal[Resp](
       req: Request,
       responseSurface: Surface,
-      context: HttpClientContext
+      context: HttpClientContext = HttpClientContext.empty
   ): Rx[Resp] = {
     send(req, context).toRx.map { resp =>
       HttpClients.parseResponse[Resp](config, responseSurface, resp)
@@ -110,7 +110,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
       requestSurface: Surface,
       responseSurface: Surface,
       requestContent: Req,
-      context: HttpClientContext
+      context: HttpClientContext = HttpClientContext.empty
   ): Rx[Resp] = {
     Rx
       .const(HttpClients.prepareRequest(config, req, requestSurface, requestContent))

@@ -103,7 +103,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
   def readAsInternal[Resp](
       req: Request,
       responseSurface: Surface,
-      context: HttpClientContext
+      context: HttpClientContext = HttpClientContext.empty
   ): Resp = {
     val resp: Response = send(req, context)
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
@@ -114,7 +114,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       requestSurface: Surface,
       responseSurface: Surface,
       requestContent: Req,
-      context: HttpClientContext
+      context: HttpClientContext = HttpClientContext.empty
   ): Resp = {
     val newRequest     = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
     val resp: Response = send(newRequest, context)
