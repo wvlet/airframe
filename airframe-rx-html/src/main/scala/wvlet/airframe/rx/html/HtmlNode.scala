@@ -53,6 +53,8 @@ class HtmlEventHandlerOf[E](name: String, namespace: Namespace = Namespace.xhtml
 
 case class EntityRef(ref: String) extends HtmlNode
 
+case class RawHtml(html: String) extends HtmlNode
+
 // Used for properly embedding namespaces to DOM. For example, for rendering SVG elements,
 // Namespace.svg must be set to DOM elements. If not, the SVG elements will not be rendered in the web browsers.
 case class Namespace(uri: String)

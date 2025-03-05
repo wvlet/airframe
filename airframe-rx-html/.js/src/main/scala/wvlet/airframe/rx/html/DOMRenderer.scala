@@ -215,6 +215,14 @@ object DOMRenderer extends LogSupport {
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
           Cancelable.empty
+        case r: RawHtml =>
+          val domNode = dom.document.createElement("span")
+          domNode.innerHTML = r.html
+          // Extract the inner node
+          domNode.childNodes.headOption.foreach { n =>
+            node.mountHere(n, anchor)
+          }
+          Cancelable.empty
         case EntityRef(entityName) =>
           // Wrap entity ref with a span tag.
           // This is a workaround if the text is inserted in the middle of text element.
