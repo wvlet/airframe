@@ -174,32 +174,27 @@ object HttpClientIR extends LogSupport {
       requestModelClassDef: Option[ClientRequestModelClassDef] = None,
       isRPC: Boolean
   ) extends ClientCodeIR {
-    def typeArgString =
-      typeArgs
-        .map(arg =>
-          if (arg.rawType.isAssignableFrom(classOf[Rx[_]]) && arg.typeArgs.size > 0)
-            // Extract Rx element type
-            arg.typeArgs(0)
-          else
-            arg
-        )
-        .map(arg => HttpClientGenerator.fullTypeNameOf(arg))
-        .mkString(", ")
 
-    def rpcReturnElementType: Surface = {
-      val isRxResponse = returnType.rawType.isAssignableFrom(classOf[Rx[_]]) && returnType.typeArgs.size == 1
-      if (isRxResponse) {
-        // for methods returning Rx[A], extract A
-        val tpe = returnType.typeArgs(0)
+    private def extractElementType(t: Surface): Surface = {
+      if (t.rawType.isAssignableFrom(classOf[Rx[_]]) && t.typeArgs.size > 0) {
+        // Extract A from Rx[A]
+        val tpe = t.typeArgs(0)
         if (tpe.rawType == classOf[ServerSentEvent]) {
           // For SSE, return empty result as the events will be handled by the event handler
           Surface.of[Unit]
         } else
           tpe
-      } else {
-        returnType
-      }
+      } else
+        t
     }
+
+    def typeArgString =
+      typeArgs
+        .map(arg => extractElementType(arg))
+        .map(arg => HttpClientGenerator.fullTypeNameOf(arg))
+        .mkString(", ")
+
+    def rpcReturnElementType: Surface = extractElementType(returnType)
 
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
