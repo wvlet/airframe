@@ -20,7 +20,7 @@ addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION          = sys.env.getOrElse("SCALAJS_VERSION", "1.18.2")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.18.2")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
@@ -38,7 +38,7 @@ addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.5.7")
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.0")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.6.4")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.6.5")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")
