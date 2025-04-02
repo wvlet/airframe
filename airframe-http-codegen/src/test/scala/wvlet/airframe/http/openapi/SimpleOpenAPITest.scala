@@ -14,6 +14,7 @@
 package wvlet.airframe.http.openapi
 import wvlet.airframe.http.openapi.OpenAPI.Schema
 import wvlet.airframe.http.{RPC, Router, description}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 
@@ -193,4 +194,20 @@ object SimpleOpenAPITest extends AirSpec {
     val schema = openapi.components.get.schemas.head.head._2.asInstanceOf[Schema]
     schema.required shouldBe empty
   }
+
+  case class HelloRet(p: String = "hello")
+  @RPC
+  trait RxTestApi {
+    def hello(): Rx[HelloRet]
+  }
+
+  test("Rx return type") {
+    val r    = Router.of[RxTestApi]
+    val yaml = openApiGenerator(r).toYAML
+    debug(yaml)
+    yaml.contains("type: object") shouldBe true
+    yaml.contains("properties:") shouldBe true
+    yaml.contains("#/components/schemas/HelloRet") shouldBe true
+  }
+
 }

@@ -21,6 +21,7 @@ import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.*
 import wvlet.airframe.surface.reflect.*
 import wvlet.airframe.ulid.ULID
@@ -489,6 +490,8 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
               Schema(`type` = "string")
             case o: OptionSurface =>
               getOpenAPISchemaOfSurface(o.elementSurface, seen + s)
+            case s: Surface if classOf[Rx[_]].isAssignableFrom(s.rawType) =>
+              getOpenAPISchemaOfSurface(s.typeArgs(0), seen + s)
             case s: Surface if Router.isFuture(s) =>
               getOpenAPISchemaOfSurface(Router.unwrapFuture(s), seen + s)
             case s: Surface if Router.isFinagleReader(s) =>
