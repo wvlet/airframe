@@ -974,7 +974,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
-          exclude ("junit", "junit"),
+        exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.3" % Provided,
         "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.3" % Provided,
@@ -1124,8 +1124,12 @@ lazy val integrationTestApi =
     .settings(noPublish)
     .settings(
       scala3Only,
-      name        := "airframe-integration-test-api",
-      description := "APIs for integration test"
+      // Skip importing the integration test projects in IntelliJ IDEA due the the following error:
+      // [error] Modules were resolved with conflicting cross-version suffixes in ProjectRef(uri("file:/Users/leo/work/airframe/"), "integrationTestApiJS"):
+      // [error]    org.scala-js:scala-js-macrotask-executor_sjs1 _3, _2.13
+      ideSkipProject := true,
+      name           := "airframe-integration-test-api",
+      description    := "APIs for integration test"
     )
     .dependsOn(http)
 
@@ -1138,6 +1142,7 @@ lazy val integrationTest =
     .settings(noPublish)
     .settings(
       scala3Only,
+      ideSkipProject      := true,
       name                := "airframe-integration-test",
       description         := "integration test project",
       airframeHttpClients := Seq("wvlet.airframe.test.api:rpc")
@@ -1152,8 +1157,9 @@ lazy val integrationTestJs =
     .settings(noPublish)
     .settings(
       scala3Only,
-      name        := "airframe-integration-test-js",
-      description := "browser integration test for Scala.js",
+      ideSkipProject := true,
+      name           := "airframe-integration-test-js",
+      description    := "browser integration test for Scala.js",
       Test / jsEnv := new jsenv.playwright.PWEnv(
         browserName = "chrome",
         headless = true,
