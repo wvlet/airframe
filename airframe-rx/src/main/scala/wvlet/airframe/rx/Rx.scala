@@ -152,6 +152,14 @@ trait Rx[+A] extends RxOps[A] {
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
   /**
+    * Emit the new value after the given time interval.
+    * @param interval
+    * @param unit
+    * @return
+    */
+  def delay(interval: Long, unit: TimeUnit): Rx[A] = DelayOp(this, interval, unit)
+
+  /**
     * Applies `f` to the input value and return the result.
     * @param f
     * @tparam B
@@ -1031,7 +1039,9 @@ object Rx extends LogSupport {
   case class TimerOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
     override def parents: Seq[RxOps[_]] = Seq.empty
   }
-
+  case class DelayOp[A](input: RxOps[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A] {
+    override def parents: Seq[RxOps[_]] = Seq(input)
+  }
   case class TakeOp[A](input: RxOps[A], n: Long) extends Rx[A] {
     override def parents: Seq[RxOps[_]] = Seq(input)
   }
