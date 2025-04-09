@@ -118,6 +118,8 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
           BodyPublishers.noBody()
         case s: HttpMessage.StringMessage =>
           BodyPublishers.ofString(s.toContentString)
+        case m: MultipartMessage =>
+          BodyPublishers.ofInputStream(() => m.toInputStream)
         case m =>
           BodyPublishers.ofByteArray(m.toContentBytes)
       }
