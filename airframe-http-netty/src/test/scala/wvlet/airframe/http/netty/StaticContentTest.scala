@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.{Endpoint, Http, HttpHeader, HttpMessage, RxRouter, StaticContent}
+import wvlet.airframe.http.{Endpoint, Http, HttpHeader, HttpMessage, HttpStatus, RxRouter, StaticContent}
 import wvlet.airspec.AirSpec
 
 object StaticContentTest extends AirSpec {
@@ -40,5 +40,53 @@ object StaticContentTest extends AirSpec {
     val resp = client.send(Http.GET("/"))
     resp.contentString shouldContain "<html>"
     resp.contentType shouldBe Some("text/html")
+  }
+
+  test("reject path traversal attacks") { (client: SyncClient) =>
+    // Test absolute path
+    val respAbsolute = client.sendSafe(Http.GET("//../../etc/passwd"))
+    respAbsolute.status shouldBe HttpStatus.Forbidden_403
+
+    // Test directory traversal using ../
+    val respTraversal = client.sendSafe(Http.GET("/../../../etc/passwd"))
+    respTraversal.status shouldBe HttpStatus.Forbidden_403
+
+    // Test directory traversal using // (double slashes)
+    val respDoubleSlash = client.sendSafe(Http.GET("//etc/passwd"))
+    respDoubleSlash.status shouldBe HttpStatus.Forbidden_403
+  }
+
+  test("reject path traversal attacks with normalized paths") { (client: SyncClient) =>
+    // Test normalized path traversal
+    val respNormalized = client.sendSafe(Http.GET("/foo/./bar/../../etc/passwd"))
+    respNormalized.status shouldBe HttpStatus.NotFound_404
+  }
+
+  test("reject absolute path traversal") { (client: SyncClient) =>
+    // Test absolute path traversal
+    val respAbsolute = client.sendSafe(Http.GET("/////etc/passwd"))
+    respAbsolute.status shouldBe HttpStatus.Forbidden_403
+
+    // Test absolute path traversal with double slashes
+    val respDoubleSlash = client.sendSafe(Http.GET("///etc/passwd"))
+    respDoubleSlash.status shouldBe HttpStatus.Forbidden_403
+  }
+
+  test("reject relative parent path traversal") { (client: SyncClient) =>
+    // Test relative path traversal
+    val respRelative = client.sendSafe(Http.GET("..//etc/passwd"))
+    respRelative.status shouldBe HttpStatus.Forbidden_403
+
+    // Test relative path traversal with double slashes
+    val respRelativeDoubleSlash = client.sendSafe(Http.GET("..//..//etc/passwd"))
+    respRelativeDoubleSlash.status shouldBe HttpStatus.Forbidden_403
+
+    // Test relative path traversal with single dot
+    val respRelativeSingleDot = client.sendSafe(Http.GET("../etc/passwd"))
+    respRelativeSingleDot.status shouldBe HttpStatus.Forbidden_403
+
+    // Test relative path traversal with double dots
+    val respRelativeDoubleDot = client.sendSafe(Http.GET("..//..//etc/passwd"))
+    respRelativeDoubleDot.status shouldBe HttpStatus.Forbidden_403
   }
 }
