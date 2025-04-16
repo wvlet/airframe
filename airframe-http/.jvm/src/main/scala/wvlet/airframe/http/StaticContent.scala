@@ -12,15 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import java.io.File
+import java.io.{File, IOException}
 import java.net.URL
-
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
 
+import java.nio.file.Paths
 import scala.annotation.tailrec
+import scala.util.Try
 
 /**
   * Helper for returning static contents
@@ -28,13 +29,35 @@ import scala.annotation.tailrec
 object StaticContent extends LogSupport {
 
   trait ResourceType {
+    def basePath: String
     def find(relativePath: String): Option[URL]
+
+    private val canonicalBasePath: Try[String] = Try(new File(basePath).getCanonicalPath)
+
+    // Helper to check if a potential resource path is truly within the base path
+    protected def isPathInsideBase(resourceFile: File): Boolean = {
+      canonicalBasePath
+        .flatMap { cbPath =>
+          Try(resourceFile.getCanonicalPath).map { rcPath =>
+            // Check if the resource's canonical path starts with the base's canonical path,
+            // ensuring it's truly contained within. Handle the separator correctly.
+            rcPath.startsWith(cbPath) &&
+            (rcPath.length == cbPath.length ||                      // Exactly the base path itself
+              rcPath.charAt(cbPath.length) == File.separatorChar || // Starts with base path + separator
+              cbPath == "/")                                        // Special case for root base path
+          }
+        }.recover { case e: IOException =>
+          // Error getting canonical paths likely indicates issues (permissions, non-existent?)
+          logger.warn(s"Failed to get canonical path for comparison: ${e.getMessage}", e)
+          false
+        }.getOrElse(false) // Default to false if any Try failed
+    }
   }
 
   case class FileResource(basePath: String) extends ResourceType {
     override def find(relativePath: String): Option[URL] = {
       val f = new File(s"${basePath}/${relativePath}")
-      if (f.exists()) {
+      if (f.exists() && f.isFile() && isPathInsideBase(f)) {
         Some(f.toURI.toURL)
       } else {
         None
@@ -63,7 +86,16 @@ object StaticContent extends LogSupport {
       }
     }
 
-    loop(0, path.split("/").toList)
+    // Check for null characters
+    if (path.contains("\u0000")) {
+      false
+    } else if (path.startsWith("/") || path.isEmpty || path.contains("//")) {
+      false
+    } else if (Try(Paths.get(path)).isFailure) {
+      false
+    } else {
+      loop(0, path.split("/").toList.filter(_.nonEmpty))
+    }
   }
 
   private def findContentType(filePath: String): String = {
@@ -116,7 +148,7 @@ object StaticContent extends LogSupport {
 
 import wvlet.airframe.http.StaticContent.*
 
-case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.empty) {
+case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.empty) extends LogSupport {
   def fromDirectory(basePath: String): StaticContent = {
     this.copy(resourcePaths = FileResource(basePath) :: resourcePaths)
   }
