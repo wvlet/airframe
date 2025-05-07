@@ -288,8 +288,13 @@ class CommandLauncher(
           } else {
             // Run the default command
             defaultCommand
-              .map { defaultCommand => defaultCommand(head) }
-              .map { x => LauncherResult(nextStack, Some(x)) }
+              .map { defaultCommand => 
+                // When default command is used, we need to reprocess the command args
+                // Find the launcher for the default command
+                val subLauncher = subCommandLaunchers.find(_.commandName == defaultCommand.commandName).getOrElse(defaultCommand)
+                // Execute with the original arguments since they're intended for the default command
+                subLauncher.execute(launcherConfig, nextStack, args, showHelpMessage)
+              }
               .getOrElse {
                 LauncherResult(nextStack, None)
               }
