@@ -10,7 +10,7 @@ addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.13.1")
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION          = sys.env.getOrElse("SCALAJS_VERSION", "1.18.2")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.19.0")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
