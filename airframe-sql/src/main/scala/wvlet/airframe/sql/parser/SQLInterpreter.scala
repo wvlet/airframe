@@ -607,6 +607,15 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     }
   }
 
+  override def visitArithmeticUnary(ctx: ArithmeticUnaryContext): Expression = {
+    val e = expression(ctx.valueExpression())
+    val sign = ctx.operator.getType match {
+      case SqlBaseParser.PLUS  => Positive
+      case SqlBaseParser.MINUS => Negative
+    }
+    ArithmeticUnaryExpr(sign, e, getLocation(ctx))
+  }
+
   override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): Expression = {
     val left  = expression(ctx.left)
     val right = expression(ctx.right)

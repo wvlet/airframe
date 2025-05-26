@@ -425,7 +425,7 @@ object SQLGenerator extends LogSupport {
       case ArithmeticBinaryExpr(tpe, left, right, _) =>
         s"${printExpression(left)} ${tpe.symbol} ${printExpression(right)}"
       case ArithmeticUnaryExpr(sign, value, _) =>
-        s"${sign.symbol} ${printExpression(value)}"
+        s"${sign.symbol}${printExpression(value)}"
       case Exists(subQuery, _) =>
         s"EXISTS(${printExpression(subQuery)})"
       case SubQueryExpression(query, _) =>

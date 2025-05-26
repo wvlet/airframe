@@ -1094,7 +1094,9 @@ object Expression {
   }
   case class ArithmeticUnaryExpr(sign: Sign, child: Expression, nodeLocation: Option[NodeLocation])
       extends ArithmeticExpression
-      with UnaryExpression
+      with UnaryExpression {
+    override def sqlExpr: String = s"${sign.symbol}${child.sqlExpr}"
+  }
 
   abstract sealed class Sign(val symbol: String)
   case object Positive extends Sign("+")
