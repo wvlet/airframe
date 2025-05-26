@@ -119,4 +119,16 @@ class SQLExprTest extends AirSpec {
     check("a NOT IN (SELECT * FROM t)")
 
   }
+
+  test("special date and time functions") {
+    check("current_date")
+    check("current_time")
+    check("current_time(6)")
+    check("current_timestamp")
+    check("current_timestamp(6)")
+    check("localtime")
+    check("localtime(6)")
+    check("localtimestamp")
+    check("localtimestamp(6)")
+  }
 }

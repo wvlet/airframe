@@ -1009,4 +1009,16 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitLambda(ctx: LambdaContext): Expression = {
     LambdaExpr(expression(ctx.expression()), ctx.identifier().asScala.map(_.getText).toSeq, getLocation(ctx))
   }
+
+  override def visitSpecialDateTimeFunction(ctx: SpecialDateTimeFunctionContext): Expression = {
+    ctx.name.getType match {
+      case SqlBaseParser.CURRENT_DATE => CurrentDate(None, getLocation(ctx))
+      case SqlBaseParser.CURRENT_TIME => CurrentTime(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
+      case SqlBaseParser.CURRENT_TIMESTAMP =>
+        CurrentTimestamp(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
+      case SqlBaseParser.LOCALTIME => CurrentLocalTime(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
+      case SqlBaseParser.LOCALTIMESTAMP =>
+        CurrentLocalTimeStamp(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
+    }
+  }
 }
