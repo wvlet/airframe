@@ -202,4 +202,14 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan)
     sql shouldBe "SELECT xid FROM A WHERE POSITION('str' IN xid) > 0"
   }
+
+  test("print lambda expression") {
+    val resolvedPlan = SQLAnalyzer.analyze(
+      "select * from A where reduce(id, 0, (c, e) -> c + if((position('x' in e) > 0), 1, 0), c -> c) > 0",
+      "default",
+      demoCatalog
+    )
+    val sql = SQLGenerator.print(resolvedPlan)
+    sql shouldBe "SELECT * FROM A WHERE reduce(id, 0, (c, e) -> c + if((POSITION('x' IN e) > 0), 1, 0), (c) -> c) > 0"
+  }
 }
