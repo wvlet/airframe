@@ -463,6 +463,8 @@ object SQLGenerator extends LogSupport {
         s"(${values.map(printExpression).mkString(", ")})"
       case Parameter(index, _) =>
         "?"
+      case LambdaExpr(body, args, _) =>
+        s"(${args.mkString(", ")}) -> ${printExpression(body)}"
       case other => unknown(other)
     }
   }

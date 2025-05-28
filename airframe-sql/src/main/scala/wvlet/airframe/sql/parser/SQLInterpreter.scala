@@ -996,4 +996,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitPosition(ctx: PositionContext): Expression = {
     Position(expression(ctx.valueExpression(0)), expression(ctx.valueExpression(1)), getLocation(ctx))
   }
+
+  override def visitLambda(ctx: LambdaContext): Expression = {
+    LambdaExpr(expression(ctx.expression()), ctx.identifier().asScala.map(_.getText).toSeq, getLocation(ctx))
+  }
 }
