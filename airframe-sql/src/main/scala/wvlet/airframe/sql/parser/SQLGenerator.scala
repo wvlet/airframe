@@ -465,6 +465,8 @@ object SQLGenerator extends LogSupport {
         "?"
       case LambdaExpr(body, args, _) =>
         s"(${args.mkString(", ")}) -> ${printExpression(body)}"
+      case c: CurrentTimeBase =>
+        c.sqlExpr
       case other => unknown(other)
     }
   }

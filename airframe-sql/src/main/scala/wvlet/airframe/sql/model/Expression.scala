@@ -1274,7 +1274,12 @@ object Expression {
     override def toString: String          = s"Row(${values.mkString(", ")})"
   }
 
-  abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends LeafExpression
+  abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends LeafExpression {
+    override def sqlExpr: String = precision match {
+      case Some(p) => s"$name($p)"
+      case None    => name
+    }
+  }
   case class CurrentTime(precision: Option[Int], nodeLocation: Option[NodeLocation])
       extends CurrentTimeBase("current_time", precision)
   case class CurrentDate(precision: Option[Int], nodeLocation: Option[NodeLocation])
