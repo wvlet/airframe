@@ -50,6 +50,18 @@ class SQLExprTest extends AirSpec {
     }
   }
 
+  private def check(sql: String, expect: String): Unit = {
+    test(sql) {
+      try {
+        SQLParser.parseExpression(sql).sqlExpr shouldBe expect
+      } catch {
+        case e: AssertionFailure =>
+          error(s"Failed to generate a proper SQL expression for:\n${SQLParser.parseExpression(sql)}")
+          throw e
+      }
+    }
+  }
+
   test("Expression.sqlExpr") {
     check("func(a, b, c)")
     check("count(x)")
@@ -58,6 +70,15 @@ class SQLExprTest extends AirSpec {
     check("count(x) OVER (PARTITION BY y)")
     check("count(x) OVER (PARTITION BY y ORDER BY x)")
     check("array_agg(name) FILTER (WHERE name IS NOT NULL)")
+  }
+
+  test("unary expression") {
+    check("+1")
+    check("-1")
+    check("+1.0", "+DECIMAL '1.0'")
+    check("-1.0", "-DECIMAL '1.0'")
+    check("+1.2E23", "+1.2E23")
+    check("-1.2E23", "-1.2E23")
   }
 
   test("binary expression") {
