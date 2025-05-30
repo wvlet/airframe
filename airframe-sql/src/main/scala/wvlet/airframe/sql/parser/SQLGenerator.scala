@@ -467,6 +467,8 @@ object SQLGenerator extends LogSupport {
         s"(${args.mkString(", ")}) -> ${printExpression(body)}"
       case c: CurrentTimeBase =>
         c.sqlExpr
+      case Position(substring, expr, _) =>
+        s"POSITION(${substring.sqlExpr} IN ${printExpression(expr)})"
       case other => unknown(other)
     }
   }
