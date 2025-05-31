@@ -47,7 +47,7 @@
 ## Git
 
 - Use gh command for github operations.
-- For creating a new branch use, `git switch -c feature/$(date +"%Y%m%d_%H%M%S")`
+- For creating a new branch use, `git switch -c feature/$(date +"%Y%m%d_%H%M%S")-your-feature-description`
 - The format of commit messages is `feature: xxx` (for new features), `fix` (bug fixes), `internal` (non-user facing changes), or `doc` based on the code change contents. When describing commit messages, focus on `why` part of the change, not `what` or `how`.
   - For example, `feature: Add XXX to improve user experience` is better than `feature: Add XXX class`
 - **Branching**: The branch naming convention `feature/$(date +"%Y%m%d_%H%M%S")` can be adapted for other types of changes (e.g., `fix/`, `doc/`, `internal/`) by replacing `feature/` with the appropriate prefix, optionally followed by a brief description: `fix/$(date +"%Y%m%d_%H%M%S")-correct-off-by-one-error`.
