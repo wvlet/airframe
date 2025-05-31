@@ -22,8 +22,28 @@ trait MT {
 }
 
 class TraitInheritedClassTest extends AirSpec:
-  test("Surface of case class defined in trait object should work") {
+  test("reproduce the crash with trait-inherited case class") {
+    // This should not crash the compiler during the erasure phase
     val schema = Surface.of[MT.B]
+    schema shouldNotBe null
     schema.name shouldBe "B"
     schema.fullName shouldBe "wvlet.airframe.surface.MT.B"
+    schema.params.length shouldBe 2
+    schema.params(0).name shouldBe "min"
+    schema.params(1).name shouldBe "max"
+  }
+
+  test("original issue scenario should work") {
+    // This reproduces the exact scenario from the issue
+    val schema = Surface.of[MT.B]
+    
+    // Should be able to print the schema without crashing
+    val schemaString = schema.toString
+    schemaString.contains("B") shouldBe true
+    
+    // Should have proper parameters with default values (though they may be None due to trait limitation)
+    schema.params.foreach { param =>
+      param.surface shouldNotBe null
+      param.surface.name shouldBe "Int"
+    }
   }
