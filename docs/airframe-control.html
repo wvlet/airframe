@@ -217,8 +217,85 @@ For example, airframe-control has exponential back-off retry, jittering, circuit
 }
 
 </code></pre>
-<p>or</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.parallel._
+<h2><a class="anchor" aria-hidden="true" id="ratelimiter"></a><a href="#ratelimiter" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RateLimiter</h2>
+<p>RateLimiter is a utility for controlling the rate of operations using a token bucket algorithm. It's useful for:</p>
+<ul>
+<li>Limiting API call rates to external services</li>
+<li>Preventing resource exhaustion</li>
+<li>Implementing per-host rate limiting</li>
+<li>Maintaining consistent traffic patterns</li>
+</ul>
+<p>RateLimiter provides both blocking (<code>acquire</code>) and non-blocking (<code>tryAcquire</code>) operations.</p>
+<h3><a class="anchor" aria-hidden="true" id="basic-usage"></a><a href="#basic-usage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Basic Usage</h3>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">RateLimiter</span>
+<span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">TimeUnit</span>
+
+<span class="hljs-comment">// Create a rate limiter allowing 10 permits per second</span>
+<span class="hljs-keyword">val</span> limiter = <span class="hljs-type">RateLimiter</span>.create(<span class="hljs-number">10.0</span>)
+
+<span class="hljs-comment">// Acquire a permit (blocks if necessary)</span>
+limiter.acquire()
+
+<span class="hljs-comment">// Try to acquire a permit without blocking</span>
+<span class="hljs-keyword">if</span> (limiter.tryAcquire()) {
+  <span class="hljs-comment">// Permit acquired</span>
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-comment">// No permit available</span>
+}
+
+<span class="hljs-comment">// Try to acquire with timeout</span>
+<span class="hljs-keyword">if</span> (limiter.tryAcquire(<span class="hljs-number">1</span>, <span class="hljs-number">100</span>, <span class="hljs-type">TimeUnit</span>.<span class="hljs-type">MILLISECONDS</span>)) {
+  <span class="hljs-comment">// Permit acquired within timeout</span>
+}
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="burst-control"></a><a href="#burst-control" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Burst Control</h3>
+<p>You can configure the maximum burst size to allow temporary spikes in traffic:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-comment">// Allow 5 permits per second with a burst of up to 20 permits</span>
+<span class="hljs-keyword">val</span> limiter = <span class="hljs-type">RateLimiter</span>.create(<span class="hljs-number">5.0</span>, <span class="hljs-number">20</span>)
+
+<span class="hljs-comment">// Can immediately acquire up to 20 permits</span>
+<span class="hljs-keyword">for</span> (_ &lt;- <span class="hljs-number">1</span> to <span class="hljs-number">20</span>) {
+  limiter.tryAcquire() <span class="hljs-comment">// All will succeed immediately</span>
+}
+
+<span class="hljs-comment">// Further acquisitions will be rate limited</span>
+limiter.tryAcquire() <span class="hljs-comment">// Will fail until tokens refill</span>
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="integration-with-retry"></a><a href="#integration-with-retry" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Integration with Retry</h3>
+<p>RateLimiter can be used with retry mechanisms to implement sophisticated traffic control:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.{<span class="hljs-type">RateLimiter</span>, <span class="hljs-type">Retry</span>}
+
+<span class="hljs-keyword">val</span> limiter = <span class="hljs-type">RateLimiter</span>.create(<span class="hljs-number">2.0</span>) <span class="hljs-comment">// 2 requests per second</span>
+
+<span class="hljs-keyword">val</span> result = <span class="hljs-type">Retry</span>.withBackOff().run {
+  <span class="hljs-keyword">if</span> (limiter.tryAcquire()) {
+    <span class="hljs-comment">// Make API call</span>
+    callExternalAPI()
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-type">Exception</span>(<span class="hljs-string">"Rate limit exceeded, retry later"</span>)
+  }
+}
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="per-host-rate-limiting"></a><a href="#per-host-rate-limiting" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Per-Host Rate Limiting</h3>
+<p>For per-host rate limiting, you can maintain a map of rate limiters:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> scala.collection.concurrent.<span class="hljs-type">TrieMap</span>
+
+<span class="hljs-keyword">val</span> hostLimiters = <span class="hljs-type">TrieMap</span>.empty[<span class="hljs-type">String</span>, <span class="hljs-type">RateLimiter</span>]
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getRateLimiter</span></span>(host: <span class="hljs-type">String</span>): <span class="hljs-type">RateLimiter</span> = {
+  hostLimiters.getOrElseUpdate(host, <span class="hljs-type">RateLimiter</span>.create(<span class="hljs-number">10.0</span>))
+}
+
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">makeRequest</span></span>(host: <span class="hljs-type">String</span>, request: <span class="hljs-type">Request</span>): <span class="hljs-type">Response</span> = {
+  <span class="hljs-keyword">val</span> limiter = getRateLimiter(host)
+  limiter.acquire() <span class="hljs-comment">// Wait for permit</span>
+  sendRequest(host, request)
+}
+
+or
+
+```scala
+<span class="hljs-keyword">import</span> wvlet.airframe.control.parallel._
 
 <span class="hljs-comment">// This syntax works for both Seq and Iterator</span>
 <span class="hljs-keyword">val</span> result = source.parallel.withParallelism(<span class="hljs-number">4</span>).map { i =&gt;
@@ -228,7 +305,7 @@ For example, airframe-control has exponential back-off retry, jittering, circuit
 <p>You can monitor metrics of parallel execution via JMX using <a href="https://github.com/wvlet/airframe/tree/main/airframe-jmx">airframe-jmx</a>.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-type">JMXAgent</span>.defaultAgent.register[<span class="hljs-type">Parallel</span>.<span class="hljs-type">ParallelExecutionStats</span>](<span class="hljs-type">Parallel</span>.jmxStats)
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-config"><span class="arrow-prev">← </span><span>airframe-config: Application Config Flow</span></a><a class="docs-next button" href="/airframe/docs/airframe-log"><span>airframe-log: Application Logger</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#control">Control</a></li><li><a href="#resourcer">Resource[R]</a></li><li><a href="#retry">Retry</a><ul class="toc-headings"><li><a href="#exponential-backoff">Exponential Backoff</a></li><li><a href="#adding-extra-wait">Adding Extra Wait</a></li><li><a href="#bounded-time-backoff">Bounded Time Backoff</a></li><li><a href="#jitter">Jitter</a></li></ul></li><li><a href="#circuitbreaker">CircuitBreaker</a></li><li><a href="#parallel">Parallel</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2025 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-config"><span class="arrow-prev">← </span><span>airframe-config: Application Config Flow</span></a><a class="docs-next button" href="/airframe/docs/airframe-log"><span>airframe-log: Application Logger</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#control">Control</a></li><li><a href="#resourcer">Resource[R]</a></li><li><a href="#retry">Retry</a><ul class="toc-headings"><li><a href="#exponential-backoff">Exponential Backoff</a></li><li><a href="#adding-extra-wait">Adding Extra Wait</a></li><li><a href="#bounded-time-backoff">Bounded Time Backoff</a></li><li><a href="#jitter">Jitter</a></li></ul></li><li><a href="#circuitbreaker">CircuitBreaker</a></li><li><a href="#parallel">Parallel</a></li><li><a href="#ratelimiter">RateLimiter</a><ul class="toc-headings"><li><a href="#basic-usage">Basic Usage</a></li><li><a href="#burst-control">Burst Control</a></li><li><a href="#integration-with-retry">Integration with Retry</a></li><li><a href="#per-host-rate-limiting">Per-Host Rate Limiting</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2025 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
