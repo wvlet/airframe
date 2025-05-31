@@ -62,6 +62,20 @@ class MockServer:
     )
     Http.response(HttpStatus.Ok_200).withJson(MessageCodec.of[Map[String, Any]].toJson(response))
 
+  @Endpoint(method = HttpMethod.PATCH, path = "/patch")
+  def patch(request: HttpMessage.Request): HttpMessage.Response =
+    val response = Map(
+      "args"    -> Map.empty[String, String],
+      "data"    -> request.contentString,
+      "files"   -> Map.empty[String, String],
+      "form"    -> Map.empty[String, String],
+      "headers" -> request.header.entries.map(e => e.key -> e.value).toMap,
+      "json"    -> parseJsonOrNull(request.contentString),
+      "origin"  -> "127.0.0.1",
+      "url"     -> s"http://localhost${request.uri}"
+    )
+    Http.response(HttpStatus.Ok_200).withJson(MessageCodec.of[Map[String, Any]].toJson(response))
+
   @Endpoint(method = HttpMethod.DELETE, path = "/delete")
   def delete(request: HttpMessage.Request): HttpMessage.Response =
     val response = Map(
