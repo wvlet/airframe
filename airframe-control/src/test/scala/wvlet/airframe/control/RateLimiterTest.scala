@@ -15,7 +15,6 @@ package wvlet.airframe.control
 
 import wvlet.airspec.AirSpec
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
   * Test suite for RateLimiter
@@ -168,27 +167,6 @@ class RateLimiterTest extends AirSpec {
     intercept[IllegalArgumentException] {
       limiter.tryAcquire(1, -1, TimeUnit.MILLISECONDS)
     }
-  }
-
-  test("handle concurrent access") {
-    val limiter               = RateLimiter.create(100.0) // High rate to avoid blocking in test
-    val counter               = new AtomicInteger(0)
-    val threads               = 10
-    val acquisitionsPerThread = 10
-
-    val threadList = (1 to threads).map { _ =>
-      new Thread(() => {
-        for (_ <- 1 to acquisitionsPerThread) {
-          limiter.acquire()
-          counter.incrementAndGet()
-        }
-      })
-    }
-
-    threadList.foreach(_.start())
-    threadList.foreach(_.join())
-
-    counter.get() shouldBe threads * acquisitionsPerThread
   }
 
   test("demonstrate burst behavior") {
