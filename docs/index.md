@@ -8,6 +8,9 @@ title: Overview
 
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Native.
 
+**New to Airframe?** Start with our **[📚 Comprehensive Walkthrough](airframe-walkthrough.md)** that guides you through building a complete application step by step, demonstrating how all the modules work together.
+
+- **[📚 Airframe Walkthrough: Building Applications Step by Step](airframe-walkthrough.md)** - A comprehensive tutorial showing how to build complete applications using Airframe modules together
 - [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 - [Presentations and Articles](articles.md)
