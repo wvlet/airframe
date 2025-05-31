@@ -8,6 +8,7 @@ title: Overview
 
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Native.
 
+- [**📚 Complete Walkthrough**](walkthrough.md) - Learn how to build applications using Airframe from start to finish
 - [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 - [Presentations and Articles](articles.md)
@@ -97,6 +98,8 @@ resolvers += Resolver.sonatypeOssRepos("snapshots")
 ```
 
 ## Usage Guides
+
+**New to Airframe?** Start with our [Complete Walkthrough](walkthrough.md) to learn how to build applications using multiple Airframe modules together.
 
 Scala is a quite powerful programming language. One of the benefits of Scala is it can utilize libraries in Java ecosystem. Existing libraries for Java, however, are not always the best choices if you are primarily writing code in Scala. For example, some libraries have performance overhead for converting Java collections into Scala collections, and their interfaces might not be well-suited to using them from Scala, etc.
 
