@@ -13,7 +13,7 @@
  */
 package wvlet.log.io
 
-import java.io.FileNotFoundException
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, FileNotFoundException}
 
 import wvlet.log.Spec
 
@@ -43,5 +43,38 @@ class IOUtilTest extends Spec {
     intercept[FileNotFoundException] {
       IOUtil.readAsString("non-existing-file-path.txt.tmp")
     }
+  }
+
+  test("copy InputStream to OutputStream") {
+    val sourceData = "Hello, World! This is a test of the copy function."
+    val input = new ByteArrayInputStream(sourceData.getBytes("UTF-8"))
+    val output = new ByteArrayOutputStream()
+    
+    IOUtil.copy(input, output)
+    
+    val result = new String(output.toByteArray, "UTF-8")
+    assert(result == sourceData)
+  }
+
+  test("copy empty InputStream") {
+    val input = new ByteArrayInputStream(Array.empty[Byte])
+    val output = new ByteArrayOutputStream()
+    
+    IOUtil.copy(input, output)
+    
+    assert(output.toByteArray.length == 0)
+  }
+
+  test("copy large data") {
+    // Test with data larger than the buffer size (8192 bytes)
+    val sourceData = "A" * 10000
+    val input = new ByteArrayInputStream(sourceData.getBytes("UTF-8"))
+    val output = new ByteArrayOutputStream()
+    
+    IOUtil.copy(input, output)
+    
+    val result = new String(output.toByteArray, "UTF-8")
+    assert(result == sourceData)
+    assert(result.length == 10000)
   }
 }
