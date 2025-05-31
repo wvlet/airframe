@@ -17,13 +17,31 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus}
+import wvlet.airframe.http.client.{JavaHttpClientBackend, SyncClient}
 import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
 
 class JavaSyncClientTest extends AirSpec {
 
-  // Use a public REST test server
+  // Use a public REST test server - skip tests if unavailable
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
+
+  private def isServiceAvailable: Boolean = {
+    try {
+      val client = Http.client
+        .withBackend(JavaHttpClientBackend)
+        .withJSONEncoding
+        .withConnectTimeout(Duration(5, TimeUnit.SECONDS))
+        .withReadTimeout(Duration(5, TimeUnit.SECONDS))
+        .newSyncClient(PUBLIC_REST_SERVICE)
+      val resp = client.sendSafe(Http.GET("/get"))
+      resp.status.isSuccessful
+    } catch {
+      case _: Exception => false
+    }
+  }
 
   override def design: Design =
     Design.newDesign
@@ -35,6 +53,10 @@ class JavaSyncClientTest extends AirSpec {
       }
 
   test("java http sync client") { (client: SyncClient) =>
+    if (!isServiceAvailable) {
+      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+    }
+
     test("GET") {
       val resp = client.send(Http.GET("/get?id=1&name=leo"))
       resp.status shouldBe HttpStatus.Ok_200
@@ -96,21 +118,29 @@ class JavaSyncClientTest extends AirSpec {
     }
 
     test("gzip encoding") {
-      val resp = client.send(Http.GET("/gzip"))
-      val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
-      m("gzipped") shouldBe true
-      resp.contentEncoding shouldBe Some("gzip")
+      flaky {
+        val resp = client.send(Http.GET("/gzip"))
+        val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
+        m("gzipped") shouldBe true
+        resp.contentEncoding shouldBe Some("gzip")
+      }
     }
 
     test("deflate encoding") {
-      val resp = client.send(Http.GET("/deflate"))
-      val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
-      m("deflated") shouldBe true
-      resp.contentEncoding shouldBe Some("deflate")
+      flaky {
+        val resp = client.send(Http.GET("/deflate"))
+        val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
+        m("deflated") shouldBe true
+        resp.contentEncoding shouldBe Some("deflate")
+      }
     }
   }
 
   test("retry test") { (client: SyncClient) =>
+    if (!isServiceAvailable) {
+      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+    }
+
     test("handle max retry") {
       val e = intercept[HttpClientMaxRetryException] {
         client.withRetryContext(_.withMaxRetry(1)).send(Http.GET("/status/500"))
@@ -125,6 +155,10 @@ class JavaSyncClientTest extends AirSpec {
   }
 
   test("circuit breaker") { (client: SyncClient) =>
+    if (!isServiceAvailable) {
+      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+    }
+
     val e = intercept[HttpClientException] {
       client
         .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))

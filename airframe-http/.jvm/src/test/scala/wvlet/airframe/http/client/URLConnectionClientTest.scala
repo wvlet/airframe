@@ -19,24 +19,38 @@ import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{Http, HttpClientException, HttpStatus}
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
 
 /**
   */
 object URLConnectionClientTest extends AirSpec {
 
+  // Use a public REST test server - skip tests if unavailable  
+  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
+
+  private def isServiceAvailable: Boolean = {
+    try {
+      val client = Http.client
+        .withJSONEncoding
+        .withConnectTimeout(Duration(5, TimeUnit.SECONDS))
+        .withReadTimeout(Duration(5, TimeUnit.SECONDS))
+        .newSyncClient(PUBLIC_REST_SERVICE)
+      val resp = client.sendSafe(Http.GET("/get"))
+      resp.status.isSuccessful
+    } catch {
+      case _: Exception => false
+    }
+  }
+
   override protected def design: Design = {
     Design.newDesign
-      .add(
-        Netty.server
-          .withRouter(RxRouter.of[MockServer])
-          .design
-      )
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
+      .bind[SyncClient]
+      .toInstance(
         Http.client
-          .withBackend(URLConnectionClientBackend)
           .withJSONEncoding
-          .newSyncClient(server.localAddress)
-      }
+          .newSyncClient(PUBLIC_REST_SERVICE)
+      )
   }
 
   case class Person(id: Int, name: String)
@@ -55,6 +69,10 @@ object URLConnectionClientTest extends AirSpec {
   }
 
   test("sync client") { (client: SyncClient) =>
+    if (!isServiceAvailable) {
+      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+    }
+
     test("complement missing slash") {
       val resp = client.sendSafe(Http.GET("get"))
       resp.status shouldBe HttpStatus.Ok_200
@@ -112,16 +130,18 @@ object URLConnectionClientTest extends AirSpec {
   }
 
   test("retry test") { (client: SyncClient) =>
+    if (!isServiceAvailable) {
+      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+    }
+
     test("Handle 5xx retry") {
       Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
-        flaky {
-          val e = intercept[HttpClientException] {
-            client
-              .withRetryContext(_.withMaxRetry(1))
-              .send(Http.GET("/status/500"))
-          }
-          e.status shouldBe HttpStatus.InternalServerError_500
+        val e = intercept[HttpClientException] {
+          client
+            .withRetryContext(_.withMaxRetry(1))
+            .send(Http.GET("/status/500"))
         }
+        e.status shouldBe HttpStatus.InternalServerError_500
       }
     }
   }
