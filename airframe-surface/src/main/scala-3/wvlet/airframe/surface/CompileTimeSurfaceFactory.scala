@@ -18,7 +18,7 @@ private[surface] object CompileTimeSurfaceFactory:
     val flags       = t.typeSymbol.flags
     if !flags.is(Flags.JavaStatic) && flags.is(Flags.NoInits) then
       t.typeSymbol.maybeOwner match
-        // For inner-class definitions
+        // For inner-class definitions (but not traits)
         case s: Symbol
             if !s.isNoSymbol &&
               s.isClassDef &&
