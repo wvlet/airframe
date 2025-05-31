@@ -14,7 +14,7 @@ This comprehensive walkthrough guides you through building a complete applicatio
 
 Throughout this walkthrough, we'll create a complete **Task Management Application** featuring:
 
-- **🔧 Backend Server**: REST API with dependency injection, configuration, and structured logging
+- **🔧 Backend Server**: RPC services with dependency injection and structured logging
 - **🚀 RPC Communication**: Type-safe client-server communication with shared interfaces  
 - **💻 Web Frontend**: Reactive Scala.js-based UI that shares code with the server
 - **📟 Command-Line Tool**: Rich CLI with multiple output formats and RPC integration
@@ -339,31 +339,22 @@ object DIApp extends App with LogSupport {
 3. **Singleton Scoping**: Services can be singletons to share state
 4. **Provider Binding**: Complex object creation through provider functions
 
-## Step 3: Building REST APIs with airframe-http
+## Step 3: RPC Communication
 
-Now let's create REST endpoints using [airframe-http](airframe-http.md). This allows us to expose our services as web APIs.
+[Airframe RPC](airframe-rpc.md) provides type-safe communication between services. Unlike traditional REST APIs, RPC allows you to define service interfaces once and use them for both server implementation and client generation.
 
 **api/src/main/scala/taskapp/api/TaskApi.scala**
 ```scala
 package taskapp.api
 
-import wvlet.airframe.http.*
+import wvlet.airframe.http.RPC
 
 @RPC
 trait TaskApi {
-  @Endpoint(method = HttpMethod.GET, path = "/api/tasks")
   def listTasks(): TaskListResponse
-  
-  @Endpoint(method = HttpMethod.GET, path = "/api/tasks/:id")  
   def getTask(id: String): Option[Task]
-  
-  @Endpoint(method = HttpMethod.POST, path = "/api/tasks")
   def createTask(request: CreateTaskRequest): Task
-  
-  @Endpoint(method = HttpMethod.PUT, path = "/api/tasks/:id")
   def updateTask(id: String, request: UpdateTaskRequest): Option[Task]
-  
-  @Endpoint(method = HttpMethod.DELETE, path = "/api/tasks/:id")
   def deleteTask(id: String): Boolean
 }
 ```
@@ -379,106 +370,36 @@ import wvlet.log.LogSupport
 class TaskApiImpl(taskService: TaskService) extends TaskApi with LogSupport {
   
   override def listTasks(): TaskListResponse = {
-    debug("API: Listing tasks")
+    debug("RPC: Listing tasks")
     taskService.listTasks()
   }
   
   override def getTask(id: String): Option[Task] = {
-    debug(s"API: Getting task ${id}")
+    debug(s"RPC: Getting task ${id}")
     taskService.getTask(id)
   }
   
   override def createTask(request: CreateTaskRequest): Task = {
-    info(s"API: Creating task '${request.title}'")
+    info(s"RPC: Creating task '${request.title}'")
     taskService.createTask(request)
   }
   
   override def updateTask(id: String, request: UpdateTaskRequest): Option[Task] = {
-    info(s"API: Updating task ${id}")
+    info(s"RPC: Updating task ${id}")
     taskService.updateTask(id, request)
   }
   
   override def deleteTask(id: String): Boolean = {
-    info(s"API: Deleting task ${id}")
+    info(s"RPC: Deleting task ${id}")
     taskService.deleteTask(id)
   }
 }
 ```
 
-**server/src/main/scala/taskapp/server/TaskServer.scala**
+**server/src/main/scala/taskapp/server/TaskRPCServer.scala**  
 ```scala
 package taskapp.server
 
-import taskapp.server.api.TaskApiImpl
-import wvlet.airframe.*
-import wvlet.airframe.http.*
-import wvlet.airframe.http.netty.Netty
-import wvlet.log.{LogSupport, Logger}
-
-object TaskServer extends App with LogSupport {
-  // Create the router from our API implementation
-  val router = RxRouter.of[TaskApiImpl]
-  
-  // Extend our design with the HTTP server  
-  val serverDesign = AppDesign.design
-    .bind[TaskApiImpl].toSingleton
-    .add(Netty.server
-      .withPort(8080)
-      .withRouter(router)
-      .design)
-  
-  // Start the server
-  serverDesign.build[HttpServer] { server =>
-    info(s"Task server started at http://localhost:${server.port}")
-    info("API endpoints:")
-    info("  GET    /api/tasks       - List all tasks")
-    info("  GET    /api/tasks/:id   - Get task by ID")  
-    info("  POST   /api/tasks       - Create new task")
-    info("  PUT    /api/tasks/:id   - Update task")
-    info("  DELETE /api/tasks/:id   - Delete task")
-    info("Press Ctrl+C to stop the server")
-    
-    // Keep the server running
-    server.awaitTermination()
-  }
-}
-```
-
-Start the server:
-```bash
-$ sbt "server/run"
-```
-
-Test the API with curl:
-```bash
-# Create a task
-$ curl -X POST http://localhost:8080/api/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Learn Airframe","description":"Complete the walkthrough"}'
-
-# List tasks  
-$ curl http://localhost:8080/api/tasks
-
-# Get specific task (use the ID from create response)
-$ curl http://localhost:8080/api/tasks/{task-id}
-```
-
-### Key HTTP Features
-
-1. **Annotation-based Routing**: Use `@Endpoint` to define HTTP endpoints
-2. **Automatic Serialization**: JSON/MessagePack serialization handled automatically  
-3. **Type Safety**: Compile-time checking of routes and parameters
-4. **Integration with DI**: HTTP handlers can use dependency injection
-
-## Step 4: RPC Communication
-
-[Airframe RPC](airframe-rpc.md) provides type-safe communication between services. Let's create an RPC client that can be used from other services or for testing.
-
-**server/src/main/scala/taskapp/server/rpc/TaskRPCServer.scala**  
-```scala
-package taskapp.server.rpc
-
-import taskapp.api.TaskApi
 import taskapp.server.api.TaskApiImpl  
 import wvlet.airframe.*
 import wvlet.airframe.http.*
@@ -486,19 +407,19 @@ import wvlet.airframe.http.netty.Netty
 import wvlet.log.{LogSupport, Logger}
 
 object TaskRPCServer extends App with LogSupport {
-  // RPC uses the same API interface but with RPC protocol
+  // Create RPC router from our API implementation
   val router = RxRouter.of[TaskApiImpl]
   
   val rpcDesign = AppDesign.design
     .bind[TaskApiImpl].toSingleton
     .add(Netty.server
-      .withPort(8081)  // Different port for RPC
+      .withPort(8080)
       .withRouter(router)
       .design)
   
   rpcDesign.build[HttpServer] { server =>
     info(s"Task RPC server started at http://localhost:${server.port}")
-    info("RPC endpoints available via type-safe client")
+    info("RPC interface available for type-safe client access")
     
     server.awaitTermination()
   }
@@ -525,12 +446,12 @@ class TaskCLI(
   @option(prefix = "--host", description = "server host")  
   host: String = "localhost",
   @option(prefix = "--port", description = "server port")
-  port: Int = 8081
+  port: Int = 8080
 ) extends LogSupport {
-  // Create RPC client - Note: adjust based on your actual RPC client generation
+  // Create RPC client - this demonstrates type-safe client generation
   private def withClient[A](f: TaskApi => A): A = {
     Using.resource(Http.client.newSyncClient(s"${host}:${port}")) { httpClient =>
-      // This assumes you've generated RPC client code - adjust package as needed
+      // Generated RPC client provides type-safe access to remote services
       val rpcClient = taskapp.api.TaskApiRPC.newRPCSyncClient(httpClient)
       f(rpcClient.TaskApi)
     }
@@ -590,7 +511,7 @@ class TaskCLI(
 To use the CLI:
 ```bash
 # Start the RPC server
-$ sbt "server/runMain taskapp.server.rpc.TaskRPCServer"
+$ sbt "server/run"
 
 # In another terminal, use the CLI
 $ sbt "cli/run create --title 'Learn RPC' --desc 'Understand Airframe RPC'"
@@ -606,7 +527,7 @@ $ sbt "cli/run delete --id {task-id}"
 3. **Cross-Platform**: Works with Scala.js for frontend development
 4. **Automatic Code Generation**: Client code generated from interfaces
 
-## Step 5: Scala.js Frontend with airframe-rx
+## Step 4: Scala.js Frontend with airframe-rx
 
 Let's build a browser-based frontend using [Airframe Rx](airframe-rx.md) for reactive UI development.
 
@@ -624,12 +545,10 @@ import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object TaskClient extends LogSupport {
-  // HTTP client for communicating with the server
+  // RPC client for communicating with the server
   private val httpClient = Http.client.newAsyncClient("http://localhost:8080")
-  // Note: For RPC, you would use generated client code like:
-  // private val rpcClient = taskapp.api.TaskApiRPC.newRPCAsyncClient(httpClient).TaskApi
+  private val rpcClient = taskapp.api.TaskApiRPC.newRPCAsyncClient(httpClient).TaskApi
   
-  // For this example, we'll use direct HTTP calls
   def main(args: Array[String]): Unit = {
     val app = new TaskApp()
     dom.document.getElementById("app").appendChild(app.render)
@@ -648,8 +567,8 @@ class TaskApp extends LogSupport {
   
   def loadTasks(): Unit = {
     loading := true
-    // Using direct HTTP API calls - in real app you'd use RPC client
-    TaskClient.httpClient.get[taskapp.api.TaskListResponse]("/api/tasks").onComplete {
+    // Using type-safe RPC client
+    TaskClient.rpcClient.listTasks().onComplete {
       case Success(response) =>
         tasks := response.tasks
         loading := false
@@ -664,7 +583,7 @@ class TaskApp extends LogSupport {
     val title = newTaskTitle.get
     if (title.nonEmpty) {
       val request = CreateTaskRequest(title, newTaskDesc.get)
-      TaskClient.httpClient.post[CreateTaskRequest, Task]("/api/tasks", request).onComplete {
+      TaskClient.rpcClient.createTask(request).onComplete {
         case Success(task) =>
           tasks := tasks.get :+ task
           newTaskTitle := ""
@@ -678,7 +597,7 @@ class TaskApp extends LogSupport {
   
   def toggleTask(task: Task): Unit = {
     val request = UpdateTaskRequest(completed = Some(!task.completed))
-    TaskClient.httpClient.put[UpdateTaskRequest, Option[Task]](s"/api/tasks/${task.id}", request).onComplete {
+    TaskClient.rpcClient.updateTask(task.id, request).onComplete {
       case Success(Some(updated)) =>
         tasks := tasks.get.map(t => if (t.id == task.id) updated else t)
         info(s"Updated task: ${task.title}")
@@ -690,7 +609,7 @@ class TaskApp extends LogSupport {
   }
   
   def deleteTask(task: Task): Unit = {
-    TaskClient.httpClient.delete[Boolean](s"/api/tasks/${task.id}").onComplete {
+    TaskClient.rpcClient.deleteTask(task.id).onComplete {
       case Success(true) =>
         tasks := tasks.get.filterNot(_.id == task.id)
         info(s"Deleted task: ${task.title}")
@@ -839,7 +758,7 @@ $ cd client/src/main/resources && python3 -m http.server 3000
 3. **RPC Integration**: Use the same RPC client on both JVM and JS
 4. **Full Scala Ecosystem**: Use Scala libraries in the browser
 
-## Step 6: Testing with AirSpec
+## Step 5: Testing with AirSpec
 
 A complete application needs comprehensive testing. [AirSpec](airspec.md) provides a functional testing framework with DI integration.
 
@@ -1003,276 +922,6 @@ $ sbt "server/test"
 3. **Lifecycle Management**: AirSpec manages service lifecycles for tests
 4. **Property-based Testing**: Support for property-based testing scenarios
 
-## Step 7: Command-Line Interface with airframe-launcher
-
-Finally, let's enhance our CLI with [airframe-launcher](airframe-launcher.md) for a complete command-line experience.
-
-**cli/src/main/scala/taskapp/cli/TaskManagerCLI.scala**
-```scala
-package taskapp.cli
-
-import taskapp.api.{TaskApi, CreateTaskRequest, UpdateTaskRequest}
-import wvlet.airframe.http.Http
-import wvlet.airframe.launcher.{Launcher, command, option}
-import wvlet.log.{LogSupport, Logger, LogLevel}
-import scala.util.{Using, Success, Failure}
-
-object TaskManagerCLI extends App {
-  Launcher.of[TaskManagerCLI].execute(args)
-}
-
-class TaskManagerCLI(
-  @option(prefix = "-h,--help", description = "show help", isHelp = true)
-  help: Boolean = false,
-  
-  @option(prefix = "-v,--verbose", description = "enable verbose logging")
-  verbose: Boolean = false,
-  
-  @option(prefix = "--host", description = "server host (default: localhost)")
-  host: String = "localhost",
-  
-  @option(prefix = "--port", description = "server port (default: 8081)")
-  port: Int = 8081,
-  
-  @option(prefix = "--format", description = "output format: table|json|csv")
-  format: String = "table"
-) extends LogSupport {
-  if (verbose) Logger.setDefaultLogLevel(LogLevel.DEBUG)
-  
-  private def withRPCClient[A](f: TaskApi => A): A = {
-    debug(s"Connecting to RPC server at ${host}:${port}")
-    Using.resource(Http.client.newSyncClient(s"${host}:${port}")) { httpClient =>
-      // Note: This assumes you've generated RPC client code using sbt-airframe plugin
-      val rpcClient = taskapp.api.TaskApiRPC.newRPCSyncClient(httpClient)
-      f(rpcClient.TaskApi)
-    }
-  }
-  
-  @command(isDefault = true, description = "Show available commands")
-  def help(): Unit = {
-    println("Task Manager CLI")
-    println("Available commands:")
-    println("  list          List all tasks")
-    println("  create        Create a new task")  
-    println("  show          Show task details")
-    println("  complete      Mark task as completed")
-    println("  delete        Delete a task")
-    println("  server        Start the task server")
-    println("")
-    println("Use --help with any command for more details")
-  }
-  
-  @command(description = "List all tasks")
-  def list(
-    @option(prefix = "--status", description = "filter by status: all|completed|pending")
-    status: String = "all"
-  ): Unit = {
-    withRPCClient { client =>
-      val response = client.listTasks()
-      val filteredTasks = status.toLowerCase match {
-        case "completed" => response.tasks.filter(_.completed)
-        case "pending" => response.tasks.filterNot(_.completed)
-        case _ => response.tasks
-      }
-      
-      format.toLowerCase match {
-        case "json" => printAsJson(filteredTasks)
-        case "csv" => printAsCsv(filteredTasks) 
-        case _ => printAsTable(filteredTasks)
-      }
-    }
-  }
-  
-  @command(description = "Create a new task")
-  def create(
-    @option(prefix = "--title", description = "task title (required)") title: String,
-    @option(prefix = "--description", description = "task description") description: String = ""
-  ): Unit = {
-    if (title.isEmpty) {
-      error("Task title is required. Use --title option.")
-      return
-    }
-    
-    withRPCClient { client =>
-      val task = client.createTask(CreateTaskRequest(title, description))
-      info(s"✓ Created task '${task.title}' with ID: ${task.id}")
-    }
-  }
-  
-  @command(description = "Show task details")
-  def show(
-    @option(prefix = "--id", description = "task ID (required)") id: String
-  ): Unit = {
-    if (id.isEmpty) {
-      error("Task ID is required. Use --id option.")
-      return
-    }
-    
-    withRPCClient { client =>
-      client.getTask(id) match {
-        case Some(task) =>
-          println(s"Task: ${task.title}")
-          println(s"ID: ${task.id}")
-          println(s"Description: ${task.description}")
-          println(s"Status: ${if (task.completed) "✓ Completed" else "○ Pending"}")
-          println(s"Created: ${task.createdAt}")
-          task.updatedAt.foreach(updated => println(s"Updated: ${updated}"))
-        case None =>
-          error(s"Task ${id} not found")
-      }
-    }
-  }
-  
-  @command(description = "Mark task as completed")
-  def complete(
-    @option(prefix = "--id", description = "task ID (required)") id: String
-  ): Unit = {
-    if (id.isEmpty) {
-      error("Task ID is required. Use --id option.")
-      return
-    }
-    
-    withRPCClient { client =>
-      client.updateTask(id, UpdateTaskRequest(completed = Some(true))) match {
-        case Some(task) => info(s"✓ Marked '${task.title}' as completed")
-        case None => error(s"Task ${id} not found")
-      }
-    }
-  }
-  
-  @command(description = "Delete a task")
-  def delete(
-    @option(prefix = "--id", description = "task ID (required)") id: String,
-    @option(prefix = "--force", description = "skip confirmation") force: Boolean = false
-  ): Unit = {
-    if (id.isEmpty) {
-      error("Task ID is required. Use --id option.")
-      return
-    }
-    
-    if (!force) {
-      print(s"Are you sure you want to delete task ${id}? (y/N): ")
-      val response = scala.io.StdIn.readLine().toLowerCase
-      if (response != "y" && response != "yes") {
-        info("Delete cancelled")
-        return
-      }
-    }
-    
-    withRPCClient { client =>
-      if (client.deleteTask(id)) {
-        info(s"✓ Deleted task ${id}")
-      } else {
-        error(s"Task ${id} not found")
-      }
-    }
-  }
-  
-  @command(description = "Start the task management server")
-  def server(
-    @option(prefix = "--server-port", description = "HTTP server port") serverPort: Int = 8080,
-    @option(prefix = "--rpc-port", description = "RPC server port") rpcPort: Int = 8081
-  ): Unit = {
-    info("Starting task management servers...")
-    info(s"HTTP API server will run on port ${serverPort}")
-    info(s"RPC server will run on port ${rpcPort}")
-    info("This would start both servers (implementation depends on your needs)")
-    // You could start both servers here or delegate to the server module
-  }
-  
-  // Helper methods for different output formats
-  private def printAsTable(tasks: Seq[Task]): Unit = {
-    if (tasks.isEmpty) {
-      println("No tasks found")
-      return
-    }
-    
-    val maxTitleLength = tasks.map(_.title.length).maxOption.getOrElse(10)
-    val titleWidth = math.max(maxTitleLength, 10)
-    
-    println(f"${"Status"}%-8s ${"ID"}%-36s ${"Title"}%-${titleWidth}s ${"Created"}%s")
-    println("-" * (8 + 36 + titleWidth + 20))
-    
-    tasks.foreach { task =>
-      val status = if (task.completed) "✓" else "○"
-      val created = task.createdAt.toString.take(10) // Just the date part
-      println(f"${status}%-8s ${task.id}%-36s ${task.title}%-${titleWidth}s ${created}%s")
-    }
-    println(s"\nTotal: ${tasks.size} tasks")
-  }
-  
-  private def printAsCsv(tasks: Seq[Task]): Unit = {
-    println("status,id,title,description,created,updated")
-    tasks.foreach { task =>
-      val status = if (task.completed) "completed" else "pending"
-      val updated = task.updatedAt.map(_.toString).getOrElse("")
-      println(s"${status},${task.id},${csvEscape(task.title)},${csvEscape(task.description)},${task.createdAt},${updated}")
-    }
-  }
-  
-  private def printAsJson(tasks: Seq[Task]): Unit = {
-    // Simple JSON output - in a real app you'd use airframe-codec
-    println("{")
-    println(s"""  "total": ${tasks.size},""")
-    println(s"""  "tasks": [""")
-    tasks.zipWithIndex.foreach { case (task, index) =>
-      val comma = if (index < tasks.size - 1) "," else ""
-      println(s"""    {""")
-      println(s"""      "id": "${task.id}",""")
-      println(s"""      "title": "${jsonEscape(task.title)}",""")
-      println(s"""      "description": "${jsonEscape(task.description)}",""")
-      println(s"""      "completed": ${task.completed},""")
-      println(s"""      "createdAt": "${task.createdAt}"""")
-      task.updatedAt.foreach(updated => println(s""",      "updatedAt": "${updated}""""))
-      println(s"""    }${comma}""")
-    }
-    println("  ]")
-    println("}")
-  }
-  
-  private def csvEscape(str: String): String = {
-    if (str.contains(",") || str.contains("\"") || str.contains("\n")) {
-      "\"" + str.replace("\"", "\"\"") + "\""
-    } else {
-      str
-    }
-  }
-  
-  private def jsonEscape(str: String): String = {
-    str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
-  }
-}
-```
-
-Usage examples:
-```bash
-# Show help
-$ sbt "cli/run --help"
-
-# Create tasks
-$ sbt "cli/run create --title 'Learn Airframe' --description 'Complete the walkthrough'"
-$ sbt "cli/run create --title 'Build app'"
-
-# List tasks in different formats
-$ sbt "cli/run list"
-$ sbt "cli/run list --format json"
-$ sbt "cli/run list --format csv"
-$ sbt "cli/run list --status pending"
-
-# Show task details
-$ sbt "cli/run show --id {task-id}"
-
-# Complete a task
-$ sbt "cli/run complete --id {task-id}"
-
-# Delete a task
-$ sbt "cli/run delete --id {task-id}"
-$ sbt "cli/run delete --id {task-id} --force"  # Skip confirmation
-
-# Enable verbose logging
-$ sbt "cli/run list --verbose"
-```
-
 ## Conclusion
 
 Congratulations! You've built a complete task management application using Airframe that demonstrates:
@@ -1280,13 +929,11 @@ Congratulations! You've built a complete task management application using Airfr
 ### What We've Accomplished
 
 1. **Logging**: Structured, performant logging with source code locations
-2. **Configuration**: Type-safe YAML configuration management  
-3. **Dependency Injection**: Clean separation of concerns with constructor injection
-4. **REST APIs**: HTTP endpoints with automatic serialization
-5. **RPC Communication**: Type-safe client-server communication
-6. **Scala.js Frontend**: Reactive browser-based UI sharing server code
-7. **Command-Line Interface**: Rich CLI with multiple output formats
-8. **Testing**: Comprehensive testing with DI integration
+2. **Dependency Injection**: Clean separation of concerns with constructor injection
+3. **RPC Communication**: Type-safe client-server communication
+4. **Scala.js Frontend**: Reactive browser-based UI sharing server code
+5. **Command-Line Interface**: Rich CLI with multiple output formats
+6. **Testing**: Comprehensive testing with DI integration
 
 ### Key Benefits of Airframe
 
