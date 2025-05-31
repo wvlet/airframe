@@ -101,4 +101,27 @@ class RxSideEffectTest extends AirSpec {
       }
   }
 
+  test("Rx.delay(...) - introduce artificial delay") {
+    if (isScalaJS) {
+      pending("Async test is required")
+    } else if (isScalaNative) {
+      pending("Timer is not yet supported in Scala Native")
+    } else {
+      val observed = Seq.newBuilder[Int]
+      val rx = Rx.fromSeq(Seq(1, 2, 3))
+        .delay(10, java.util.concurrent.TimeUnit.MILLISECONDS)
+      
+      val c = rx.run { x =>
+        observed += x
+      }
+      
+      // Wait a bit for the async operations to complete
+      compat.scheduleOnce(200) {
+        val result = observed.result()
+        result shouldBe Seq(1, 2, 3)
+        c.cancel
+      }
+    }
+  }
+
 }

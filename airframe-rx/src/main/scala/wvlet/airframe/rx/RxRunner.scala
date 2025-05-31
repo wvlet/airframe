@@ -342,6 +342,32 @@ class RxRunner(
               effect(OnError(e))
           }
         }
+      case DelayOp(in, interval, unit) =>
+        val delayMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        run(in) { ev =>
+          ev match {
+            case OnNext(v) =>
+              compat.scheduleOnce(delayMillis) {
+                Try(effect(OnNext(v.asInstanceOf[A]))) match {
+                  case Success(c) =>
+                    // Continue processing without emitting completion here
+                  case Failure(e) =>
+                    effect(OnError(e))
+                }
+              }
+              RxResult.Continue
+            case other =>
+              // For OnError and OnCompletion, pass them through with delay
+              compat.scheduleOnce(delayMillis) {
+                effect(other)
+              }
+              if (other == OnCompletion) {
+                RxResult.Stop
+              } else {
+                RxResult.Continue
+              }
+          }
+        }
       case ThrottleFirstOp(in, interval, unit) =>
         var lastUpdateTimeNanos = -interval
         run(in) {

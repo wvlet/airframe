@@ -580,6 +580,16 @@ trait Rx[+A] extends RxOps[A] {
     * Emit the given items first before returning the items from the source.
     */
   def startWith[A1 >: A](lst: Seq[A1]): Rx[A1] = Rx.concat(Rx.fromSeq(lst), this)
+
+  /**
+    * Introduce an artificial delay before emitting each value from the source. This is similar to the tap operator
+    * but with a time delay. Each value will be emitted after the specified delay period.
+    *
+    * @param interval delay time
+    * @param unit time unit
+    * @return delayed Rx stream with the same values
+    */
+  def delay(interval: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] = DelayOp(this, interval, unit)
 }
 
 /**
@@ -1031,6 +1041,8 @@ object Rx extends LogSupport {
   case class TimerOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
     override def parents: Seq[RxOps[_]] = Seq.empty
   }
+
+  case class DelayOp[A](input: RxOps[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
 
   case class TakeOp[A](input: RxOps[A], n: Long) extends Rx[A] {
     override def parents: Seq[RxOps[_]] = Seq(input)
