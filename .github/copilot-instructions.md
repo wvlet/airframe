@@ -18,7 +18,7 @@
 
 ## Coding style
 
-- To properly format Scala code, use `./sbt scalafmtAll`.
+- Before commit, run `./sbt scalafmtAll` to properly format the Scala code.
 - case classes for configuration should have withXXX(...) methods for all fields and noXXX(...) methods for all optional fields.
 - In string interpolation, always enclose expr with bracket `${...}` for consistency.
 - Returning `Try[A]` is generally discouraged as it forces a monadic style on the caller. Consider using plain exceptions for unrecoverable errors, or domain-specific error types.

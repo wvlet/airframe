@@ -17,9 +17,8 @@ import wvlet.airspec.AirSpec
 
 object MT extends MT
 
-trait MT {
+trait MT:
   case class B(min: Int = 0, max: Int = 0)
-}
 
 class TraitInheritedClassTest extends AirSpec:
   test("reproduce the crash with trait-inherited case class") {
@@ -36,11 +35,11 @@ class TraitInheritedClassTest extends AirSpec:
   test("original issue scenario should work") {
     // This reproduces the exact scenario from the issue
     val schema = Surface.of[MT.B]
-    
+
     // Should be able to print the schema without crashing
     val schemaString = schema.toString
     schemaString.contains("B") shouldBe true
-    
+
     // Should have proper parameters with default values (though they may be None due to trait limitation)
     schema.params.foreach { param =>
       param.surface shouldNotBe null
