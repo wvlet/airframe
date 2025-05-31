@@ -16,7 +16,7 @@ package wvlet.airframe.http.rx.html
 import org.scalajs.dom
 import org.scalajs.dom.{HTMLElement, document}
 import wvlet.airframe.rx.{Cancelable, Rx, html}
-import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
+import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement, RxDOM}
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.html.*
 import wvlet.airframe.rx.html.all.*
@@ -381,6 +381,55 @@ object RxRenderingTest extends AirSpec {
     selected := "about"
     // The atrribute should be totally removed
     n.outerHTML shouldBe """<div>about</div>"""
+  }
+
+  test("onMount should find element by ID in nested sequences") {
+    var elementFound = false
+    var onMountCalled = false
+    val foundElement = Rx.variable(false)
+    
+    class HoverableTextLabel(txt: RxElement, hoverMessage: String) extends RxElement {
+      private val elementId = s"element-${System.nanoTime()}"
+
+      override def onMount(n: Any): Unit = {
+        onMountCalled = true
+        RxDOM.getHTMLElementById(elementId) match {
+          case Some(el) => 
+            elementFound = true
+            foundElement := true
+            foundElement.stop()
+          case None =>
+            elementFound = false
+        }
+      }
+
+      override def render: RxElement = span(
+        id                   -> elementId,
+        data("bs-toggle")    -> "tooltip",
+        data("bs-placement") -> "top", 
+        data("bs-title")     -> hoverMessage,
+        txt
+      )
+    }
+
+    val element = div(
+      Seq[RxElement](
+        HoverableTextLabel(span("hello"), "mouseover message")
+      )
+    )
+
+    val (n, c) = render(element)
+    
+    // Wait for the async onMount to complete
+    foundElement.lastOption.map { flag =>
+      // onMount should have been called
+      onMountCalled shouldBe true
+      
+      // The element should be found by ID when onMount is called
+      flag shouldBe true
+    }
+    
+    c.cancel
   }
 
 }
