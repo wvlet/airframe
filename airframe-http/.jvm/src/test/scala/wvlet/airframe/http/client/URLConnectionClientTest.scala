@@ -26,13 +26,12 @@ import java.util.concurrent.TimeUnit
   */
 object URLConnectionClientTest extends AirSpec {
 
-  // Use a public REST test server - skip tests if unavailable  
+  // Use a public REST test server - skip tests if unavailable
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
 
   private def isServiceAvailable: Boolean = {
     try {
-      val client = Http.client
-        .withJSONEncoding
+      val client = Http.client.withJSONEncoding
         .withConnectTimeout(Duration(5, TimeUnit.SECONDS))
         .withReadTimeout(Duration(5, TimeUnit.SECONDS))
         .newSyncClient(PUBLIC_REST_SERVICE)
@@ -47,8 +46,7 @@ object URLConnectionClientTest extends AirSpec {
     Design.newDesign
       .bind[SyncClient]
       .toInstance(
-        Http.client
-          .withJSONEncoding
+        Http.client.withJSONEncoding
           .newSyncClient(PUBLIC_REST_SERVICE)
       )
   }
@@ -70,7 +68,9 @@ object URLConnectionClientTest extends AirSpec {
 
   test("sync client") { (client: SyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     test("complement missing slash") {
@@ -131,7 +131,9 @@ object URLConnectionClientTest extends AirSpec {
 
   test("retry test") { (client: SyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     test("Handle 5xx retry") {

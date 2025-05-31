@@ -54,7 +54,9 @@ class JavaSyncClientTest extends AirSpec {
 
   test("java http sync client") { (client: SyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     test("GET") {
@@ -138,7 +140,9 @@ class JavaSyncClientTest extends AirSpec {
 
   test("retry test") { (client: SyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     test("handle max retry") {
@@ -156,7 +160,9 @@ class JavaSyncClientTest extends AirSpec {
 
   test("circuit breaker") { (client: SyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     val e = intercept[HttpClientException] {

@@ -22,11 +22,11 @@ import wvlet.airspec.AirSpec
 import wvlet.airframe.http.HttpHeader.MediaType
 
 /**
- * RPCHttpClient test using local Netty server instead of external httpbin.org
- */
-class RPCHttpClientTest extends AirSpec {
+  * RPCHttpClient test using local Netty server instead of external httpbin.org
+  */
+class RPCHttpClientTest extends AirSpec:
 
-  override protected def design: Design = {
+  override protected def design: Design =
     Design.newDesign
       .add(
         Netty.server
@@ -36,17 +36,15 @@ class RPCHttpClientTest extends AirSpec {
       .bind[SyncClient].toProvider { (server: NettyServer) =>
         Http.client.newSyncClient(server.localAddress)
       }
-  }
 
   case class TestRequest(id: Int, name: String)
   case class TestResponse(url: String, headers: Map[String, Any])
 
   test("Create an RPCSyncClient") { (client: SyncClient) =>
-    val m         = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
-    val response  = client.rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
+    val m        = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
+    val response = client.rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
 
     // Test message
     debug(response)
     response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
   }
-}

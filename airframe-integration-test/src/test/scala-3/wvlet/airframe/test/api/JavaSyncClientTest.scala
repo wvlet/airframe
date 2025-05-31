@@ -23,9 +23,9 @@ import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
 
 /**
- * JavaSyncClient test using local Netty server instead of external httpbin.org
- */
-class JavaSyncClientTest extends AirSpec {
+  * JavaSyncClient test using local Netty server instead of external httpbin.org
+  */
+class JavaSyncClientTest extends AirSpec:
 
   override def design: Design =
     Design.newDesign
@@ -137,11 +137,9 @@ class JavaSyncClientTest extends AirSpec {
         .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
         .send(Http.GET("/status/500"))
     }
-    e.getCause match {
+    e.getCause match
       case c: CircuitBreakerOpenException =>
       // ok
       case other =>
         fail(s"Unexpected failure: ${e}")
-    }
   }
-}

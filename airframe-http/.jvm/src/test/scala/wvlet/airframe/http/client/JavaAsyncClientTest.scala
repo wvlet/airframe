@@ -61,7 +61,9 @@ object JavaAsyncClientTest extends AirSpec {
 
   test("java http sync client") { (client: AsyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     test("GET") {
@@ -139,7 +141,9 @@ object JavaAsyncClientTest extends AirSpec {
 
   test("retry test") { (client: AsyncClient) =>
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     test("handle max retry") {

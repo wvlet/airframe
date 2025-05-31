@@ -23,11 +23,11 @@ import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 
 /**
- * URLConnectionClient test using local Netty server instead of external httpbin.org
- */
-class URLConnectionClientTest extends AirSpec {
+  * URLConnectionClient test using local Netty server instead of external httpbin.org
+  */
+class URLConnectionClientTest extends AirSpec:
 
-  override protected def design: Design = {
+  override protected def design: Design =
     Design.newDesign
       .add(
         Netty.server
@@ -40,22 +40,19 @@ class URLConnectionClientTest extends AirSpec {
           .withJSONEncoding
           .newSyncClient(server.localAddress)
       }
-  }
 
   case class Person(id: Int, name: String)
 
   val p     = Person(1, "leo")
   val pJson = MessageCodec.of[Person].toJson(p)
 
-  private def check(r: Response): Unit = {
+  private def check(r: Response): Unit =
     r.status shouldBe HttpStatus.Ok_200
     val m = MessageCodec.of[Map[String, Any]].fromJson(r.contentString)
     check(m)
-  }
 
-  private def check(m: Map[String, Any]): Unit = {
+  private def check(m: Map[String, Any]): Unit =
     m("json") shouldBe Map("id" -> 1, "name" -> "leo")
-  }
 
   test("sync client") { (client: SyncClient) =>
     test("complement missing slash") {
@@ -128,4 +125,3 @@ class URLConnectionClientTest extends AirSpec {
       }
     }
   }
-}

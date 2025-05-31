@@ -25,9 +25,9 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 /**
- * JavaAsyncClient test using local Netty server instead of external httpbin.org
- */
-class JavaAsyncClientTest extends AirSpec {
+  * JavaAsyncClient test using local Netty server instead of external httpbin.org
+  */
+class JavaAsyncClientTest extends AirSpec:
 
   case class Person(id: Int, name: String)
   private val p     = Person(1, "leo")
@@ -138,4 +138,3 @@ class JavaAsyncClientTest extends AirSpec {
         }
     }
   }
-}

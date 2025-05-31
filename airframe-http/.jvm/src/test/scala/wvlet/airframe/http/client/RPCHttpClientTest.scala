@@ -43,7 +43,9 @@ object RPCHttpClientTest extends AirSpec {
 
   test("Create an RPCSyncClient") {
     if (!isServiceAvailable) {
-      pending(s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead.")
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
     }
 
     val rpcClient = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
