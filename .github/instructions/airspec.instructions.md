@@ -20,7 +20,7 @@ AirSpec provides a rich set of assertion syntaxes for verifying test expectation
 | `intercept[E] { ... }`       | Catch an exception of type `E` to check an expected exception is thrown              |
 | `x shouldBe y`               | check x == y. This supports matching collections like Seq, Array (with deepEqual)    |
 | `x shouldNotBe y`            | check x != y                                                                         |
-| `x shouldNotBe null`         | `shouldBe`, `shouldNotBe` supports null check                                        |
+| `x shouldNotBe null`         | check x is not null                                                                  |
 | `x shouldBe defined`         | check x.isDefined == true, when x is Option or Seq                                   |
 | `x shouldBe empty`           | check x.isEmpty == true, when x is Option or Seq                                     |
 | `x shouldBeTheSameInstanceAs y` | check x eq y; x and y are the same object instance                                   |
