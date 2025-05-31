@@ -22,7 +22,11 @@ import wvlet.airframe.surface.Surface
   * codec instance as MessageCodec[X](StringCodec, OptionCodec(LazyCodec[X])).
   */
 case class LazyCodec[A](surface: Surface, codecFactory: MessageCodecFactory) extends MessageCodec[A] {
-  private lazy val ref: MessageCodec[A] = codecFactory.ofSurface(surface).asInstanceOf[MessageCodec[A]]
+  private lazy val ref: MessageCodec[A] = {
+    // When resolving the lazy reference, pass the current surface in the seen set
+    // to prevent infinite recursion if the cache lookup fails for any reason
+    codecFactory.ofSurface(surface, Set(surface)).asInstanceOf[MessageCodec[A]]
+  }
 
   override def pack(p: Packer, v: A): Unit = {
     ref.pack(p, v)
