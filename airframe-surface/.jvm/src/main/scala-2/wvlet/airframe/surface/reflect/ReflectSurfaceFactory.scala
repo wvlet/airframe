@@ -122,6 +122,9 @@ object ReflectSurfaceFactory extends LogSupport {
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         fullName
+      case ct: ru.ConstantType =>
+        // Distinguish literal types (e.g., Int(1), Boolean(true)) from their primitive types (Int, Boolean)
+        s"${ct.typeSymbol.fullName}(${ct.value.value})"
       case TypeRef(prefix, typeSymbol, args) if args.isEmpty =>
         typeSymbol.fullName
       case TypeRef(prefix, typeSymbol, args) if !args.isEmpty =>

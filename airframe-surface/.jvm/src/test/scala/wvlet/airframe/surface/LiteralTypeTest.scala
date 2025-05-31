@@ -20,48 +20,48 @@ package wvlet.airframe.surface
 class LiteralTypeTest extends SurfaceSpec {
   test("literal types should not interfere with primitive types") {
     // Test the issue: Surface.of[1] followed by Surface.of[Int] returns Object
-    val literal1 = Surface.of[1]
+    val literal1   = Surface.of[1]
     val intSurface = Surface.of[Int]
-    
+
     debug(s"Surface.of[1]: ${literal1} (class: ${literal1.getClass.getSimpleName})")
     debug(s"Surface.of[Int]: ${intSurface} (class: ${intSurface.getClass.getSimpleName})")
-    
+
     // Surface.of[Int] should always return "Int", not "Object"
     intSurface.toString shouldBe "Int"
-    
-    // Test with Seq[Int] 
+
+    // Test with Seq[Int]
     val seqInt = Surface.of[Seq[Int]]
     debug(s"Surface.of[Seq[Int]]: ${seqInt}")
     seqInt.toString shouldBe "Seq[Int]"
   }
-  
+
   test("double literal types should not interfere") {
-    val literal1_0 = Surface.of[1.0]
+    val literal1_0    = Surface.of[1.0]
     val doubleSurface = Surface.of[Double]
-    
+
     debug(s"Surface.of[1.0]: ${literal1_0}")
     debug(s"Surface.of[Double]: ${doubleSurface}")
-    
+
     doubleSurface.toString shouldBe "Double"
   }
-  
+
   test("char literal types should not interfere") {
-    val literalA = Surface.of['a']
+    val literalA    = Surface.of['a']
     val charSurface = Surface.of[Char]
-    
+
     debug(s"Surface.of['a']: ${literalA}")
     debug(s"Surface.of[Char]: ${charSurface}")
-    
+
     charSurface.toString shouldBe "Char"
   }
-  
+
   test("boolean literal types should not interfere") {
-    val literalTrue = Surface.of[true]
+    val literalTrue    = Surface.of[true]
     val booleanSurface = Surface.of[Boolean]
-    
+
     debug(s"Surface.of[true]: ${literalTrue}")
     debug(s"Surface.of[Boolean]: ${booleanSurface}")
-    
+
     booleanSurface.toString shouldBe "Boolean"
   }
 }
