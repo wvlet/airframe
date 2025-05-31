@@ -81,3 +81,11 @@ object IOUtil:
       b.toByteArray
     }
     f(byteArray)
+
+  def copy(in: InputStream, out: OutputStream): Unit =
+    val buf = new Array[Byte](8192)
+    var readBytes = 0
+    while {
+      readBytes = in.read(buf)
+      readBytes != -1
+    } do out.write(buf, 0, readBytes)
