@@ -35,9 +35,9 @@
 
 - Use `./sbt` command to open sbt shell.
 - Use `./sbt projectJVM/Test/compile` to compile the source and test code for JVM projects. Similarly, use `projectJS/Test/compile` for JS projects, and `projectNative/Test/compile` for Native projects. Replace `project` with the actual module name (e.g., `logJVM/Test/compile`).
-- To run a specific test class: `./sbt '(moduleName)(JVM|JS|Native)/testOnly *.(test class name)'`.
-    - Example for a JVM test in `airframe-log` module: `./sbt 'logJVM/testOnly *.MyLogTest'`
-    - Example for a JS test in `airframe-codec` module: `./sbt 'codecJS/testOnly *.MyCodecTest'`
+- To run a specific test class: `./sbt '(moduleName)(JVM|JS|Native)/testOnly *TestClassName'`.
+    - Example for a JVM test in `airframe-log` module: `./sbt 'logJVM/testOnly *MyLogTest'`
+    - Example for a JS test in `airframe-codec` module: `./sbt 'codecJS/testOnly fully.qualified.TestClassName'`
 - Use AirSpec testing framework. Key assertion syntaxes include `shouldBe`, `shouldNotBe`, `shouldMatch`.
 - Test names should be concise and descriptive, written in plain English.
 - Avoid using mock as it increases the maintenance cost.

@@ -13,27 +13,27 @@ AirSpec provides a rich set of assertion syntaxes for verifying test expectation
 
 ### Assertion Syntax Table:
 
-| syntax                       | meaning                                                                              |
-| :--------------------------- | :----------------------------------------------------------------------------------- |
-| `assert(x == y)`             | check x equals to y                                                                  |
-| `assertEquals(a, b, delta)`  | check the equality of Float (or Double) values by allowing some delta difference     |
-| `intercept[E] { ... }`       | Catch an exception of type `E` to check an expected exception is thrown              |
-| `x shouldBe y`               | check x == y. This supports matching collections like Seq, Array (with deepEqual)    |
-| `x shouldNotBe y`            | check x != y                                                                         |
-| `x shouldNotBe null`         | check x is not null                                                                  |
-| `x shouldBe defined`         | check x.isDefined == true, when x is Option or Seq                                   |
-| `x shouldBe empty`           | check x.isEmpty == true, when x is Option or Seq                                     |
-| `x shouldBeTheSameInstanceAs y` | check x eq y; x and y are the same object instance                                   |
-| `x shouldNotBeTheSameInstanceAs y` | check x ne y; x and y should not be the same instance                               |
-| `x shouldMatch { case .. => }` | check x matches given patterns                                                       |
-| `x shouldContain y`          | check x contains given value y                                                       |
-| `x shouldNotContain y`       | check x doesn't contain a given value y                                              |
-| `fail("reason")`             | fail the test if this code path should not be reached                                |
-| `ignore("reason")`           | ignore this test execution.                                                          |
-| `cancel("reason")`           | cancel the test (e.g., due to set up failure)                                        |
-| `pending("reason")`          | pending the test execution (e.g., when hitting an unknown issue)                     |
-| `pendingUntil("reason")`     | pending until fixing some blocking issues                                            |
-| `skip("reason")`             | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)      |
+| syntax                             | meaning                                                                           |
+|:-----------------------------------|:----------------------------------------------------------------------------------|
+| `assert(x == y)`                   | check x equals to y                                                               |
+| `assertEquals(a, b, delta)`        | check the equality of Float (or Double) values by allowing some delta difference  |
+| `intercept[E] { ... }`             | Catch an exception of type `E` to check an expected exception is thrown           |
+| `x shouldBe y`                     | check x == y. This supports matching collections like Seq, Array (with deepEqual) |
+| `x shouldNotBe y`                  | check x != y                                                                      |
+| `x shouldNotBe null`               | check x is not null                                                               |
+| `x shouldBe defined`               | check x.isDefined == true, when x is Option or Seq                                |
+| `x shouldBe empty`                 | check x.isEmpty == true, when x is Option or Seq                                  |
+| `x shouldBeTheSameInstanceAs y`    | check x eq y; x and y are the same object instance                                |
+| `x shouldNotBeTheSameInstanceAs y` | check x ne y; x and y should not be the same instance                             |
+| `x shouldMatch { case .. => }`     | check x matches given patterns                                                    |
+| `x shouldContain y`                | check x contains given value y                                                    |
+| `x shouldNotContain y`             | check x doesn't contain a given value y                                           |
+| `fail("reason")`                   | fail the test if this code path should not be reached                             |
+| `ignore("reason")`                 | ignore this test execution.                                                       |
+| `cancel("reason")`                 | cancel the test (e.g., due to set up failure)                                     |
+| `pending("reason")`                | pending the test execution (e.g., when hitting an unknown issue)                  |
+| `pendingUntil("reason")`           | pending until fixing some blocking issues                                         |
+| `skip("reason")`                   | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)     |
 
 ### Assertion Example:
 
