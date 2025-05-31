@@ -11,18 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.client
+package wvlet.airframe.test.api
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.{Http, HttpClientException, HttpStatus}
+import wvlet.airframe.http.{Http, HttpClientException, HttpStatus, RxRouter}
+import wvlet.airframe.http.client.{SyncClient, URLConnectionClientBackend}
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 
 /**
-  */
-object URLConnectionClientTest extends AirSpec {
+ * URLConnectionClient test using local Netty server instead of external httpbin.org
+ */
+class URLConnectionClientTest extends AirSpec {
 
   override protected def design: Design = {
     Design.newDesign
