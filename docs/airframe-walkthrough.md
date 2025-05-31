@@ -67,6 +67,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
 // Server module (JVM only)
 lazy val server = project
   .in(file("server"))
+  .enablePlugins(AirframeHttpPlugin)
   .settings(
     name := "task-server",
     libraryDependencies ++= Seq(
@@ -76,34 +77,38 @@ lazy val server = project
       "org.wvlet.airframe" %% "airframe-codec"       % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-launcher"    % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airspec"              % AIRFRAME_VERSION % Test
-    )
+    ),
+    airframeHttpClients := Seq("taskapp.api:rpc:TaskApiRPC")
   )
   .dependsOn(api.jvm)
 
 // Scala.js client module
 lazy val client = project
   .in(file("client"))
-  .enablePlugins(ScalaJSPlugin)
+  .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
   .settings(
     name := "task-client",
     libraryDependencies ++= Seq(
       "org.wvlet.airframe" %%% "airframe-http"  % AIRFRAME_VERSION,
       "org.wvlet.airframe" %%% "airframe-rx"    % AIRFRAME_VERSION,
       "org.wvlet.airframe" %%% "airframe-log"   % AIRFRAME_VERSION
-    )
+    ),
+    airframeHttpClients := Seq("taskapp.api:rpc:TaskApiRPC")
   )
   .dependsOn(api.js)
 
 // CLI module
 lazy val cli = project
   .in(file("cli"))
+  .enablePlugins(AirframeHttpPlugin)
   .settings(
     name := "task-cli",
     libraryDependencies ++= Seq(
       "org.wvlet.airframe" %% "airframe-launcher" % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-http"     % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-log"      % AIRFRAME_VERSION
-    )
+    ),
+    airframeHttpClients := Seq("taskapp.api:rpc:TaskApiRPC")
   )
   .dependsOn(api.jvm)
 ```
