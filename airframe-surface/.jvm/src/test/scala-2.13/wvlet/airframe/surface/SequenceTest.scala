@@ -18,6 +18,7 @@ package wvlet.airframe.surface
   * Test for the specific behavior mentioned in the problem statement
   */
 class SequenceTest extends SurfaceSpec {
+
   test("Seq[Int] should work correctly after literal type resolution") {
     // This mimics the exact sequence mentioned in the problem statement
     val surface1 = Surface.of[1]        // Object

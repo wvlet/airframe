@@ -18,6 +18,7 @@ package wvlet.airframe.surface
   * Test for the issue where Surface.of[Int] after Surface.of[1] returns Surface.of[Object]
   */
 class LiteralTypeTest extends SurfaceSpec {
+
   test("literal types should not interfere with primitive types") {
     // Test the issue: Surface.of[1] followed by Surface.of[Int] returns Object
     val literal1   = Surface.of[1]
