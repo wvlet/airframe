@@ -17,8 +17,8 @@ import wvlet.airspec.AirSpec
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * JVM-specific tests for RateLimiter that use java.lang.Thread
- */
+  * JVM-specific tests for RateLimiter that use java.lang.Thread
+  */
 class RateLimiterJVMTest extends AirSpec {
 
   test("handle concurrent access") {
