@@ -27,7 +27,7 @@ import scala.util.{Failure, Success}
 class JSHttpAsyncClientTest extends AirSpec {
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
-  // Use a public REST test server
+  // Use a public REST test server - tests marked as flaky to handle service unavailability
   private val PUBLIC_REST_SERVICE = "https://jsonplaceholder.typicode.com/"
 
   override def design: Design =

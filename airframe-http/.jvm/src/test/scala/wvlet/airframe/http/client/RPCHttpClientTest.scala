@@ -17,16 +17,37 @@ import wvlet.airframe.http.{Http, RPCMethod}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.airframe.http.HttpHeader.MediaType
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
 
 object RPCHttpClientTest extends AirSpec {
 
-  // Use a public REST test server
+  // Use a public REST test server - skip tests if unavailable
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
+
+  private def isServiceAvailable: Boolean = {
+    try {
+      val client = Http.client
+        .withConnectTimeout(Duration(5, TimeUnit.SECONDS))
+        .withReadTimeout(Duration(5, TimeUnit.SECONDS))
+        .newSyncClient(PUBLIC_REST_SERVICE)
+      val resp = client.sendSafe(Http.GET("/get"))
+      resp.status.isSuccessful
+    } catch {
+      case _: Exception => false
+    }
+  }
 
   case class TestRequest(id: Int, name: String)
   case class TestResponse(url: String, headers: Map[String, Any])
 
   test("Create an RPCSyncClient") {
+    if (!isServiceAvailable) {
+      pending(
+        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
+      )
+    }
+
     val rpcClient = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
     val m         = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
     val response  = rpcClient.rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))

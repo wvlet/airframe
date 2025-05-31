@@ -11,20 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.client
+package wvlet.airframe.test.api
 
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.*
+import wvlet.airframe.http.client.{AsyncClient, JavaHttpClientBackend}
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.{Design, newDesign}
 import wvlet.airspec.AirSpec
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-object JavaAsyncClientTest extends AirSpec {
+/**
+  * JavaAsyncClient test using local Netty server instead of external httpbin.org
+  */
+class JavaAsyncClientTest extends AirSpec:
 
   case class Person(id: Int, name: String)
   private val p     = Person(1, "leo")
@@ -32,40 +35,21 @@ object JavaAsyncClientTest extends AirSpec {
 
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
-  // Use a public REST test server - skip tests if unavailable
-  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
-
-  private def isServiceAvailable: Boolean = {
-    try {
-      val client = Http.client
-        .withBackend(JavaHttpClientBackend)
-        .withJSONEncoding
-        .withConnectTimeout(Duration(5, TimeUnit.SECONDS))
-        .withReadTimeout(Duration(5, TimeUnit.SECONDS))
-        .newSyncClient(PUBLIC_REST_SERVICE)
-      val resp = client.sendSafe(Http.GET("/get"))
-      resp.status.isSuccessful
-    } catch {
-      case _: Exception => false
-    }
-  }
-
   override def design: Design =
     Design.newDesign
-      .bind[AsyncClient].toInstance {
+      .add(
+        Netty.server
+          .withRouter(RxRouter.of[MockServer])
+          .design
+      )
+      .bind[AsyncClient].toProvider { (server: NettyServer) =>
         Http.client
           .withBackend(JavaHttpClientBackend)
           .withJSONEncoding
-          .newAsyncClient(PUBLIC_REST_SERVICE)
+          .newAsyncClient(server.localAddress)
       }
 
-  test("java http sync client") { (client: AsyncClient) =>
-    if (!isServiceAvailable) {
-      pending(
-        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
-      )
-    }
-
+  test("java http async client") { (client: AsyncClient) =>
     test("GET") {
       client
         .send(Http.GET("/get?id=1&name=leo"))
@@ -140,12 +124,6 @@ object JavaAsyncClientTest extends AirSpec {
   }
 
   test("retry test") { (client: AsyncClient) =>
-    if (!isServiceAvailable) {
-      pending(
-        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
-      )
-    }
-
     test("handle max retry") {
       client
         .withRetryContext(_.withMaxRetry(1))
@@ -160,4 +138,3 @@ object JavaAsyncClientTest extends AirSpec {
         }
     }
   }
-}
