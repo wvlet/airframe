@@ -16,35 +16,50 @@ package wvlet.airframe.control
 import wvlet.airspec.AirSpec
 
 /**
- * Simple test suite for RateLimiter to debug issues
+ * Simple test suite for RateLimiter basic functionality
  */
 class RateLimiterSimpleTest extends AirSpec {
 
   test("basic creation works") {
-    val limiter = RateLimiter.create(10.0)
+    val limiter = new RateLimiter(10.0)
     limiter.getRate shouldBe 10.0
   }
 
   test("single tryAcquire works") {
-    val limiter = RateLimiter.create(10.0)
+    val limiter = new RateLimiter(10.0)
     val result = limiter.tryAcquire()
     result shouldBe true
   }
 
   test("multiple tryAcquire respects burst") {
-    val limiter = RateLimiter.create(10.0, 2) // burst of 2
-    println(s"Initial rate: ${limiter.getRate}")
+    val ticker = new ManualTicker(0)
+    val limiter = new RateLimiter(10.0, 2, ticker) // burst of 2
     
     val result1 = limiter.tryAcquire()
-    println(s"First tryAcquire: ${result1}")
     result1 shouldBe true  // 1st should work
     
     val result2 = limiter.tryAcquire()
-    println(s"Second tryAcquire: ${result2}")
     result2 shouldBe true  // 2nd should work (burst)
     
     val result3 = limiter.tryAcquire()
-    println(s"Third tryAcquire: ${result3}")
     result3 shouldBe false // 3rd should fail
+  }
+
+  test("tokens refill over time") {
+    val ticker = new ManualTicker(0)
+    val limiter = new RateLimiter(2.0, 3, ticker) // 2 permits/sec, burst of 3
+    
+    // Consume all tokens
+    limiter.tryAcquire(3) shouldBe true
+    
+    // No more tokens
+    limiter.tryAcquire() shouldBe false
+    
+    // Advance time by 1 second
+    ticker.tick(1000000000L)
+    
+    // Should have 2 new tokens
+    limiter.tryAcquire(2) shouldBe true
+    limiter.tryAcquire() shouldBe false
   }
 }

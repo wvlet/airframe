@@ -199,6 +199,96 @@ val result: Iterator[Int] = Parallel.iterate(source, parallelism = 4){ i =>
 
 ```
 
+## RateLimiter
+
+RateLimiter is a utility for controlling the rate of operations using a token bucket algorithm. It's useful for:
+- Limiting API call rates to external services
+- Preventing resource exhaustion
+- Implementing per-host rate limiting
+- Maintaining consistent traffic patterns
+
+RateLimiter provides both blocking (`acquire`) and non-blocking (`tryAcquire`) operations.
+
+### Basic Usage
+
+```scala
+import wvlet.airframe.control.RateLimiter
+import java.util.concurrent.TimeUnit
+
+// Create a rate limiter allowing 10 permits per second
+val limiter = RateLimiter.create(10.0)
+
+// Acquire a permit (blocks if necessary)
+limiter.acquire()
+
+// Try to acquire a permit without blocking
+if (limiter.tryAcquire()) {
+  // Permit acquired
+} else {
+  // No permit available
+}
+
+// Try to acquire with timeout
+if (limiter.tryAcquire(1, 100, TimeUnit.MILLISECONDS)) {
+  // Permit acquired within timeout
+}
+```
+
+### Burst Control
+
+You can configure the maximum burst size to allow temporary spikes in traffic:
+
+```scala
+// Allow 5 permits per second with a burst of up to 20 permits
+val limiter = RateLimiter.create(5.0, 20)
+
+// Can immediately acquire up to 20 permits
+for (_ <- 1 to 20) {
+  limiter.tryAcquire() // All will succeed immediately
+}
+
+// Further acquisitions will be rate limited
+limiter.tryAcquire() // Will fail until tokens refill
+```
+
+### Integration with Retry
+
+RateLimiter can be used with retry mechanisms to implement sophisticated traffic control:
+
+```scala
+import wvlet.airframe.control.{RateLimiter, Retry}
+
+val limiter = RateLimiter.create(2.0) // 2 requests per second
+
+val result = Retry.withBackOff().run {
+  if (limiter.tryAcquire()) {
+    // Make API call
+    callExternalAPI()
+  } else {
+    throw new Exception("Rate limit exceeded, retry later")
+  }
+}
+```
+
+### Per-Host Rate Limiting
+
+For per-host rate limiting, you can maintain a map of rate limiters:
+
+```scala
+import scala.collection.concurrent.TrieMap
+
+val hostLimiters = TrieMap.empty[String, RateLimiter]
+
+def getRateLimiter(host: String): RateLimiter = {
+  hostLimiters.getOrElseUpdate(host, RateLimiter.create(10.0))
+}
+
+def makeRequest(host: String, request: Request): Response = {
+  val limiter = getRateLimiter(host)
+  limiter.acquire() // Wait for permit
+  sendRequest(host, request)
+}
+
 or
 
 ```scala

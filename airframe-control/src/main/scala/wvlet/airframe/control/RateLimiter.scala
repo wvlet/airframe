@@ -15,12 +15,19 @@ package wvlet.airframe.control
 
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.Duration
 
 /**
  * Rate limiter exception thrown when rate limit is exceeded and blocking is not allowed
  */
 case class RateLimitExceededException(message: String) extends Exception(message)
+
+/**
+ * Internal state for the rate limiter
+ */
+private case class RateLimiterState(
+    availableTokens: Double,
+    lastRefillTimeNanos: Long
+)
 
 /**
  * A rate limiter that controls the rate of permit acquisition using a token bucket algorithm.
@@ -36,9 +43,10 @@ class RateLimiter(
   private val actualMaxBurstSize = if (maxBurstSize == -1) permitsPerSecond.toLong.max(1) else maxBurstSize
   private val intervalNanos = (1e9 / permitsPerSecond).toLong
   
-  // Token bucket state
-  private val availableTokens = new AtomicReference[Double](actualMaxBurstSize.toDouble)
-  private val lastRefillTime = new AtomicLong(ticker.read)
+  // Using a single atomic reference to hold both tokens and timestamp
+  private val state = new AtomicReference[RateLimiterState](
+    RateLimiterState(actualMaxBurstSize.toDouble, ticker.read)
+  )
 
   /**
    * Acquire a single permit, blocking if necessary until permit is available.
@@ -54,7 +62,7 @@ class RateLimiter(
   def acquire(permits: Int): Long = {
     require(permits > 0, s"permits must be positive: ${permits}")
     
-    val waitTimeNanos = reserveAndGetWaitTime(permits, 0)
+    val waitTimeNanos = reservePermits(permits)
     if (waitTimeNanos > 0) {
       sleepNanos(waitTimeNanos)
     }
@@ -75,7 +83,7 @@ class RateLimiter(
   def tryAcquire(permits: Int): Boolean = {
     require(permits > 0, s"permits must be positive: ${permits}")
     
-    val waitTimeNanos = reserveAndGetWaitTime(permits, 0)
+    val waitTimeNanos = tryReservePermits(permits)
     waitTimeNanos == 0
   }
 
@@ -91,7 +99,7 @@ class RateLimiter(
     require(timeout >= 0, s"timeout must be non-negative: ${timeout}")
     
     val timeoutNanos = unit.toNanos(timeout)
-    val waitTimeNanos = reserveAndGetWaitTime(permits, 0)
+    val waitTimeNanos = reservePermits(permits)
     
     if (waitTimeNanos <= timeoutNanos) {
       if (waitTimeNanos > 0) {
@@ -122,84 +130,93 @@ class RateLimiter(
     new RateLimiter(permitsPerSecond, newMaxBurstSize, ticker)
   }
 
-  private def reserveAndGetWaitTime(permits: Int, retries: Int = 0): Long = {
-    if (retries > 10) {
-      // Prevent infinite recursion - just try once more after yielding
-      Thread.`yield`()
+  /**
+   * Try to reserve permits without allowing the bucket to go negative.
+   * This is used for non-blocking operations like tryAcquire.
+   */
+  private def tryReservePermits(permits: Int): Long = {
+    var retry = 0
+    while (retry < 100) { // Limit retries to prevent infinite loops
+      val currentState = state.get()
       val now = ticker.read
-      val currentTokens = refillAndGetTokens(now)
-      if (currentTokens >= permits) {
-        if (availableTokens.compareAndSet(currentTokens, currentTokens - permits)) {
-          0L
-        } else {
-          ((permits - currentTokens) * intervalNanos).toLong // Fallback calculation
+      
+      // Calculate new state after refilling tokens
+      val newState = refillTokens(currentState, now)
+      
+      if (newState.availableTokens >= permits) {
+        // Enough tokens available, try to consume them
+        val updatedState = newState.copy(availableTokens = newState.availableTokens - permits)
+        if (state.compareAndSet(currentState, updatedState)) {
+          return 0L // Success, no wait needed
         }
       } else {
-        val tokensNeeded = permits - currentTokens
-        availableTokens.compareAndSet(currentTokens, currentTokens - permits)
-        (tokensNeeded * intervalNanos).toLong
+        // Not enough tokens available - for tryAcquire, we don't allow going negative
+        return 1L // Any positive value indicates failure for tryAcquire
       }
-    } else {
-      val now = ticker.read
-      val currentTokens = refillAndGetTokens(now)
       
-      println(s"[DEBUG] Current tokens: ${currentTokens}, permits needed: ${permits}")
-      
-      if (currentTokens >= permits) {
-        // Try to consume tokens atomically
-        if (availableTokens.compareAndSet(currentTokens, currentTokens - permits)) {
-          println(s"[DEBUG] Successfully consumed ${permits} tokens, wait time: 0")
-          0L // No wait needed
-        } else {
-          println(s"[DEBUG] CAS failed, retrying...")
-          // Retry due to concurrent modification
-          reserveAndGetWaitTime(permits, retries + 1)
-        }
-      } else {
-        // Not enough tokens, calculate wait time
-        val tokensNeeded = permits - currentTokens
-        val waitTimeNanos = (tokensNeeded * intervalNanos).toLong
-        println(s"[DEBUG] Not enough tokens, need ${tokensNeeded} more, wait time: ${waitTimeNanos}")
-        
-        // Reserve future tokens by going negative
-        if (availableTokens.compareAndSet(currentTokens, currentTokens - permits)) {
-          waitTimeNanos
-        } else {
-          println(s"[DEBUG] CAS failed in negative path, retrying...")
-          // Retry due to concurrent modification  
-          reserveAndGetWaitTime(permits, retries + 1)
-        }
-      }
+      retry += 1
     }
+    
+    // Fallback: if we couldn't complete the operation after many retries
+    1L // Indicate failure
   }
-  
-  private def refillAndGetTokens(now: Long): Double = {
-    val lastRefill = lastRefillTime.get()
-    val timeDeltaNanos = now - lastRefill
+
+  /**
+   * Reserve permits and return the wait time needed.
+   * This is the core method that handles token bucket logic.
+   */
+  private def reservePermits(permits: Int): Long = {
+    var retry = 0
+    while (retry < 100) { // Limit retries to prevent infinite loops
+      val currentState = state.get()
+      val now = ticker.read
+      
+      // Calculate new state after refilling tokens
+      val newState = refillTokens(currentState, now)
+      
+      if (newState.availableTokens >= permits) {
+        // Enough tokens available, try to consume them
+        val updatedState = newState.copy(availableTokens = newState.availableTokens - permits)
+        if (state.compareAndSet(currentState, updatedState)) {
+          return 0L // Success, no wait needed
+        }
+      } else {
+        // Not enough tokens, calculate wait time and reserve future tokens
+        val tokensNeeded = permits - newState.availableTokens
+        val waitTimeNanos = (tokensNeeded * intervalNanos).toLong
+        val updatedState = newState.copy(availableTokens = newState.availableTokens - permits)
+        
+        if (state.compareAndSet(currentState, updatedState)) {
+          return waitTimeNanos
+        }
+      }
+      
+      retry += 1
+    }
+    
+    // Fallback: if we couldn't complete the operation after many retries,
+    // just return a reasonable wait time
+    (permits * intervalNanos).toLong
+  }
+
+  /**
+   * Refill tokens based on elapsed time and return the new state.
+   */
+  private def refillTokens(oldState: RateLimiterState, currentTimeNanos: Long): RateLimiterState = {
+    val timeDeltaNanos = currentTimeNanos - oldState.lastRefillTimeNanos
     
     if (timeDeltaNanos <= 0) {
-      return availableTokens.get()
+      return oldState
     }
     
     val tokensToAdd = timeDeltaNanos.toDouble / intervalNanos
     if (tokensToAdd < 1e-6) {
-      return availableTokens.get()
+      return oldState // Avoid tiny refills
     }
     
-    val currentTokens = availableTokens.get()
-    val newTokens = math.min(actualMaxBurstSize.toDouble, currentTokens + tokensToAdd)
-    
-    // Try to update both tokens and time
-    if (availableTokens.compareAndSet(currentTokens, newTokens)) {
-      lastRefillTime.compareAndSet(lastRefill, now)
-      newTokens
-    } else {
-      // If CAS failed, just return the current value
-      availableTokens.get()
-    }
+    val newTokens = math.min(actualMaxBurstSize.toDouble, oldState.availableTokens + tokensToAdd)
+    RateLimiterState(newTokens, currentTimeNanos)
   }
-
-
 
   private def sleepNanos(nanos: Long): Unit = {
     if (nanos <= 0) return
