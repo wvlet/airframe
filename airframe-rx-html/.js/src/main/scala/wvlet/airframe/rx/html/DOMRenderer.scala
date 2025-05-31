@@ -193,16 +193,16 @@ object DOMRenderer extends LogSupport {
                 // Check if element has an ID and ensure it's available before calling onMount
                 val hasId = elem match {
                   case htmlElement: dom.HTMLElement => Option(htmlElement.id).filter(_.nonEmpty).isDefined
-                  case _ => false
+                  case _                            => false
                 }
-                
+
                 if (hasId) {
                   // For elements with ID, ensure they're available via getElementById before calling onMount
                   val elementId = elem.asInstanceOf[dom.HTMLElement].id
                   def tryCallOnMount(): Unit = {
                     Option(dom.document.getElementById(elementId)) match {
                       case Some(_) => rx.onMount(elem)
-                      case None => 
+                      case None    =>
                         // Element not yet available, try again in next tick
                         dom.window.setTimeout(() => tryCallOnMount(), 0)
                     }

@@ -384,17 +384,17 @@ object RxRenderingTest extends AirSpec {
   }
 
   test("onMount should find element by ID in nested sequences") {
-    var elementFound = false
+    var elementFound  = false
     var onMountCalled = false
-    val foundElement = Rx.variable(false)
-    
+    val foundElement  = Rx.variable(false)
+
     class HoverableTextLabel(txt: RxElement, hoverMessage: String) extends RxElement {
       private val elementId = s"element-${System.nanoTime()}"
 
       override def onMount(n: Any): Unit = {
         onMountCalled = true
         RxDOM.getHTMLElementById(elementId) match {
-          case Some(el) => 
+          case Some(el) =>
             elementFound = true
             foundElement := true
             foundElement.stop()
@@ -406,7 +406,7 @@ object RxRenderingTest extends AirSpec {
       override def render: RxElement = span(
         id                   -> elementId,
         data("bs-toggle")    -> "tooltip",
-        data("bs-placement") -> "top", 
+        data("bs-placement") -> "top",
         data("bs-title")     -> hoverMessage,
         txt
       )
@@ -419,16 +419,16 @@ object RxRenderingTest extends AirSpec {
     )
 
     val (n, c) = render(element)
-    
+
     // Wait for the async onMount to complete
     foundElement.lastOption.map { flag =>
       // onMount should have been called
       onMountCalled shouldBe true
-      
+
       // The element should be found by ID when onMount is called
       flag shouldBe true
     }
-    
+
     c.cancel
   }
 
