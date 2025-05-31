@@ -72,7 +72,6 @@ lazy val server = project
     libraryDependencies ++= Seq(
       "org.wvlet.airframe" %% "airframe"             % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-http-netty"  % AIRFRAME_VERSION,
-      "org.wvlet.airframe" %% "airframe-config"      % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-log"         % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-codec"       % AIRFRAME_VERSION,
       "org.wvlet.airframe" %% "airframe-launcher"    % AIRFRAME_VERSION,
@@ -149,9 +148,6 @@ package taskapp.server
 import wvlet.log.{LogSupport, Logger}
 
 object TaskApp extends App with LogSupport {
-  // Initialize the logger - this sets up console logging with source code locations
-  Logger.init
-  
   info("Starting Task Management Application")
   debug("Debug logging is available but won't show unless debug level is enabled")
   
@@ -179,78 +175,7 @@ You'll see output like:
 2023-12-15 10:30:15.125-0800  info [TaskApp] Application initialized successfully  - (TaskApp.scala:14)
 ```
 
-## Step 2: Configuration with airframe-config  
-
-Real applications need configuration management. [airframe-config](airframe-config.md) provides YAML-based configuration with type safety.
-
-**server/src/main/resources/application.yml**
-```yaml
-server:
-  port: 8080
-  name: "task-server"
-  
-database:
-  host: "localhost"
-  port: 5432
-  name: "taskdb"
-  
-logging:
-  level: "INFO"
-  enableFileLogging: false
-```
-
-**server/src/main/scala/taskapp/server/Config.scala**
-```scala
-package taskapp.server
-
-case class ServerConfig(
-  port: Int = 8080,
-  name: String = "task-server"
-)
-
-case class DatabaseConfig(
-  host: String = "localhost", 
-  port: Int = 5432,
-  name: String = "taskdb"
-)
-
-case class LoggingConfig(
-  level: String = "INFO",
-  enableFileLogging: Boolean = false  
-)
-
-case class AppConfig(
-  server: ServerConfig = ServerConfig(),
-  database: DatabaseConfig = DatabaseConfig(),
-  logging: LoggingConfig = LoggingConfig()
-)
-```
-
-**server/src/main/scala/taskapp/server/ConfigApp.scala**
-```scala
-package taskapp.server
-
-import wvlet.airframe.config.*
-import wvlet.log.{LogSupport, Logger, LogLevel}
-
-object ConfigApp extends App with LogSupport {
-  Logger.init
-  
-  // Load configuration from YAML file
-  val config = Config(env = "default").of[AppConfig]
-  
-  info(s"Loaded config: ${config}")
-  info(s"Server will run on port: ${config.server.port}")
-  
-  // Configure logging based on config
-  val logLevel = LogLevel(config.logging.level)
-  Logger.setDefaultLogLevel(logLevel)
-  
-  debug("This debug message will show if log level is DEBUG or lower")
-}
-```
-
-## Step 3: Dependency Injection with Airframe DI
+## Step 2: Dependency Injection with Airframe DI
 
 As our application grows, managing dependencies becomes crucial. [Airframe DI](airframe-di.md) provides a Scala-friendly dependency injection framework.
 
@@ -389,8 +314,6 @@ import taskapp.server.service.TaskService
 import wvlet.log.{LogSupport, Logger}
 
 object DIApp extends App with LogSupport {
-  Logger.init
-  
   // Build and run the application using the design
   AppDesign.design.build[TaskService] { taskService =>
     info("Testing dependency injection")
@@ -416,7 +339,7 @@ object DIApp extends App with LogSupport {
 3. **Singleton Scoping**: Services can be singletons to share state
 4. **Provider Binding**: Complex object creation through provider functions
 
-## Step 4: Building REST APIs with airframe-http
+## Step 3: Building REST APIs with airframe-http
 
 Now let's create REST endpoints using [airframe-http](airframe-http.md). This allows us to expose our services as web APIs.
 
@@ -493,8 +416,6 @@ import wvlet.airframe.http.netty.Netty
 import wvlet.log.{LogSupport, Logger}
 
 object TaskServer extends App with LogSupport {
-  Logger.init
-  
   // Create the router from our API implementation
   val router = RxRouter.of[TaskApiImpl]
   
@@ -549,7 +470,7 @@ $ curl http://localhost:8080/api/tasks/{task-id}
 3. **Type Safety**: Compile-time checking of routes and parameters
 4. **Integration with DI**: HTTP handlers can use dependency injection
 
-## Step 5: RPC Communication
+## Step 4: RPC Communication
 
 [Airframe RPC](airframe-rpc.md) provides type-safe communication between services. Let's create an RPC client that can be used from other services or for testing.
 
@@ -565,8 +486,6 @@ import wvlet.airframe.http.netty.Netty
 import wvlet.log.{LogSupport, Logger}
 
 object TaskRPCServer extends App with LogSupport {
-  Logger.init
-  
   // RPC uses the same API interface but with RPC protocol
   val router = RxRouter.of[TaskApiImpl]
   
@@ -608,9 +527,6 @@ class TaskCLI(
   @option(prefix = "--port", description = "server port")
   port: Int = 8081
 ) extends LogSupport {
-  
-  Logger.init
-  
   // Create RPC client - Note: adjust based on your actual RPC client generation
   private def withClient[A](f: TaskApi => A): A = {
     Using.resource(Http.client.newSyncClient(s"${host}:${port}")) { httpClient =>
@@ -690,7 +606,7 @@ $ sbt "cli/run delete --id {task-id}"
 3. **Cross-Platform**: Works with Scala.js for frontend development
 4. **Automatic Code Generation**: Client code generated from interfaces
 
-## Step 6: Scala.js Frontend with airframe-rx
+## Step 5: Scala.js Frontend with airframe-rx
 
 Let's build a browser-based frontend using [Airframe Rx](airframe-rx.md) for reactive UI development.
 
@@ -708,8 +624,6 @@ import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object TaskClient extends LogSupport {
-  Logger.init
-  
   // HTTP client for communicating with the server
   private val httpClient = Http.client.newAsyncClient("http://localhost:8080")
   // Note: For RPC, you would use generated client code like:
@@ -925,7 +839,7 @@ $ cd client/src/main/resources && python3 -m http.server 3000
 3. **RPC Integration**: Use the same RPC client on both JVM and JS
 4. **Full Scala Ecosystem**: Use Scala libraries in the browser
 
-## Step 7: Testing with AirSpec
+## Step 6: Testing with AirSpec
 
 A complete application needs comprehensive testing. [AirSpec](airspec.md) provides a functional testing framework with DI integration.
 
@@ -947,7 +861,7 @@ class TaskServiceTest extends AirSpec {
     created.title shouldBe "Test Task"
     created.description shouldBe "Test Description"
     created.completed shouldBe false
-    created.id should not be empty
+    created.id shouldNotBe empty
     
     // Retrieve the task
     val retrieved = service.getTask(created.id)
@@ -967,7 +881,7 @@ class TaskServiceTest extends AirSpec {
     // Should have 2 tasks
     val list = service.listTasks()
     list.total shouldBe 2
-    list.tasks should have size 2
+    list.tasks.size shouldBe 2
   }
   
   test("should update tasks") { (service: TaskService) =>
@@ -976,13 +890,13 @@ class TaskServiceTest extends AirSpec {
     
     // Update title
     val updated1 = service.updateTask(task.id, UpdateTaskRequest(title = Some("Updated")))
-    updated1 should be defined
+    updated1 shouldBe defined
     updated1.get.title shouldBe "Updated"
     updated1.get.description shouldBe "Original desc"
     
     // Mark as completed
     val updated2 = service.updateTask(task.id, UpdateTaskRequest(completed = Some(true)))
-    updated2 should be defined  
+    updated2 shouldBe defined  
     updated2.get.completed shouldBe true
   }
   
@@ -991,7 +905,7 @@ class TaskServiceTest extends AirSpec {
     val task = service.createTask(CreateTaskRequest("To Delete", "Will be deleted"))
     
     // Verify it exists
-    service.getTask(task.id) should be defined
+    service.getTask(task.id) shouldBe defined
     
     // Delete it
     val deleted = service.deleteTask(task.id)
@@ -1051,8 +965,8 @@ class TaskApiTest extends AirSpec {
     
     // List tasks
     val list = client.get[TaskListResponse]("/api/tasks")
-    list.total should be >= 1
-    list.tasks should contain(updated)
+    list.total >= 1 shouldBe true
+    list.tasks.contains(updated) shouldBe true
     
     // Delete the task
     val deleted = client.delete[Boolean](s"/api/tasks/${created.id}")
@@ -1089,7 +1003,7 @@ $ sbt "server/test"
 3. **Lifecycle Management**: AirSpec manages service lifecycles for tests
 4. **Property-based Testing**: Support for property-based testing scenarios
 
-## Step 8: Command-Line Interface with airframe-launcher
+## Step 7: Command-Line Interface with airframe-launcher
 
 Finally, let's enhance our CLI with [airframe-launcher](airframe-launcher.md) for a complete command-line experience.
 
@@ -1123,8 +1037,6 @@ class TaskManagerCLI(
   @option(prefix = "--format", description = "output format: table|json|csv")
   format: String = "table"
 ) extends LogSupport {
-  
-  Logger.init
   if (verbose) Logger.setDefaultLogLevel(LogLevel.DEBUG)
   
   private def withRPCClient[A](f: TaskApi => A): A = {
@@ -1405,7 +1317,6 @@ For deeper understanding of individual modules:
 - **[Airframe RPC](airframe-rpc.md)**: RPC protocols and client generation
 - **[Airframe Rx](airframe-rx.md)**: Reactive programming for UIs
 - **[AirSpec](airspec.md)**: Testing patterns and best practices
-- **[Configuration](airframe-config.md)**: Advanced configuration techniques
 - **[Logging](airframe-log.md)**: Logging configuration and patterns
 
 This walkthrough shows how Airframe enables you to build sophisticated applications with minimal effort, leveraging the power of Scala across your entire stack. The modules work together naturally, reducing complexity while maintaining flexibility and type safety.
