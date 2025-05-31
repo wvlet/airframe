@@ -125,4 +125,59 @@ class IntervalTest extends AirSpec {
       c.cancel
     }
   }
+
+  test("delay elements") {
+    pendingInScalaJSAndScalaNative
+    val start      = System.currentTimeMillis()
+    val received   = Seq.newBuilder[Int]
+    val timestamps = Seq.newBuilder[Long]
+
+    val rx = Rx
+      .sequence(1, 2, 3)
+      .delay(50, TimeUnit.MILLISECONDS)
+
+    val c = rx.run { x =>
+      received += x
+      timestamps += (System.currentTimeMillis() - start)
+    }
+
+    try {
+      // Wait longer to ensure all delayed elements are received
+      compat.scheduleOnce(500) {
+        val result = received.result()
+        val times  = timestamps.result()
+        result shouldBe Seq(1, 2, 3)
+        // Verify all elements were delayed
+        result.size shouldBe 3
+        times.size shouldBe 3
+        // Each element should be delayed by at least 45ms (with some tolerance)
+        times.foreach { time =>
+          time >= 45L shouldBe true
+        }
+      }
+    } finally {
+      c.cancel
+    }
+  }
+
+  test("delay preserves values like tap") {
+    pendingInScalaJSAndScalaNative
+    val rx = Rx
+      .sequence("a", "b", "c")
+      .delay(10, TimeUnit.MILLISECONDS)
+
+    val received = Seq.newBuilder[String]
+    val c = rx.run { x =>
+      received += x
+    }
+
+    try {
+      compat.scheduleOnce(200) {
+        val result = received.result()
+        result shouldBe Seq("a", "b", "c")
+      }
+    } finally {
+      c.cancel
+    }
+  }
 }

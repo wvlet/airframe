@@ -391,6 +391,18 @@ class RxRunner(
           timer.cancel
           c.cancel
         }
+      case DelayOp(in, interval, unit) =>
+        val delayMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        run(in) {
+          case OnNext(v) =>
+            // Schedule the delayed emission asynchronously
+            compat.scheduleOnce(delayMillis) {
+              effect(OnNext(v))
+            }
+            RxResult.Continue
+          case other =>
+            effect(other)
+        }
       case z @ ZipOp(r1, r2) =>
         zip(z)(effect)
       case z @ Zip3Op(r1, r2, r3) =>
