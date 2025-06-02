@@ -572,6 +572,13 @@ trait Rx[+A] extends RxOps[A] {
     ThrottleLastOp[A](this, timeWindow, unit)
 
   /**
+    * Insert an artificial delay before emitting each element from the source. Similar to the tap operator, this does
+    * nothing other than adding a delay.
+    */
+  def delay(interval: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+    DelayOp[A](this, interval, unit)
+
+  /**
     * Emit the given item first before returning the items from the source.
     */
   def startWith[A1 >: A](a: A1): Rx[A1] = Rx.concat(Rx.single(a), this)
@@ -809,7 +816,8 @@ object Rx extends LogSupport {
   def timer(interval: Long, unit: TimeUnit): Rx[Long] = TimerOp(interval, unit)
 
   /**
-    * Emits 0 once after the give delay period.
+    * Creates a timer that emits 0 once after the given delay period. This is different from RxOps.delay which adds
+    * delay to existing stream elements.
     */
   def delay(interval: Long, unit: TimeUnit): Rx[Long] = timer(interval, unit)
 
@@ -1037,6 +1045,7 @@ object Rx extends LogSupport {
   }
   case class ThrottleFirstOp[A](input: RxOps[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
   case class ThrottleLastOp[A](input: RxOps[A], interval: Long, unit: TimeUnit)  extends UnaryRx[A, A]
+  case class DelayOp[A](input: RxOps[A], interval: Long, unit: TimeUnit)         extends UnaryRx[A, A]
 
   case class CacheOp[A](
       input: RxOps[A],
