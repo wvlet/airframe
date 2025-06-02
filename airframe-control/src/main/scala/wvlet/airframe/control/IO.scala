@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
-import java.io.{ByteArrayOutputStream, File, InputStream}
+import java.io.{ByteArrayOutputStream, File, InputStream, OutputStream}
 import java.net.URL
 import java.nio.charset.StandardCharsets
 
@@ -54,6 +54,28 @@ object IO {
         }
       }
     byteArray
+  }
+
+  /**
+   * Copy data from an InputStream to an OutputStream
+   *
+   * @param in the input stream to read from
+   * @param out the output stream to write to
+   */
+  def copy(in: InputStream, out: OutputStream): Unit = {
+    if (in != null && out != null) {
+      withResource(in) { src =>
+        val buf = new Array[Byte](8192)
+        var readBytes = 0
+        while ({
+          readBytes = src.read(buf)
+          readBytes != -1
+        }) {
+          out.write(buf, 0, readBytes)
+        }
+        out.flush()
+      }
+    }
   }
 
 }
