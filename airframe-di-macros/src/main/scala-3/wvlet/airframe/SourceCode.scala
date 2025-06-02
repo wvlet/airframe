@@ -43,23 +43,18 @@ object SourceCode:
     // Hidden because embedding the absolute path is not good for privacy and code size
     val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
     val fileName                    = Expr(srcPath.getFileName().toString)
-    
+
     // Extract source code line - content is Option[String] in Scala 3
-    val sourceLine = try {
-      src.content match {
-        case Some(content) =>
-          val lines = content.split('\n')
-          val lineIndex = pos.startLine - 1 // Position is 1-based, array is 0-based
-          if (lineIndex >= 0 && lineIndex < lines.length) {
-            lines(lineIndex).trim
-          } else {
-            ""
-          }
-        case None => ""
-      }
-    } catch {
-      case _: Exception => ""
-    }
+    val sourceLine =
+      try
+        src.content match
+          case Some(content) =>
+            val lines     = content.split('\n')
+            val lineIndex = pos.startLine - 1 // Position is 1-based, array is 0-based
+            if lineIndex >= 0 && lineIndex < lines.length then lines(lineIndex).trim
+            else ""
+          case None => ""
+      catch case _: Exception => ""
     val sourceLineExpr = Expr(sourceLine)
-    
+
     '{ SourceCode("", ${ fileName }, ${ line } + 1, ${ column }, ${ sourceLineExpr }) }
