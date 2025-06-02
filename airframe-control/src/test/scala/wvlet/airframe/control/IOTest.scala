@@ -18,70 +18,71 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.nio.charset.StandardCharsets
 
 /**
- * Test for IO utilities
- */
+  * Test for IO utilities
+  */
 class IOTest extends AirSpec {
-  
+
   test("copy from InputStream to OutputStream") {
-    val testData = "Hello, World! This is a test string for IO.copy functionality."
+    val testData   = "Hello, World! This is a test string for IO.copy functionality."
     val inputBytes = testData.getBytes(StandardCharsets.UTF_8)
-    
-    val inputStream = new ByteArrayInputStream(inputBytes)
+
+    val inputStream  = new ByteArrayInputStream(inputBytes)
     val outputStream = new ByteArrayOutputStream()
-    
+
     IO.copy(inputStream, outputStream)
-    
-    val copiedBytes = outputStream.toByteArray
+
+    val copiedBytes  = outputStream.toByteArray
     val copiedString = new String(copiedBytes, StandardCharsets.UTF_8)
-    
+
     copiedString shouldBe testData
     copiedBytes.length shouldBe inputBytes.length
   }
-  
-  test("copy with null input stream") {
+
+  test("copy with null input stream should throw NullPointerException") {
     val outputStream = new ByteArrayOutputStream()
-    
-    // Should not throw exception and not write anything
-    IO.copy(null, outputStream)
-    
-    outputStream.toByteArray.length shouldBe 0
+
+    intercept[NullPointerException] {
+      IO.copy(null, outputStream)
+    }
   }
-  
-  test("copy with null output stream") {
-    val testData = "Test data"
+
+  test("copy with null output stream should throw NullPointerException") {
+    val testData    = "Test data"
     val inputStream = new ByteArrayInputStream(testData.getBytes(StandardCharsets.UTF_8))
-    
-    // Should not throw exception
-    IO.copy(inputStream, null)
+
+    intercept[NullPointerException] {
+      IO.copy(inputStream, null)
+    }
   }
-  
-  test("copy with both null streams") {
-    // Should not throw exception
-    IO.copy(null, null)
+
+  test("copy with both null streams should throw NullPointerException") {
+    intercept[NullPointerException] {
+      IO.copy(null, null)
+    }
   }
-  
+
   test("copy with empty input stream") {
-    val inputStream = new ByteArrayInputStream(Array.empty[Byte])
+    val inputStream  = new ByteArrayInputStream(Array.empty[Byte])
     val outputStream = new ByteArrayOutputStream()
-    
+
     IO.copy(inputStream, outputStream)
-    
+
     outputStream.toByteArray.length shouldBe 0
   }
-  
+
   test("copy large data") {
     // Test with data larger than buffer size (8192 bytes)
-    val largeData = "A" * 10000 // 10KB of 'A' characters
+    val largeData  = "A" * 10000 // 10KB of 'A' characters
     val inputBytes = largeData.getBytes(StandardCharsets.UTF_8)
-    
-    val inputStream = new ByteArrayInputStream(inputBytes)
+
+    val inputStream  = new ByteArrayInputStream(inputBytes)
     val outputStream = new ByteArrayOutputStream()
-    
+
     IO.copy(inputStream, outputStream)
-    
-    val copiedBytes = outputStream.toByteArray
+
+    val copiedBytes  = outputStream.toByteArray
     val copiedString = new String(copiedBytes, StandardCharsets.UTF_8)
-    
+
     copiedString shouldBe largeData
     copiedBytes.length shouldBe inputBytes.length
   }

@@ -57,24 +57,33 @@ object IO {
   }
 
   /**
-   * Copy data from an InputStream to an OutputStream
-   *
-   * @param in the input stream to read from
-   * @param out the output stream to write to
-   */
+    * Copy data from an InputStream to an OutputStream
+    *
+    * @param in
+    *   the input stream to read from
+    * @param out
+    *   the output stream to write to
+    * @throws NullPointerException
+    *   if in or out is null
+    */
   def copy(in: InputStream, out: OutputStream): Unit = {
-    if (in != null && out != null) {
-      withResource(in) { src =>
-        val buf = new Array[Byte](8192)
-        var readBytes = 0
-        while ({
-          readBytes = src.read(buf)
-          readBytes != -1
-        }) {
-          out.write(buf, 0, readBytes)
-        }
-        out.flush()
+    if (in == null) {
+      throw new NullPointerException("InputStream cannot be null")
+    }
+    if (out == null) {
+      throw new NullPointerException("OutputStream cannot be null")
+    }
+
+    withResource(in) { src =>
+      val buf       = new Array[Byte](8192)
+      var readBytes = 0
+      while ({
+        readBytes = src.read(buf)
+        readBytes != -1
+      }) {
+        out.write(buf, 0, readBytes)
       }
+      out.flush()
     }
   }
 
