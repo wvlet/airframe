@@ -16,7 +16,7 @@ package wvlet.airframe.http.rx.html
 import org.scalajs.dom
 import org.scalajs.dom.{HTMLElement, document}
 import wvlet.airframe.rx.{Cancelable, Rx, html}
-import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
+import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement, RxDOM}
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.html.*
 import wvlet.airframe.rx.html.all.*
@@ -381,6 +381,48 @@ object RxRenderingTest extends AirSpec {
     selected := "about"
     // The atrribute should be totally removed
     n.outerHTML shouldBe """<div>about</div>"""
+  }
+
+  test("onMount should find element by ID in nested sequences") {
+    val foundElement = Rx.variable(false)
+
+    object testLabel extends RxElement {
+      private val elementId = s"element-${System.nanoTime()}"
+
+      override def onMount(n: Any): Unit = {
+        RxDOM.getHTMLElementById(elementId) match {
+          case Some(el) =>
+            foundElement := true
+            foundElement.stop()
+          case None =>
+            foundElement := false
+        }
+      }
+
+      override def render: RxElement = span(
+        id                   -> elementId,
+        data("bs-toggle")    -> "tooltip",
+        data("bs-placement") -> "top",
+        data("bs-title")     -> "mouseover message",
+        span("hello")
+      )
+    }
+
+    val element = div(
+      Seq[RxElement](
+        testLabel
+      )
+    )
+
+    val (n, c) = render(element)
+
+    // Wait for the async onMount to complete
+    foundElement.lastOption.map { flag =>
+      // The element should be found by ID when onMount is called
+      flag shouldBe true
+    }
+
+    c.cancel
   }
 
 }
