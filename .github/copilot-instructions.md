@@ -18,7 +18,7 @@
 
 ## Coding style
 
-- Before commit, run `./sbt scalafmtAll` to properly format the Scala code.
+- Before committing changes, run `./sbt scalafmtAll` to properly format the Scala code according to project guidelines. This ensures consistent code style across the codebase. For targeted formatting of specific modules, use `./sbt "(moduleNameJVM)/scalafmtAll` (replace moduleNameJVM with your target module).
 - case classes for configuration should have withXXX(...) methods for all fields and noXXX(...) methods for all optional fields.
 - In string interpolation, always enclose expr with bracket `${...}` for consistency.
 - Returning `Try[A]` is generally discouraged as it forces a monadic style on the caller. Consider using plain exceptions for unrecoverable errors, or domain-specific error types.
