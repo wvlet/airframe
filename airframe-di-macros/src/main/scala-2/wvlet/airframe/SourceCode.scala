@@ -22,7 +22,8 @@ case class SourceCode(
     private val filePath: String,
     fileName: String,
     line: Int,
-    col: Int
+    col: Int,
+    codeText: String = ""
 ) {
   override def toString = s"${fileName}:${line}"
 }

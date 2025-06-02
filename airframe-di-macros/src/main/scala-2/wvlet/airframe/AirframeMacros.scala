@@ -1030,6 +1030,13 @@ private[wvlet] object AirframeMacros {
     import c.universe.*
     c.internal.enclosingOwner
     val pos = c.enclosingPosition
-    q"wvlet.airframe.SourceCode(${""}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+    val sourceContent = pos.source.content
+    val lineStart = sourceContent.lastIndexOf('\n', pos.point - 1) + 1
+    val lineEnd = sourceContent.indexOf('\n', pos.point) match {
+      case -1 => sourceContent.length
+      case end => end
+    }
+    val sourceLine = new String(sourceContent.slice(lineStart, lineEnd)).trim
+    q"wvlet.airframe.SourceCode(${""}, ${pos.source.file.name}, ${pos.line}, ${pos.column}, ${sourceLine})"
   }
 }

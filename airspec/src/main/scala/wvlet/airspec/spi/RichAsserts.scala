@@ -89,11 +89,36 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   }
 
   implicit protected class ShouldBe[A](val value: A) {
-    protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
-      AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
+    private def formatAssertionMessage(obtained: Any, expected: Any, code: SourceCode): String = {
+      val contextLine = if (code.codeText.nonEmpty) {
+        s"failed: ${code.codeText} (${code})"
+      } else {
+        s"${pp(obtained)} didn't match with ${pp(expected)}"
+      }
+      
+      s"""${contextLine}
+[obtained]
+${pp(obtained)}
+[expected]
+${pp(expected)}"""
     }
+    
+    protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
+      val message = if (code.codeText.nonEmpty) {
+        formatAssertionMessage(value, expected, code)
+      } else {
+        s"${pp(value)} didn't match with ${pp(expected)}"
+      }
+      AssertionFailure(message, code)
+    }
+    
     protected def unmatchFailure(unexpected: Any, code: SourceCode): AssertionFailure = {
-      AssertionFailure(s"${pp(value)} matched with ${pp(unexpected)}", code)
+      val message = if (code.codeText.nonEmpty) {
+        s"failed: ${code.codeText} (${code})\n[obtained]\n${pp(value)}\n[expected]\nnot ${pp(unexpected)}"
+      } else {
+        s"${pp(value)} matched with ${pp(unexpected)}"
+      }
+      AssertionFailure(message, code)
     }
 
     private def test(expected: Any): TestResult = {
@@ -125,7 +150,12 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
       if (expected == null) {
         if (value != null) {
-          throw AssertionFailure(s"${pp(value)} should be null", code)
+          val message = if (code.codeText.nonEmpty) {
+            s"failed: ${code.codeText} (${code})\n[obtained]\n${pp(value)}\n[expected]\nnull"
+          } else {
+            s"${pp(value)} should be null"
+          }
+          throw AssertionFailure(message, code)
         }
       } else {
         value match {
@@ -146,7 +176,12 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
       if (expected == null) {
         if (value == null) {
-          throw AssertionFailure(s"${pp(value)} should not be null", code)
+          val message = if (code.codeText.nonEmpty) {
+            s"failed: ${code.codeText} (${code})\n[obtained]\n${pp(value)}\n[expected]\nnot null"
+          } else {
+            s"${pp(value)} should not be null"
+          }
+          throw AssertionFailure(message, code)
         }
       } else {
         value match {
