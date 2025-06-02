@@ -188,31 +188,46 @@ object DOMRenderer extends LogSupport {
               val c1   = renderToInternal(localContext, node, r)
               val elem = node.lastChild
               val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
-              node.mountHere(elem, anchor)
               if ((rx.onMount _) ne RxElement.NoOp) {
-                // Check if element has an ID and ensure it's available before calling onMount
-                val hasId = elem match {
-                  case htmlElement: dom.HTMLElement => Option(htmlElement.id).filter(_.nonEmpty).isDefined
-                  case _                            => false
-                }
+                val observer: MutationObserver = new MutationObserver({ (mut, obs) =>
+                  mut.foreach { m =>
+                    m.addedNodes.find(_ eq elem).foreach { n =>
+                      // Check if element has an ID and ensure it's available before calling onMount
+                      val hasId = elem match {
+                        case htmlElement: dom.HTMLElement => Option(htmlElement.id).filter(_.nonEmpty).isDefined
+                        case _                            => false
+                      }
 
-                if (hasId) {
-                  // For elements with ID, ensure they're available via getElementById before calling onMount
-                  val elementId = elem.asInstanceOf[dom.HTMLElement].id
-                  def tryCallOnMount(): Unit = {
-                    Option(dom.document.getElementById(elementId)) match {
-                      case Some(_) => rx.onMount(elem)
-                      case None    =>
-                        // Element not yet available, try again in next tick
-                        dom.window.setTimeout(() => tryCallOnMount(), 0)
+                      if (hasId) {
+                        // For elements with ID, verify they're available via getElementById before calling onMount
+                        val elementId = elem.asInstanceOf[dom.HTMLElement].id
+                        Option(dom.document.getElementById(elementId)) match {
+                          case Some(_) => rx.onMount(elem)
+                          case None    =>
+                            // Element not yet available, try once more in next tick
+                            dom.window.setTimeout(() => {
+                              if (Option(dom.document.getElementById(elementId)).isDefined) {
+                                rx.onMount(elem)
+                              }
+                            }, 0)
+                        }
+                      } else {
+                        // For elements without ID, call onMount immediately
+                        rx.onMount(elem)
+                      }
                     }
                   }
-                  tryCallOnMount()
-                } else {
-                  // For elements without ID, call onMount immediately
-                  rx.onMount(elem)
-                }
+                  obs.disconnect()
+                })
+                observer.observe(
+                  node,
+                  new MutationObserverInit {
+                    attributes = node.nodeType == dom.Node.ATTRIBUTE_NODE
+                    childList = node.nodeType != dom.Node.ATTRIBUTE_NODE
+                  }
+                )
               }
+              node.mountHere(elem, anchor)
               Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
             case Failure(e) =>
               warn(s"Failed to render ${rx}: ${e.getMessage}", e)
