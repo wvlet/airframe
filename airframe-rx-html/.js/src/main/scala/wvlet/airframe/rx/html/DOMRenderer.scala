@@ -205,11 +205,14 @@ object DOMRenderer extends LogSupport {
                           case Some(_) => rx.onMount(elem)
                           case None    =>
                             // Element not yet available, try once more in next tick
-                            dom.window.setTimeout(() => {
-                              if (Option(dom.document.getElementById(elementId)).isDefined) {
-                                rx.onMount(elem)
-                              }
-                            }, 0)
+                            dom.window.setTimeout(
+                              () => {
+                                if (Option(dom.document.getElementById(elementId)).isDefined) {
+                                  rx.onMount(elem)
+                                }
+                              },
+                              0
+                            )
                         }
                       } else {
                         // For elements without ID, call onMount immediately
