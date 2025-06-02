@@ -13,11 +13,7 @@
  */
 package wvlet.airframe.codec
 
-/**
-  * Test for recursive type codec handling
-  */
-class RecursiveCodecTest extends CodecSpec {
-
+object RecursiveCodecTest {
   case class FileEntry(
       name: String,
       path: String,
@@ -27,6 +23,13 @@ class RecursiveCodecTest extends CodecSpec {
       content: Option[String] = None,
       children: List[FileEntry] = List.empty
   )
+}
+
+/**
+  * Test for recursive type codec handling
+  */
+class RecursiveCodecTest extends CodecSpec {
+  import RecursiveCodecTest.*
 
   test("support recursive types serialization and deserialization") {
     val child1 = FileEntry("file1.txt", "/home/file1.txt", false, 100L, 1234567890L, Some("content1"))
