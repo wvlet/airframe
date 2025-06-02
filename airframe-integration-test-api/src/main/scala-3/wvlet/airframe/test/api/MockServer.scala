@@ -151,7 +151,7 @@ class MockServer:
       query
         .split("&").map { param =>
           val eq = param.indexOf('=')
-          if eq == -1 then param -> ""
+          if eq == -1 then param      -> ""
           else param.substring(0, eq) -> param.substring(eq + 1)
         }.toMap
 
