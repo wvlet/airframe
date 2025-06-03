@@ -1,6 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val AIRFRAME_VERSION = "2025.1.11"
+val AIRFRAME_VERSION = "2025.1.12"
 ThisBuild / scalaVersion := "3.2.2"
 
 lazy val rpcExample =
