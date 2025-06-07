@@ -13,6 +13,12 @@ ThisBuild / dynverSonatypeSnapshots := true
 ThisBuild / dynverSeparator := "-"
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
+ThisBuild / publishTo := {
+  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+  else localStaging.value
+}
+
 val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
@@ -25,10 +31,8 @@ val buildSettings = Seq[Setting[?]](
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  sonatypeProfileName := "org.wvlet",
-  crossPaths          := true,
-  publishMavenStyle   := true,
-  publishTo           := sonatypePublishToBundle.value,
+  crossPaths        := true,
+  publishMavenStyle := true,
   javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq(
     "-feature",
