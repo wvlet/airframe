@@ -35,10 +35,11 @@ ThisBuild / dynverSonatypeSnapshots := true
 ThisBuild / dynverSeparator := "-"
 
 // For Sonatype
-// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-ThisBuild / publishTo := sonatypePublishToBundle.value
-sonatypeProfileName   := "org.wvlet"
-sonatypeSessionName   := s"${sonatypeSessionName.value} for AirSpec"
+ThisBuild / publishTo := {
+  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+  else localStaging.value
+}
 
 // Share
 ThisBuild / scalafmtConfig := file("../.scalafmt.conf")
@@ -130,7 +131,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
