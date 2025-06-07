@@ -154,7 +154,11 @@ val scala3Only = Seq[Setting[?]](
 val runTestSequentially = Seq[Setting[?]](Test / parallelExecution := false)
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-ThisBuild / publishTo := sonatypePublishToBundle.value
+ThisBuild / publishTo := {
+  val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
+  if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
+  else localStaging.value
+}
 
 val jsBuildSettings = Seq[Setting[?]](
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
@@ -191,27 +195,12 @@ val noPublish = Seq(
   mimaPreviousArtifacts := Set.empty
 )
 
-Global / excludeLintKeys ++= Set(sonatypeProfileName, sonatypeSessionName)
-
 lazy val root =
   project
     .in(file("."))
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .settings(
-      sonatypeProfileName := "org.wvlet",
-      sonatypeSessionName := {
-        // Use different session names for parallel publishing to Sonatype
-        if (sys.env.isDefinedAt("SCALA_JS")) {
-          s"${sonatypeSessionName.value} for Scala.js"
-        } else if (sys.env.isDefinedAt("SCALA_NATIVE")) {
-          s"${sonatypeSessionName.value} for Scala Native"
-        } else {
-          sonatypeSessionName.value
-        }
-      }
-    )
     .aggregate((jvmProjects ++ jsProjects ++ itProjects): _*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
@@ -974,7 +963,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
-          exclude ("junit", "junit"),
+        exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.4" % Provided,
         "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.4" % Provided,
