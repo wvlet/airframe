@@ -2,7 +2,6 @@
 // sbt-scoverage upgraded to scala-xml 2.1.0, but other sbt-plugins and Scala compilier 2.12 uses scala-xml 1.x.x
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
 
-addSbtPlugin("org.xerial.sbt"      % "sbt-sonatype"             % "3.12.2")
 addSbtPlugin("com.github.sbt"      % "sbt-pgp"                  % "2.3.1")
 addSbtPlugin("org.scoverage"       % "sbt-scoverage"            % "2.3.1")
 addSbtPlugin("org.scalameta"       % "sbt-scalafmt"             % "2.5.4")
@@ -20,7 +19,7 @@ addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.19.0")
+val SCALAJS_VERSION          = sys.env.getOrElse("SCALAJS_VERSION", "1.19.0")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (

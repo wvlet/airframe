@@ -41,5 +41,5 @@ jobs:
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: ./sbt sonatypeBundleRelease
+        run: ./sbt sonaRelease
         working-directory: ./sbt-airframe

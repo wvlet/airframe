@@ -32,4 +32,4 @@ jobs:
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: SCALA_JS=true ./sbt sonatypeBundleRelease
+        run: SCALA_JS=true ./sbt sonaRelease
