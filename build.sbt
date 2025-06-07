@@ -153,7 +153,6 @@ val scala3Only = Seq[Setting[?]](
 // Do not run tests concurrently to avoid JMX registration failures
 val runTestSequentially = Seq[Setting[?]](Test / parallelExecution := false)
 
-// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
 ThisBuild / publishTo := {
   val centralSnapshots = "https://central.sonatype.com/repository/maven-snapshots/"
   if (isSnapshot.value) Some("central-snapshots" at centralSnapshots)
