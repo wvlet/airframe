@@ -252,6 +252,8 @@ object HttpMessage {
     def withRemoteAddress(remoteAddress: ServerAddress): Request = this.copy(remoteAddress = Some(remoteAddress))
     def withEventHandler(f: ServerSentEventHandler): Request     = this.copy(eventHandler = f)
 
+    def withMultiPart()
+
     override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
   }
