@@ -9,7 +9,7 @@ addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.13.1")
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION          = sys.env.getOrElse("SCALAJS_VERSION", "1.19.0")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.19.0")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
@@ -21,6 +21,6 @@ addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
 addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.5.8")
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.0")
+addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-Xsource:3")
