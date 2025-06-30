@@ -2,4 +2,4 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 addSbtPlugin("org.xerial.sbt"     % "sbt-pack"     % "0.20")
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % "2025.1.14")
-addSbtPlugin("org.scalameta"      % "sbt-scalafmt" % "2.5.4")
+addSbtPlugin("org.scalameta"      % "sbt-scalafmt" % "2.5.5")
