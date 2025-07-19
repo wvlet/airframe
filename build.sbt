@@ -14,7 +14,7 @@ val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.1
 val SCALACHECK_VERSION              = "1.18.1"
 val MSGPACK_VERSION                 = "0.9.9"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.4.0"
-val SQLITE_JDBC_VERSION             = "3.49.1.0"
+val SQLITE_JDBC_VERSION             = "3.50.2.0"
 val SLF4J_VERSION                   = "2.0.17"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
@@ -724,8 +724,8 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.duckdb"     % "duckdb_jdbc" % "1.3.0.0",
-        "org.postgresql" % "postgresql"  % "42.7.6",
+        "org.duckdb"     % "duckdb_jdbc" % "1.3.2.0",
+        "org.postgresql" % "postgresql"  % "42.7.7",
         "com.zaxxer"     % "HikariCP"    % "6.3.0",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
@@ -803,7 +803,7 @@ lazy val httpCodeGen =
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
-        "io.swagger.parser.v3" % "swagger-parser" % "2.1.30" % Test,
+        "io.swagger.parser.v3" % "swagger-parser" % "2.1.31" % Test,
         // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test,
         // For gRPC route scanner test
@@ -822,7 +822,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.2.2.Final"
+        "io.netty" % "netty-all" % "4.2.3.Final"
       )
     )
     .dependsOn(http.jvm, rx.jvm)
@@ -876,7 +876,7 @@ lazy val okhttp =
       name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",
       libraryDependencies ++= Seq(
-        "com.squareup.okhttp3" % "okhttp" % "5.1.0"
+        "com.squareup.okhttp3" % "okhttp-jvm" % "5.1.0"
       )
     )
     .dependsOn(http.jvm, netty % Test)
@@ -934,7 +934,7 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
         "org.json4s" %% "json4s-jackson" % "4.0.7",
-        "io.circe"   %% "circe-parser"   % "0.14.13",
+        "io.circe"   %% "circe-parser"   % "0.14.14",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
