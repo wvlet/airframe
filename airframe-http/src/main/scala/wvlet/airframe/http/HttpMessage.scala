@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.language.experimental.macros
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
@@ -224,7 +224,7 @@ object HttpMessage {
       eventHandler: ServerSentEventHandler = ServerSentEventHandler.empty
   ) extends HttpMessage[Request] {
     // Mutable attachment for storing context information with the request
-    private val attachmentMap = new ConcurrentHashMap[String, Any]().asScala
+    private val attachmentMap     = new ConcurrentHashMap[String, Any]().asScala
     override def toString: String = s"Request(${method},${uri},${header})"
 
     /**
@@ -244,14 +244,14 @@ object HttpMessage {
     def query: HttpMultiMap = extractQueryFromUri(uri)
 
     def withFilter(f: Request => Request): Request = f(this)
-    
+
     private def copyWithAttachments(newRequest: Request): Request = {
       newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
-    
+
     def withMethod(method: String): Request = copyWithAttachments(this.copy(method = method))
-    def withUri(uri: String): Request = copyWithAttachments(this.copy(uri = uri))
+    def withUri(uri: String): Request       = copyWithAttachments(this.copy(uri = uri))
 
     /**
       * Overwrite the default destination address of the request
@@ -259,31 +259,35 @@ object HttpMessage {
       * @return
       */
     def withDest(dest: ServerAddress): Request = copyWithAttachments(this.copy(dest = Some(dest)))
-    def withRemoteAddress(remoteAddress: ServerAddress): Request = copyWithAttachments(this.copy(remoteAddress = Some(remoteAddress)))
+    def withRemoteAddress(remoteAddress: ServerAddress): Request = copyWithAttachments(
+      this.copy(remoteAddress = Some(remoteAddress))
+    )
     def withEventHandler(f: ServerSentEventHandler): Request = copyWithAttachments(this.copy(eventHandler = f))
 
-    override protected def copyWith(newHeader: HttpMultiMap): Request = copyWithAttachments(this.copy(header = newHeader))
+    override protected def copyWith(newHeader: HttpMultiMap): Request = copyWithAttachments(
+      this.copy(header = newHeader)
+    )
     override protected def copyWith(newMessage: Message): Request = copyWithAttachments(this.copy(message = newMessage))
 
     // Attachment management methods
     def attachment: Map[String, Any] = attachmentMap.toMap
-    
+
     def getAttachment[T](key: String): Option[T] = {
-      attachmentMap.get(key).map(_.asInstanceOf[T])
+      attachmentMap.get(key).flatMap(v => scala.util.Try(v.asInstanceOf[T]).toOption)
     }
-    
+
     def setAttachment(key: String, value: Any): Unit = {
       attachmentMap.put(key, value)
     }
-    
+
     def removeAttachment(key: String): Option[Any] = {
       attachmentMap.remove(key)
     }
-    
+
     def clearAttachments(): Unit = {
       attachmentMap.clear()
     }
-    
+
     def hasAttachment(key: String): Boolean = {
       attachmentMap.contains(key)
     }
