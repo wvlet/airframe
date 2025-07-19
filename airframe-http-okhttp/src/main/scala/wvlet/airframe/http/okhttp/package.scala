@@ -54,16 +54,16 @@ package object okhttp {
     override def remoteAddressOf(request: Request): Option[ServerAddress] = None
   }
 
-  implicit class OkHttpResponseWrapper(val raw: okhttp3.Response) extends HttpResponse[okhttp3.Response] {
+  implicit class OkHttpResponseWrapper(val raw: Response) extends HttpResponse[Response] {
     override protected def adapter: HttpResponseAdapter[Response] = OkHttpResponseAdapter
     override def toRaw: Response                                  = raw
   }
 
-  implicit object OkHttpResponseAdapter extends HttpResponseAdapter[okhttp3.Response] with LogSupport {
-    override def statusCodeOf(res: okhttp3.Response): Int = {
+  implicit object OkHttpResponseAdapter extends HttpResponseAdapter[Response] with LogSupport {
+    override def statusCodeOf(res: Response): Int = {
       res.code()
     }
-    override def messageOf(resp: okhttp3.Response): Message = {
+    override def messageOf(resp: Response): Message = {
       try {
         Option(resp.body()).map(_.bytes()) match {
           case Some(bytes) => ByteArrayMessage(bytes)
@@ -75,9 +75,9 @@ package object okhttp {
           EmptyMessage
       }
     }
-    override def contentTypeOf(res: okhttp3.Response): Option[String] = Option(res.body()).map(_.contentType().toString)
-    override def wrap(resp: okhttp3.Response): HttpResponse[okhttp3.Response] = OkHttpResponseWrapper(resp)
-    override def headerOf(resp: okhttp3.Response): HttpMultiMap = {
+    override def contentTypeOf(res: Response): Option[String] = Option(res.body()).map(_.contentType().toString)
+    override def wrap(resp: Response): HttpResponse[Response] = OkHttpResponseWrapper(resp)
+    override def headerOf(resp: Response): HttpMultiMap = {
       var h = toHttpMultiMap(resp.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
       for (b <- Option(resp.body)) {
