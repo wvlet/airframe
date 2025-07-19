@@ -23,6 +23,7 @@ import java.util
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def header: HttpMultiMap
@@ -244,57 +245,32 @@ object HttpMessage {
     def query: HttpMultiMap = extractQueryFromUri(uri)
 
     def withFilter(f: Request => Request): Request = f(this)
-    def withMethod(method: String): Request        = {
-      val newRequest = this.copy(method = method)
+    
+    private def copyWithAttachments(newRequest: Request): Request = {
       newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
-    def withUri(uri: String): Request              = {
-      val newRequest = this.copy(uri = uri)
-      newRequest.attachmentMap ++= attachmentMap
-      newRequest
-    }
+    
+    def withMethod(method: String): Request = copyWithAttachments(this.copy(method = method))
+    def withUri(uri: String): Request = copyWithAttachments(this.copy(uri = uri))
 
     /**
       * Overwrite the default destination address of the request
       * @param dest
       * @return
       */
-    def withDest(dest: ServerAddress): Request                   = {
-      val newRequest = this.copy(dest = Some(dest))
-      newRequest.attachmentMap ++= attachmentMap
-      newRequest
-    }
-    def withRemoteAddress(remoteAddress: ServerAddress): Request = {
-      val newRequest = this.copy(remoteAddress = Some(remoteAddress))
-      newRequest.attachmentMap ++= attachmentMap
-      newRequest
-    }
-    def withEventHandler(f: ServerSentEventHandler): Request     = {
-      val newRequest = this.copy(eventHandler = f)
-      newRequest.attachmentMap ++= attachmentMap
-      newRequest
-    }
+    def withDest(dest: ServerAddress): Request = copyWithAttachments(this.copy(dest = Some(dest)))
+    def withRemoteAddress(remoteAddress: ServerAddress): Request = copyWithAttachments(this.copy(remoteAddress = Some(remoteAddress)))
+    def withEventHandler(f: ServerSentEventHandler): Request = copyWithAttachments(this.copy(eventHandler = f))
 
-    override protected def copyWith(newHeader: HttpMultiMap): Request = {
-      val newRequest = this.copy(header = newHeader)
-      // Copy attachments to the new request
-      newRequest.attachmentMap ++= attachmentMap
-      newRequest
-    }
-    
-    override protected def copyWith(newMessage: Message): Request = {
-      val newRequest = this.copy(message = newMessage)
-      // Copy attachments to the new request
-      newRequest.attachmentMap ++= attachmentMap
-      newRequest
-    }
+    override protected def copyWith(newHeader: HttpMultiMap): Request = copyWithAttachments(this.copy(header = newHeader))
+    override protected def copyWith(newMessage: Message): Request = copyWithAttachments(this.copy(message = newMessage))
 
     // Attachment management methods
     def attachment: Map[String, Any] = attachmentMap.toMap
     
-    def getAttachment[T](key: String): Option[T] = {
-      attachmentMap.get(key).map(_.asInstanceOf[T])
+    def getAttachment[T: ClassTag](key: String): Option[T] = {
+      attachmentMap.get(key).collect { case v: T => v }
     }
     
     def setAttachment(key: String, value: Any): Unit = {
