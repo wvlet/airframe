@@ -4,16 +4,29 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '**.scala'
-      - '**.java'
-      - '**.sbt'
-      - '.github/workflows/package-test.yml'
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      packaging: ${{ steps.filter.outputs.packaging }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            packaging:
+              - '**.scala'
+              - '**.java'
+              - '**.sbt'
+              - '.github/workflows/package-test.yml'
   test_packaging:
     name: Packaging Test
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.packaging == 'true'
     steps:
       - uses: actions/checkout@v4
         with:
