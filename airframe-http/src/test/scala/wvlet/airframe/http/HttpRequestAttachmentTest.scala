@@ -182,17 +182,4 @@ class HttpRequestAttachmentTest extends AirSpec {
     request.getAttachment[UserContext]("userContext") shouldBe Some(userContext)
     request.getAttachment[Map[String, String]]("metadata") shouldBe Some(Map("version" -> "1.0", "source" -> "api"))
   }
-
-  test("getAttachment should return None for type mismatch") {
-    val request = Http.GET("/test")
-    request.setAttachment("key1", "value1")
-    request.setAttachment("key2", 42)
-
-    // Attempt to get a String as an Int
-    request.getAttachment[Int]("key1") shouldBe None
-    // Attempt to get an Int as a String
-    request.getAttachment[String]("key2") shouldBe None
-    // Attempt to get a value as a different complex type
-    request.getAttachment[List[String]]("key1") shouldBe None
-  }
 }

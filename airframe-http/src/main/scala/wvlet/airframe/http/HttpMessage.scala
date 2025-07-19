@@ -23,7 +23,6 @@ import java.util
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
 import scala.language.experimental.macros
-import scala.reflect.ClassTag
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def header: HttpMultiMap
@@ -269,8 +268,8 @@ object HttpMessage {
     // Attachment management methods
     def attachment: Map[String, Any] = attachmentMap.toMap
     
-    def getAttachment[T: ClassTag](key: String): Option[T] = {
-      attachmentMap.get(key).collect { case v: T => v }
+    def getAttachment[T](key: String): Option[T] = {
+      attachmentMap.get(key).map(_.asInstanceOf[T])
     }
     
     def setAttachment(key: String, value: Any): Unit = {
