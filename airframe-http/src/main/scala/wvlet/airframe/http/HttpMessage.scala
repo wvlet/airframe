@@ -20,6 +20,8 @@ import wvlet.airframe.rx.Rx
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util
+import java.util.concurrent.ConcurrentHashMap
+import scala.jdk.CollectionConverters._
 import scala.language.experimental.macros
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
@@ -221,6 +223,8 @@ object HttpMessage {
       remoteAddress: Option[ServerAddress] = None,
       eventHandler: ServerSentEventHandler = ServerSentEventHandler.empty
   ) extends HttpMessage[Request] {
+    // Mutable attachment for storing context information with the request
+    private val attachmentMap: ConcurrentHashMap[String, Any] = new ConcurrentHashMap[String, Any]()
     override def toString: String = s"Request(${method},${uri},${header})"
 
     /**
@@ -240,20 +244,74 @@ object HttpMessage {
     def query: HttpMultiMap = extractQueryFromUri(uri)
 
     def withFilter(f: Request => Request): Request = f(this)
-    def withMethod(method: String): Request        = this.copy(method = method)
-    def withUri(uri: String): Request              = this.copy(uri = uri)
+    def withMethod(method: String): Request        = {
+      val newRequest = this.copy(method = method)
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
+    def withUri(uri: String): Request              = {
+      val newRequest = this.copy(uri = uri)
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
 
     /**
       * Overwrite the default destination address of the request
       * @param dest
       * @return
       */
-    def withDest(dest: ServerAddress): Request                   = this.copy(dest = Some(dest))
-    def withRemoteAddress(remoteAddress: ServerAddress): Request = this.copy(remoteAddress = Some(remoteAddress))
-    def withEventHandler(f: ServerSentEventHandler): Request     = this.copy(eventHandler = f)
+    def withDest(dest: ServerAddress): Request                   = {
+      val newRequest = this.copy(dest = Some(dest))
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
+    def withRemoteAddress(remoteAddress: ServerAddress): Request = {
+      val newRequest = this.copy(remoteAddress = Some(remoteAddress))
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
+    def withEventHandler(f: ServerSentEventHandler): Request     = {
+      val newRequest = this.copy(eventHandler = f)
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
 
-    override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
-    override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
+    override protected def copyWith(newHeader: HttpMultiMap): Request = {
+      val newRequest = this.copy(header = newHeader)
+      // Copy attachments to the new request
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
+    
+    override protected def copyWith(newMessage: Message): Request = {
+      val newRequest = this.copy(message = newMessage)
+      // Copy attachments to the new request
+      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest
+    }
+
+    // Attachment management methods
+    def attachment: Map[String, Any] = attachmentMap.asScala.toMap
+    
+    def getAttachment[T](key: String): Option[T] = {
+      Option(attachmentMap.get(key)).map(_.asInstanceOf[T])
+    }
+    
+    def setAttachment(key: String, value: Any): Unit = {
+      attachmentMap.put(key, value)
+    }
+    
+    def removeAttachment(key: String): Option[Any] = {
+      Option(attachmentMap.remove(key))
+    }
+    
+    def clearAttachments(): Unit = {
+      attachmentMap.clear()
+    }
+    
+    def hasAttachment(key: String): Boolean = {
+      attachmentMap.containsKey(key)
+    }
   }
 
   private[http] def extractQueryFromUri(uri: String): HttpMultiMap = {
