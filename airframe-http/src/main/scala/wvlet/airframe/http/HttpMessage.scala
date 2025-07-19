@@ -246,12 +246,12 @@ object HttpMessage {
     def withFilter(f: Request => Request): Request = f(this)
     def withMethod(method: String): Request        = {
       val newRequest = this.copy(method = method)
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
     def withUri(uri: String): Request              = {
       val newRequest = this.copy(uri = uri)
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
 
@@ -262,31 +262,31 @@ object HttpMessage {
       */
     def withDest(dest: ServerAddress): Request                   = {
       val newRequest = this.copy(dest = Some(dest))
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
     def withRemoteAddress(remoteAddress: ServerAddress): Request = {
       val newRequest = this.copy(remoteAddress = Some(remoteAddress))
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
     def withEventHandler(f: ServerSentEventHandler): Request     = {
       val newRequest = this.copy(eventHandler = f)
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = {
       val newRequest = this.copy(header = newHeader)
       // Copy attachments to the new request
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
     
     override protected def copyWith(newMessage: Message): Request = {
       val newRequest = this.copy(message = newMessage)
       // Copy attachments to the new request
-      attachmentMap.forEach((k, v) => newRequest.attachmentMap.put(k, v))
+      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
       newRequest
     }
 
