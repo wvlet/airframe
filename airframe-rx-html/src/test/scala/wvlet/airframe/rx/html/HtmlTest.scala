@@ -227,24 +227,24 @@ class HtmlTest extends AirSpec {
       option(value -> "banana")
     )
   }
-  
+
   test("unified import for HTML and SVG") {
     import unifiedAll.*
-    
+
     // Can use both HTML and SVG together without conflicts
     div(
-      cls -> "container",  // HTML class
-      style -> "padding: 10px;",  // HTML style
+      cls   -> "container",      // HTML class
+      style -> "padding: 10px;", // HTML style
       h1("HTML and SVG Together"),
       svg(
-        svgWidth -> "100",
+        svgWidth  -> "100",
         svgHeight -> "100",
-        svgClass -> "my-svg",  // SVG class (prefixed)
-        svgStyle -> "border: 1px solid black;",  // SVG style (prefixed)
+        svgClass  -> "my-svg",                   // SVG class (prefixed)
+        svgStyle  -> "border: 1px solid black;", // SVG style (prefixed)
         circle(
-          cx -> "50",
-          cy -> "50",
-          r -> "40",
+          cx   -> "50",
+          cy   -> "50",
+          r    -> "40",
           fill -> "red"
         )
       )
