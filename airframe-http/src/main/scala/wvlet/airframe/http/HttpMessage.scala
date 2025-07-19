@@ -224,7 +224,7 @@ object HttpMessage {
       eventHandler: ServerSentEventHandler = ServerSentEventHandler.empty
   ) extends HttpMessage[Request] {
     // Mutable attachment for storing context information with the request
-    private val attachmentMap: ConcurrentHashMap[String, Any] = new ConcurrentHashMap[String, Any]()
+    private val attachmentMap = new ConcurrentHashMap[String, Any]().asScala
     override def toString: String = s"Request(${method},${uri},${header})"
 
     /**
@@ -246,12 +246,12 @@ object HttpMessage {
     def withFilter(f: Request => Request): Request = f(this)
     def withMethod(method: String): Request        = {
       val newRequest = this.copy(method = method)
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
     def withUri(uri: String): Request              = {
       val newRequest = this.copy(uri = uri)
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
 
@@ -262,39 +262,39 @@ object HttpMessage {
       */
     def withDest(dest: ServerAddress): Request                   = {
       val newRequest = this.copy(dest = Some(dest))
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
     def withRemoteAddress(remoteAddress: ServerAddress): Request = {
       val newRequest = this.copy(remoteAddress = Some(remoteAddress))
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
     def withEventHandler(f: ServerSentEventHandler): Request     = {
       val newRequest = this.copy(eventHandler = f)
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = {
       val newRequest = this.copy(header = newHeader)
       // Copy attachments to the new request
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
     
     override protected def copyWith(newMessage: Message): Request = {
       val newRequest = this.copy(message = newMessage)
       // Copy attachments to the new request
-      newRequest.attachmentMap.asScala ++= attachmentMap.asScala
+      newRequest.attachmentMap ++= attachmentMap
       newRequest
     }
 
     // Attachment management methods
-    def attachment: Map[String, Any] = attachmentMap.asScala.toMap
+    def attachment: Map[String, Any] = attachmentMap.toMap
     
     def getAttachment[T](key: String): Option[T] = {
-      Option(attachmentMap.get(key)).map(_.asInstanceOf[T])
+      attachmentMap.get(key).map(_.asInstanceOf[T])
     }
     
     def setAttachment(key: String, value: Any): Unit = {
@@ -302,7 +302,7 @@ object HttpMessage {
     }
     
     def removeAttachment(key: String): Option[Any] = {
-      Option(attachmentMap.remove(key))
+      attachmentMap.remove(key)
     }
     
     def clearAttachments(): Unit = {
@@ -310,7 +310,7 @@ object HttpMessage {
     }
     
     def hasAttachment(key: String): Boolean = {
-      attachmentMap.containsKey(key)
+      attachmentMap.contains(key)
     }
   }
 
