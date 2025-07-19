@@ -1014,6 +1014,11 @@ lazy val parquet =
         "org.xerial.snappy"  % "snappy-java"  % "1.1.10.7",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
         "org.apache.parquet" % "parquet-avro" % PARQUET_VERSION % Test
+      ),
+      // Add Java options to allow security manager for Hadoop/Parquet compatibility with Java 17+
+      Test / fork := true,
+      Test / javaOptions ++= Seq(
+        "-Djava.security.manager=allow"
       )
     )
     .dependsOn(codec.jvm, sql)
