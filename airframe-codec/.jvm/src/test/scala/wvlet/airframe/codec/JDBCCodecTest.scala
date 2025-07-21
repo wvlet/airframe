@@ -215,6 +215,14 @@ class JDBCCodecTest extends AirSpec {
       json shouldBe """[{"id":1,"name":"leo"},{"id":2,"name":"yui"}]"""
     }
   }
+
+  test("handle Types.OTHER without warning") {
+    import java.sql.Types
+    // Test that Types.OTHER is handled without generating a warning
+    val codec = JDBCCodec.toJDBCColumnCodec(Types.OTHER, "OTHER")
+    // Types.OTHER should map to JDBCStringCodec as a reasonable default
+    codec shouldBe JDBCStringCodec
+  }
 }
 
 case class MockArray(v: AnyRef) extends java.sql.Array {

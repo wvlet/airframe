@@ -172,6 +172,7 @@ object JDBCCodec extends LogSupport {
           case Types.ARRAY                                                       => JDBCArrayCodec
           case Types.JAVA_OBJECT                                                 => JDBCJavaObjectCodec
           case Types.NULL                                                        => JDBCNullCodec
+          case Types.OTHER                                                       => JDBCStringCodec
           case other =>
             warn(s"Unsupported JDBC type: ${other}. Assume string type")
             JDBCStringCodec
