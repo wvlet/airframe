@@ -24,7 +24,7 @@ lazy val client =
     )
     .jsSettings(
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "2.8.0"
+        "org.scala-js" %%% "scalajs-dom" % "2.8.1"
       )
     )
     .dependsOn(spi)
