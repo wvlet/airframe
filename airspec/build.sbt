@@ -368,7 +368,9 @@ lazy val airspec =
         ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
         ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.3").cross(CrossVersion.for3Use2_13),
         // Needed to be explicitly included here for running Scala.js tests successfully
-        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
+        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
+        // Required by embedded airframe-log code that uses java.util.logging
+        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
     .nativeSettings(

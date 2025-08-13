@@ -33,6 +33,18 @@ class TestJSSpec extends AirSpec with LogSupport {
   test("natural method name test") {
     debug("hello symbol name tests")
   }
+
+  test("java.util.logging should be available on Scala.js") {
+    // This test verifies that java.util.logging is available (requires scalajs-java-logging dependency)
+    val logger = java.util.logging.Logger.getLogger("test.logger")
+    logger.info("java.util.logging works on Scala.js")
+    
+    // Verify that we can create LogRecord instances 
+    val record = new java.util.logging.LogRecord(java.util.logging.Level.INFO, "test message")
+    record.getMessage shouldBe "test message"
+    
+    info("Successfully used java.util.logging on Scala.js platform")
+  }
 }
 
 class FlexWordSpecTest extends AirSpec {
