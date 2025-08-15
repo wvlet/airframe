@@ -31,6 +31,12 @@ To start using AirSpec, read [Quick Start](#quick-start).
 
 ## Quick Start
 
+
+Documentation assumes that the build tool used is [sbt](https://www.scala-sbt.org/).
+
+AirSpec is also supported for Gradle by the
+[Gradle multi-backend Scala plugin](https://github.com/dubinsky/scalajs-gradle).
+
 To use AirSpec, add `"org.wvlet.airframe" %% "airspec"` to your test dependency and add `wvlet.airspec.Framework` as a TestFramework.
 
 AirSpec uses `(year).(month).(patch)` versioning scheme. For example, version 19.8.x means a version released on August, 2019:
