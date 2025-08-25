@@ -13,7 +13,7 @@ jobs:
     outputs:
       sbt-integration: ${{ steps.filter.outputs.sbt-integration }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -32,7 +32,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.sbt-integration == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # Fetch all tags so that sbt-dynver can find the previous release version
           fetch-depth: 0
