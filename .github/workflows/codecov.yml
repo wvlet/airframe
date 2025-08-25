@@ -32,7 +32,7 @@ jobs:
     if: needs.changes.outputs.coverage == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '21'
