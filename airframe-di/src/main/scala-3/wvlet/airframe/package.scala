@@ -41,6 +41,3 @@ val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
 
 def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any =
   traitFactoryCache.getOrElseUpdate(s, factory)
-
-
-
