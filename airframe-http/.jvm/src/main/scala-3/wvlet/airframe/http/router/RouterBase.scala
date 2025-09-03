@@ -43,11 +43,9 @@ private[router] object RouterObjectMacros:
 
     if TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType] then
       '{
-        wvlet.airframe.registerTraitFactory[Controller]
         Router(filterSurface = Some(Surface.of[Controller]))
       }
     else
       '{
-        wvlet.airframe.registerTraitFactory[Controller]
         Router.empty.add[Controller]
       }
