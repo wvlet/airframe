@@ -29,6 +29,9 @@ val SNAKE_YAML_VERSION              = "2.5"
 
 val AIRFRAME_BINARY_COMPAT_VERSION = "23.6.0"
 
+// JVM options for Java 24+
+val java24PlusJvmOptions = Seq("--sun-misc-unsafe-memory-access=allow", "--enable-native-access=ALL-UNNAMED")
+
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
@@ -801,6 +804,11 @@ lazy val httpCodeGen =
       description        := "REST and RPC code generator",
       packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
+      packJvmVersionSpecificOpts := Map(
+        "airframe-http-code-generator" -> Map(
+          24 -> java24PlusJvmOptions
+        )
+      ),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
         "io.swagger.parser.v3" % "swagger-parser" % "2.1.33" % Test,
@@ -917,6 +925,11 @@ lazy val benchmark =
       crossScalaVersions := targetScalaVersions,
       name               := "airframe-benchmark",
       packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      packJvmVersionSpecificOpts := Map(
+        "airframe-benchmark" -> Map(
+          24 -> java24PlusJvmOptions
+        )
+      ),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
