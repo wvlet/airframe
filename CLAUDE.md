@@ -101,6 +101,7 @@ airframe/
 ## Key Modules
 
 ### Core Infrastructure
+- `airframe-core` - A new core module of Airframe for Scala 3
 - `airframe-di` - Dependency injection framework
 - `airframe-log` - Logging framework (minimal dependencies)
 - `airframe-surface` - Object structure extraction
