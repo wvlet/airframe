@@ -801,6 +801,11 @@ lazy val httpCodeGen =
       description        := "REST and RPC code generator",
       packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
+      packJvmVersionSpecificOpts := Map(
+        "airframe-http-code-generator" -> Map(
+          24 -> Seq("--sun-misc-unsafe-memory-access=allow", "--enable-native-access=ALL-UNNAMED")
+        )
+      ),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
         "io.swagger.parser.v3" % "swagger-parser" % "2.1.33" % Test,
@@ -917,6 +922,11 @@ lazy val benchmark =
       crossScalaVersions := targetScalaVersions,
       name               := "airframe-benchmark",
       packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      packJvmVersionSpecificOpts := Map(
+        "airframe-benchmark" -> Map(
+          24 -> Seq("--sun-misc-unsafe-memory-access=allow", "--enable-native-access=ALL-UNNAMED")
+        )
+      ),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
