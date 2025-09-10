@@ -830,7 +830,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.2.5.Final"
+        "io.netty" % "netty-all" % "4.2.6.Final"
       )
     )
     .dependsOn(http.jvm, rx.jvm)
