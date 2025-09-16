@@ -811,7 +811,7 @@ lazy val httpCodeGen =
       ),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
-        "io.swagger.parser.v3" % "swagger-parser" % "2.1.33" % Test,
+        "io.swagger.parser.v3" % "swagger-parser" % "2.1.34" % Test,
         // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test,
         // For gRPC route scanner test
