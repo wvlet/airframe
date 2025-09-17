@@ -131,7 +131,7 @@ jobs:
           annotate_only: true
           detailed_summary: true
   test_3_latest_jdk:
-    name: Scala 3 / JDK Latest LTS
+    name: Scala 3 / JDK25
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.tests == 'true'
@@ -149,7 +149,7 @@ jobs:
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
-          check_name: Test Report Scala 3 / JDK Latest LTS
+          check_name: Test Report Scala 3 / JDK25
           annotate_only: true
           detailed_summary: true
   test_integration:
