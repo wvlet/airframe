@@ -17,6 +17,19 @@ import wvlet.airframe.control.ResultClass
 import wvlet.airspec.AirSpec
 
 class HttpClientExceptionTest extends AirSpec {
+
+  private def assertIsRetryable(response: HttpMessage.Response, expected: Boolean): Unit = {
+    val result = HttpClientException.classifyHttpResponse(response)
+    result match {
+      case ResultClass.Failed(isRetryable, _, _) =>
+        withClue(s"For status ${response.status}") {
+          isRetryable shouldBe expected
+        }
+      case _ =>
+        fail(s"Expected Failed result for ${response.status}")
+    }
+  }
+
   test("classify 304 Not Modified as success") {
     val response = HttpMessage.Response(HttpStatus.NotModified_304)
     val result   = HttpClientException.classifyHttpResponse(response)
@@ -44,15 +57,7 @@ class HttpClientExceptionTest extends AirSpec {
       HttpMessage.Response(HttpStatus.ServiceUnavailable_503)
     )
 
-    responses.foreach { response =>
-      val result = HttpClientException.classifyHttpResponse(response)
-      result match {
-        case ResultClass.Failed(isRetryable, _, _) =>
-          isRetryable shouldBe true
-        case _ =>
-          fail(s"Expected Failed result for ${response.status}")
-      }
-    }
+    responses.foreach(assertIsRetryable(_, expected = true))
   }
 
   test("classify most client errors as non-retryable") {
@@ -63,15 +68,7 @@ class HttpClientExceptionTest extends AirSpec {
       HttpMessage.Response(HttpStatus.NotFound_404)
     )
 
-    responses.foreach { response =>
-      val result = HttpClientException.classifyHttpResponse(response)
-      result match {
-        case ResultClass.Failed(isRetryable, _, _) =>
-          isRetryable shouldBe false
-        case _ =>
-          fail(s"Expected Failed result for ${response.status}")
-      }
-    }
+    responses.foreach(assertIsRetryable(_, expected = false))
   }
 
   test("classify specific client errors as retryable") {
@@ -82,14 +79,6 @@ class HttpClientExceptionTest extends AirSpec {
       HttpMessage.Response(HttpStatus.ClientClosedRequest_499)
     )
 
-    retryableClientErrors.foreach { response =>
-      val result = HttpClientException.classifyHttpResponse(response)
-      result match {
-        case ResultClass.Failed(isRetryable, _, _) =>
-          isRetryable shouldBe true
-        case _ =>
-          fail(s"Expected Failed result for ${response.status}")
-      }
-    }
+    retryableClientErrors.foreach(assertIsRetryable(_, expected = true))
   }
 }
