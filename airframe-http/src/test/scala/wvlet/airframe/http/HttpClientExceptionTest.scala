@@ -22,8 +22,8 @@ class HttpClientExceptionTest extends AirSpec {
     val result = HttpClientException.classifyHttpResponse(response)
     result match {
       case ResultClass.Failed(isRetryable, _, _) =>
-        withClue(s"For status ${response.status}") {
-          isRetryable shouldBe expected
+        if (isRetryable != expected) {
+          fail(s"For status ${response.status}: expected isRetryable=$expected but got $isRetryable")
         }
       case _ =>
         fail(s"Expected Failed result for ${response.status}")
