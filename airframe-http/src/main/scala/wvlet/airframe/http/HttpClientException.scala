@@ -89,6 +89,9 @@ object HttpClientException extends LogSupport {
     status match {
       case s if s.isSuccessful =>
         Succeeded
+      case HttpStatus.NotModified_304 =>
+        // 304 Not Modified is a successful response indicating cached content is still valid
+        Succeeded
       case s if s.isServerError =>
         // We should retry on any server side errors
         val f = retryableFailure(requestFailure(response))
