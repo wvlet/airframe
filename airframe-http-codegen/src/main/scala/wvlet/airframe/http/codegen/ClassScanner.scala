@@ -94,24 +94,34 @@ object ClassScanner extends LogSupport {
   }
 
   private def scanClassesInJar(jarFile: String, targetPackageNames: Seq[String]): Seq[String] = {
-    val jf: JarFile = new JarFile(jarFile)
-    val entryEnum   = jf.entries
+    try {
+      val jf: JarFile = new JarFile(jarFile)
+      try {
+        val entryEnum = jf.entries
 
-    val targetPaths = targetPackageNames.map(toFilePath)
+        val targetPaths = targetPackageNames.map(toFilePath)
 
-    val classes = Seq.newBuilder[String]
+        val classes = Seq.newBuilder[String]
 
-    while (entryEnum.hasMoreElements) {
-      val jarEntry  = entryEnum.nextElement
-      val entryName = jarEntry.getName
-      if (entryName.endsWith(".class") && targetPaths.exists(p => entryName.startsWith(p))) {
-        val clsName = entryName
-          .stripSuffix(".class")
-          .replaceAll("\\/", ".")
-        classes += clsName
+        while (entryEnum.hasMoreElements) {
+          val jarEntry  = entryEnum.nextElement
+          val entryName = jarEntry.getName
+          if (entryName.endsWith(".class") && targetPaths.exists(p => entryName.startsWith(p))) {
+            val clsName = entryName
+              .stripSuffix(".class")
+              .replaceAll("\\/", ".")
+            classes += clsName
+          }
+        }
+
+        classes.result()
+      } finally {
+        jf.close()
       }
+    } catch {
+      case e: java.io.IOException =>
+        debug(s"Failed to read JAR file: ${jarFile}, skipping: ${e.getMessage}")
+        Seq.empty
     }
-
-    classes.result()
   }
 }
