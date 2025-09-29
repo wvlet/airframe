@@ -15,6 +15,7 @@ package wvlet.airframe.http.codegen
 import java.io.File
 import java.net.{URL, URLClassLoader}
 import java.util.jar.JarFile
+import wvlet.airframe.control.Control
 import wvlet.log.LogSupport
 
 import java.nio.charset.StandardCharsets
@@ -95,8 +96,7 @@ object ClassScanner extends LogSupport {
 
   private def scanClassesInJar(jarFile: String, targetPackageNames: Seq[String]): Seq[String] = {
     try {
-      val jf: JarFile = new JarFile(jarFile)
-      try {
+      Control.withResource(new JarFile(jarFile)) { jf =>
         val entryEnum = jf.entries
 
         val targetPaths = targetPackageNames.map(toFilePath)
@@ -115,8 +115,6 @@ object ClassScanner extends LogSupport {
         }
 
         classes.result()
-      } finally {
-        jf.close()
       }
     } catch {
       case e: java.io.IOException =>
