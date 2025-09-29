@@ -14,6 +14,9 @@
 package wvlet.airframe.http.codegen
 
 import wvlet.airspec.AirSpec
+import wvlet.log.io.IOUtil
+import java.io.{FileOutputStream, File}
+import java.util.jar.{JarOutputStream, JarEntry}
 
 /**
   */
@@ -26,8 +29,8 @@ class ClassScannerTest extends AirSpec {
 
   test("scanClasses should handle non-existent JAR files gracefully") {
     // Create a ClassLoader with a non-existent JAR file in the classpath
-    val nonExistentJar = new java.io.File("/tmp/non-existent-file.jar").toURI.toURL
-    val invalidJar     = new java.io.File("/tmp/invalid file name.jar").toURI.toURL // Space in filename
+    val nonExistentJar = new File("target/non-existent-file.jar").toURI.toURL
+    val invalidJar     = new File("target/invalid file name.jar").toURI.toURL // Space in filename
     val classLoader    = new java.net.URLClassLoader(Array(nonExistentJar, invalidJar))
 
     // This should not throw an exception and return empty results
@@ -36,10 +39,10 @@ class ClassScannerTest extends AirSpec {
   }
 
   test("scanClasses should handle malformed JAR paths like the one from issue") {
-    // Simulate the exact issue case with a space in the JAR filename
+    // Simulate the exact issue case with a space in the JAR filename - use a more generic path
     val malformedJarPath =
-      "/Users/xx/.ivy2/cache/org.scala-js/scalajs-scalalib_2.13/jars/scalajs-scalalib_2.13-2.13.16 1.20.1.jar"
-    val malformedJar = new java.io.File(malformedJarPath).toURI.toURL
+      "target/.cache/org.scala-js/scalajs-scalalib_2.13/jars/scalajs-scalalib_2.13-2.13.16 1.20.1.jar"
+    val malformedJar = new File(malformedJarPath).toURI.toURL
     val classLoader  = new java.net.URLClassLoader(Array(malformedJar))
 
     // This should not throw NoSuchFileException and return empty results instead
@@ -48,12 +51,24 @@ class ClassScannerTest extends AirSpec {
   }
 
   test("scanClasses should handle valid JAR files properly") {
-    // Test with a valid JAR file to ensure we didn't break normal functionality
-    val validJar    = new java.io.File("/tmp/valid-test.jar").toURI.toURL
-    val classLoader = new java.net.URLClassLoader(Array(validJar))
+    // Create a valid JAR file to test normal functionality
+    IOUtil.withTempFile("valid-test", ".jar", "target") { jarFile =>
+      // Create a minimal valid JAR file with a test class entry
+      val jarOut = new JarOutputStream(new FileOutputStream(jarFile))
+      try {
+        val entry = new JarEntry("com/example/TestClass.class")
+        jarOut.putNextEntry(entry)
+        jarOut.write("dummy class content".getBytes)
+        jarOut.closeEntry()
+      } finally {
+        jarOut.close()
+      }
 
-    // This should work without throwing any exceptions (even if it returns empty for our test jar)
-    val result = ClassScanner.scanClasses(classLoader, Seq("nonexistent.package"))
-    result shouldBe Seq.empty
+      val classLoader = new java.net.URLClassLoader(Array(jarFile.toURI.toURL))
+
+      // This should work without throwing any exceptions
+      val result = ClassScanner.scanClasses(classLoader, Seq("com.example"))
+      result shouldContain "com.example.TestClass"
+    }
   }
 }
