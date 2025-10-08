@@ -73,9 +73,7 @@ class JSMatcherTest extends AirSpec {
       val c = ""
       val b = true
       val a = 1
-      val e = new js.Object() {
-        val foo = 1
-      }
+      val e = new HasIntFoo(foo = 1)
       val d = null
     }
     a shouldBe b
