@@ -168,14 +168,12 @@ val jsBuildSettings = Seq[Setting[?]](
     ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test).cross(CrossVersion.for3Use2_13),
     // TODO It should be included in AirSpec
     "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1" % Test
-  ),
-  coverageEnabled := false
+  )
 )
 
 val nativeBuildSettings = Seq[Setting[?]](
   scalaVersion       := SCALA_3,
-  crossScalaVersions := List(SCALA_3),
-  coverageEnabled    := false
+  crossScalaVersions := List(SCALA_3)
 //  nativeConfig ~= {
 //    _.withSourceLevelDebuggingConfig(_.enableAll) // enable generation of debug informations
 //      .withOptimize(false)                        // disable Scala Native optimizer
@@ -299,9 +297,7 @@ lazy val projectJVM =
     .settings(noPublish)
     .settings(
       // Skip importing aggregated projects in IntelliJ IDEA
-      ideSkipProject := true,
-      // Use a stable coverage directory name without containing scala version
-      coverageDataDir := target.value
+      ideSkipProject := true
     )
     .aggregate(jvmProjects: _*)
 
