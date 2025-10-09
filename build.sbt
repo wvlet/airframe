@@ -139,7 +139,7 @@ val buildSettings = Seq[Setting[?]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.13.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.14.0")
   }
 )
 
