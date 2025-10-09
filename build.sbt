@@ -1012,11 +1012,18 @@ lazy val parquet =
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
         "org.apache.parquet" % "parquet-avro" % PARQUET_VERSION % Test
       ),
-      // Add Java options to allow security manager for Hadoop/Parquet compatibility with Java 17+
+      // Add Java options to allow security manager for Hadoop/Parquet compatibility with Java 17-23
+      // JDK 24+ removed the Security Manager completely
       Test / fork := true,
-      Test / javaOptions ++= Seq(
-        "-Djava.security.manager=allow"
-      )
+      Test / javaOptions ++= {
+        import scala.util.Try
+        val javaVersion = Try(System.getProperty("java.version", "1.8")).getOrElse("1.8")
+        val majorVersion = javaVersion.split("\\.")(0).toInt
+        if (majorVersion >= 17 && majorVersion < 24)
+          Seq("-Djava.security.manager=allow")
+        else
+          Nil
+      }
     )
     .dependsOn(codec.jvm, sql)
 
