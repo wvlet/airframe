@@ -1,3 +1,3 @@
 #!/bin/sh
 
-npm install jsdom@24.X
+npm install jsdom@27.X
