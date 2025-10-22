@@ -101,9 +101,9 @@ final class ULID(private val ulid: String) extends Ordered[ULID] {
   * represents 5-bit value (0-31).
   */
 object ULID {
-  val MaxValue: ULID        = ULID("7ZZZZZZZZZZZZZZZZZZZZZZZZZ")
   private[ulid] val MinTime = 0L
   private[ulid] val MaxTime = (~0L) >>> (64 - 48) // Timestamp uses 48-bit range
+  val MaxValue: ULID        = ULID("7ZZZZZZZZZZZZZZZZZZZZZZZZZ")
 
   private var _generator: ULIDGenerator = defaultULIDGenerator
 
@@ -184,6 +184,10 @@ object ULID {
     require(ulid != null, "The input ULID string was null")
     require(ulid.length == 26, s"ULID must have 26 characters: ${ulid} (length: ${ulid.length})")
     require(CrockfordBase32.isValidBase32(ulid), s"Invalid Base32 character is found in ${ulid}")
+
+    val unixTimeMillis = CrockfordBase32.decode48bits(ulid.substring(0, 10))
+    require(isValidTimestamp(unixTimeMillis), f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
+
     new ULID(ulid)
   }
 
@@ -198,7 +202,7 @@ object ULID {
     * @return
     */
   def of(unixTimeMillis: Long, randHi: Long, randLow: Long): ULID = {
-    if (unixTimeMillis < 0L || unixTimeMillis > MaxTime) {
+    if (!isValidTimestamp(unixTimeMillis)) {
       throw new IllegalArgumentException(f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
     }
     val hi: Long  = (unixTimeMillis << (64 - 48)) | (randHi & 0xffff)
@@ -229,7 +233,10 @@ object ULID {
       low |= bytes(offset + i) & 0xffL
       i += 1
     }
-    new ULID(CrockfordBase32.encode128bits(hi, low))
+    val ulid           = CrockfordBase32.encode128bits(hi, low);
+    val unixTimeMillis = CrockfordBase32.decode48bits(ulid.substring(0, 10))
+    require(isValidTimestamp(unixTimeMillis), f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
+    new ULID(ulid)
   }
 
   /**
@@ -250,14 +257,18 @@ object ULID {
     }
   }
 
+  private[ulid] def isValidTimestamp(unixTimeMillis: Long): Boolean =
+    unixTimeMillis >= 0 && unixTimeMillis <= MaxTime
+
   /**
     * check a given string is valid as ULID
     * @param ulid
     * @return
     */
-  def isValid(ulid: String): Boolean = {
-    ulid.length == 26 && CrockfordBase32.isValidBase32(ulid)
-  }
+  def isValid(ulid: String): Boolean =
+    ulid.length == 26 && CrockfordBase32.isValidBase32(ulid) && isValidTimestamp(
+      CrockfordBase32.decode48bits(ulid.substring(0, 10))
+    )
 
   /**
     * ULID generator.
