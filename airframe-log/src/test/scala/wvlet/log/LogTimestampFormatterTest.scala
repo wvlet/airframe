@@ -19,36 +19,36 @@ package wvlet.log
 class LogTimestampFormatterTest extends Spec {
   test("should format timestamps correctly") {
     val testTime = 1642680000000L // January 20, 2022 12:00:00 UTC
-    
-    val formatted = LogTimestampFormatter.formatTimestamp(testTime)
+
+    val formatted        = LogTimestampFormatter.formatTimestamp(testTime)
     val formattedNoSpace = LogTimestampFormatter.formatTimestampWithNoSpaace(testTime)
-    
+
     debug(s"formatTimestamp: $formatted")
     debug(s"formatTimestampWithNoSpaace: $formattedNoSpace")
-    
+
     // Check basic format structure
     assert(formatted.contains("2022"))
     assert(formatted.contains(" ")) // Should have space separator
     assert(formatted.contains(":"))
     assert(formatted.contains("."))
     assert(formatted.contains("Z"))
-    
+
     assert(formattedNoSpace.contains("2022"))
-    assert(formattedNoSpace.contains("T")) // Should have T separator 
+    assert(formattedNoSpace.contains("T")) // Should have T separator
     assert(formattedNoSpace.contains(":"))
     assert(formattedNoSpace.contains("."))
     assert(formattedNoSpace.contains("Z"))
   }
-  
+
   test("should handle current time") {
     val currentTime = System.currentTimeMillis()
-    
-    val formatted = LogTimestampFormatter.formatTimestamp(currentTime)
+
+    val formatted        = LogTimestampFormatter.formatTimestamp(currentTime)
     val formattedNoSpace = LogTimestampFormatter.formatTimestampWithNoSpaace(currentTime)
-    
+
     debug(s"Current time formatTimestamp: $formatted")
     debug(s"Current time formatTimestampWithNoSpaace: $formattedNoSpace")
-    
+
     // Basic sanity checks
     assert(formatted.length > 20)
     assert(formattedNoSpace.length > 20)
