@@ -233,10 +233,9 @@ object ULID {
       low |= bytes(offset + i) & 0xffL
       i += 1
     }
-    val ulid           = CrockfordBase32.encode128bits(hi, low);
-    val unixTimeMillis = CrockfordBase32.decode48bits(ulid.substring(0, 10))
+    val unixTimeMillis = hi >>> 16
     require(isValidTimestamp(unixTimeMillis), f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
-    new ULID(ulid)
+    new ULID(CrockfordBase32.encode128bits(hi, low))
   }
 
   /**
