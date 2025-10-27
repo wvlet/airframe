@@ -15,6 +15,7 @@ package wvlet.airframe.http.codegen
 import java.io.File
 import java.net.{URL, URLClassLoader}
 import java.util.jar.JarFile
+import wvlet.airframe.control.Control
 import wvlet.log.LogSupport
 
 import java.nio.charset.StandardCharsets
@@ -94,24 +95,31 @@ object ClassScanner extends LogSupport {
   }
 
   private def scanClassesInJar(jarFile: String, targetPackageNames: Seq[String]): Seq[String] = {
-    val jf: JarFile = new JarFile(jarFile)
-    val entryEnum   = jf.entries
+    try {
+      Control.withResource(new JarFile(jarFile)) { jf =>
+        val entryEnum = jf.entries
 
-    val targetPaths = targetPackageNames.map(toFilePath)
+        val targetPaths = targetPackageNames.map(toFilePath)
 
-    val classes = Seq.newBuilder[String]
+        val classes = Seq.newBuilder[String]
 
-    while (entryEnum.hasMoreElements) {
-      val jarEntry  = entryEnum.nextElement
-      val entryName = jarEntry.getName
-      if (entryName.endsWith(".class") && targetPaths.exists(p => entryName.startsWith(p))) {
-        val clsName = entryName
-          .stripSuffix(".class")
-          .replaceAll("\\/", ".")
-        classes += clsName
+        while (entryEnum.hasMoreElements) {
+          val jarEntry  = entryEnum.nextElement
+          val entryName = jarEntry.getName
+          if (entryName.endsWith(".class") && targetPaths.exists(p => entryName.startsWith(p))) {
+            val clsName = entryName
+              .stripSuffix(".class")
+              .replaceAll("\\/", ".")
+            classes += clsName
+          }
+        }
+
+        classes.result()
       }
+    } catch {
+      case e: java.io.IOException =>
+        debug(s"Failed to read JAR file: ${jarFile}, skipping: ${e.getMessage}")
+        Seq.empty
     }
-
-    classes.result()
   }
 }
