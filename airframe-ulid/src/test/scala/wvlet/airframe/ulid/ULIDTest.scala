@@ -136,4 +136,26 @@ class ULIDTest extends AirSpec with PropertyCheck {
     val ulid2 = ULID.fromUUID(uuid)
     ulid shouldBe ulid2
   }
+
+  test("reject ULID strings with timestamps out of valid range") {
+    // Test with the maximum valid ULID
+    val maxValidULID = ULID.MaxValue.toString
+    ULID.fromString(maxValidULID) shouldBe ULID.MaxValue
+    ULID.isValid(maxValidULID) shouldBe true
+
+    // Test with an invalid ULID that has a timestamp beyond the 48-bit range
+    // "8ZZZZZZZZZZZZZZZZZZZZZZZZZ" has a timestamp that exceeds MaxTime
+    val invalidULID = "8ZZZZZZZZZZZZZZZZZZZZZZZZZ"
+    intercept[IllegalArgumentException] {
+      ULID.fromString(invalidULID)
+    }
+    ULID.isValid(invalidULID) shouldBe false
+
+    // Test with another invalid ULID with maximum timestamp overflow
+    val anotherInvalidULID = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+    intercept[IllegalArgumentException] {
+      ULID.fromString(anotherInvalidULID)
+    }
+    ULID.isValid(anotherInvalidULID) shouldBe false
+  }
 }
