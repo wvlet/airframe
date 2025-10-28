@@ -40,8 +40,10 @@ object ParquetWriterAdapter extends LogSupport {
   }
 
   class Builder[A](surface: Surface, file: OutputFile) extends ParquetWriter.Builder[A, Builder[A]](file: OutputFile) {
-    override def self(): Builder[A]                                    = this
-    override def getWriteSupport(conf: Configuration): WriteSupport[A] = ???
+    override def self(): Builder[A] = this
+    override def getWriteSupport(conf: Configuration): WriteSupport[A] = {
+      new ParquetWriteSupportAdapter[A](surface)
+    }
     override def getWriteSupport(conf: ParquetConfiguration): WriteSupport[A] = {
       new ParquetWriteSupportAdapter[A](surface)
     }
@@ -80,7 +82,10 @@ class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] wi
   private var recordConsumer: RecordConsumer = null
   import scala.jdk.CollectionConverters.*
 
-  override def init(configuration: Configuration): WriteSupport.WriteContext = ???
+  override def init(configuration: Configuration): WriteSupport.WriteContext = {
+    val extraMetadata: Map[String, String] = Map.empty
+    new WriteContext(schema, extraMetadata.asJava)
+  }
   override def init(configuration: ParquetConfiguration): WriteSupport.WriteContext = {
     val extraMetadata: Map[String, String] = Map.empty
     new WriteContext(schema, extraMetadata.asJava)
@@ -101,7 +106,10 @@ class ParquetRecordWriterSupportAdapter(schema: MessageType, knownSurfaces: Seq[
     with LogSupport {
   private var recordConsumer: RecordConsumer = null
 
-  override def init(configuration: Configuration): WriteSupport.WriteContext = ???
+  override def init(configuration: Configuration): WriteSupport.WriteContext = {
+    trace(s"schema: ${schema}")
+    new WriteContext(schema, Map.empty[String, String].asJava)
+  }
   override def init(configuration: ParquetConfiguration): WriteContext = {
     trace(s"schema: ${schema}")
     new WriteContext(schema, Map.empty[String, String].asJava)

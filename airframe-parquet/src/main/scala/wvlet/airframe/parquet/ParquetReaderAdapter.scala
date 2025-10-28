@@ -73,7 +73,9 @@ class ParquetReadSupportAdapter[A](surface: Surface, plan: Option[ParquetQueryPl
       keyValueMetaData: util.Map[String, String],
       fileSchema: MessageType,
       readContext: ReadContext
-  ): RecordMaterializer[A] = ???
+  ): RecordMaterializer[A] = {
+    new ParquetRecordMaterializer[A](surface, readContext.getRequestedSchema)
+  }
 
   override def prepareForRead(
       configuration: ParquetConfiguration,
