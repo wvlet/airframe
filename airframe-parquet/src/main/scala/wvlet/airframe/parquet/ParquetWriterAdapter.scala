@@ -53,7 +53,9 @@ object ParquetWriterAdapter extends LogSupport {
       extends ParquetWriter.Builder[Any, RecordWriterBuilder](file: OutputFile) {
     override def self(): RecordWriterBuilder = this
 
-    override def getWriteSupport(conf: Configuration): WriteSupport[Any] = ???
+    override def getWriteSupport(conf: Configuration): WriteSupport[Any] = {
+      new ParquetRecordWriterSupportAdapter(schema, knownSurfaces)
+    }
     override def getWriteSupport(conf: ParquetConfiguration): WriteSupport[Any] = {
       new ParquetRecordWriterSupportAdapter(schema, knownSurfaces)
     }
