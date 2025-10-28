@@ -14,6 +14,7 @@
 package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.parquet.conf.ParquetConfiguration
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.hadoop.api.WriteSupport.WriteContext
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
@@ -39,8 +40,9 @@ object ParquetWriterAdapter extends LogSupport {
   }
 
   class Builder[A](surface: Surface, file: OutputFile) extends ParquetWriter.Builder[A, Builder[A]](file: OutputFile) {
-    override def self(): Builder[A] = this
-    override def getWriteSupport(conf: Configuration): WriteSupport[A] = {
+    override def self(): Builder[A]                                    = this
+    override def getWriteSupport(conf: Configuration): WriteSupport[A] = ???
+    override def getWriteSupport(conf: ParquetConfiguration): WriteSupport[A] = {
       new ParquetWriteSupportAdapter[A](surface)
     }
   }
@@ -48,7 +50,9 @@ object ParquetWriterAdapter extends LogSupport {
   class RecordWriterBuilder(schema: MessageType, file: OutputFile, knownSurfaces: Seq[Surface])
       extends ParquetWriter.Builder[Any, RecordWriterBuilder](file: OutputFile) {
     override def self(): RecordWriterBuilder = this
-    override def getWriteSupport(conf: Configuration): WriteSupport[Any] = {
+
+    override def getWriteSupport(conf: Configuration): WriteSupport[Any] = ???
+    override def getWriteSupport(conf: ParquetConfiguration): WriteSupport[Any] = {
       new ParquetRecordWriterSupportAdapter(schema, knownSurfaces)
     }
   }
@@ -76,7 +80,8 @@ class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] wi
   private var recordConsumer: RecordConsumer = null
   import scala.jdk.CollectionConverters.*
 
-  override def init(configuration: Configuration): WriteSupport.WriteContext = {
+  override def init(configuration: Configuration): WriteSupport.WriteContext = ???
+  override def init(configuration: ParquetConfiguration): WriteSupport.WriteContext = {
     val extraMetadata: Map[String, String] = Map.empty
     new WriteContext(schema, extraMetadata.asJava)
   }
@@ -96,7 +101,8 @@ class ParquetRecordWriterSupportAdapter(schema: MessageType, knownSurfaces: Seq[
     with LogSupport {
   private var recordConsumer: RecordConsumer = null
 
-  override def init(configuration: Configuration): WriteContext = {
+  override def init(configuration: Configuration): WriteSupport.WriteContext = ???
+  override def init(configuration: ParquetConfiguration): WriteContext = {
     trace(s"schema: ${schema}")
     new WriteContext(schema, Map.empty[String, String].asJava)
   }

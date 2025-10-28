@@ -14,6 +14,7 @@
 package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
+import org.apache.parquet.conf.ParquetConfiguration
 import org.apache.parquet.hadoop.ParquetReader
 import org.apache.parquet.hadoop.api.ReadSupport.ReadContext
 import org.apache.parquet.hadoop.api.{InitContext, ReadSupport}
@@ -69,6 +70,13 @@ class ParquetReadSupportAdapter[A](surface: Surface, plan: Option[ParquetQueryPl
 
   override def prepareForRead(
       configuration: Configuration,
+      keyValueMetaData: util.Map[String, String],
+      fileSchema: MessageType,
+      readContext: ReadContext
+  ): RecordMaterializer[A] = ???
+
+  override def prepareForRead(
+      configuration: ParquetConfiguration,
       keyValueMetaData: util.Map[String, String],
       fileSchema: MessageType,
       readContext: ReadSupport.ReadContext
