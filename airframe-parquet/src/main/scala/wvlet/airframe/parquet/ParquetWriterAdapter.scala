@@ -14,27 +14,26 @@
 package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
+import org.apache.parquet.conf.ParquetConfiguration
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.hadoop.api.WriteSupport.WriteContext
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.apache.parquet.hadoop.util.HadoopOutputFile
 import org.apache.parquet.hadoop.{ParquetFileWriter, ParquetWriter}
-import org.apache.parquet.io.OutputFile
+import org.apache.parquet.io.{LocalOutputFile, OutputFile}
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import java.nio.file.Paths
 import scala.jdk.CollectionConverters.*
 
 /**
   */
 object ParquetWriterAdapter extends LogSupport {
-  def builder[A](surface: Surface, path: String, conf: Configuration): Builder[A] = {
-    val fsPath = new Path(path)
-    val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new Builder[A](surface, file).withConf(conf)
+  def builder[A](surface: Surface, path: String): Builder[A] = {
+    val file = new LocalOutputFile(Paths.get(path))
+    val b    = new Builder[A](surface, file)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
@@ -45,12 +44,19 @@ object ParquetWriterAdapter extends LogSupport {
     override def getWriteSupport(conf: Configuration): WriteSupport[A] = {
       new ParquetWriteSupportAdapter[A](surface)
     }
+    override def getWriteSupport(conf: ParquetConfiguration): WriteSupport[A] = {
+      new ParquetWriteSupportAdapter[A](surface)
+    }
   }
 
   class RecordWriterBuilder(schema: MessageType, file: OutputFile, knownSurfaces: Seq[Surface])
       extends ParquetWriter.Builder[Any, RecordWriterBuilder](file: OutputFile) {
     override def self(): RecordWriterBuilder = this
+
     override def getWriteSupport(conf: Configuration): WriteSupport[Any] = {
+      new ParquetRecordWriterSupportAdapter(schema, knownSurfaces)
+    }
+    override def getWriteSupport(conf: ParquetConfiguration): WriteSupport[Any] = {
       new ParquetRecordWriterSupportAdapter(schema, knownSurfaces)
     }
   }
@@ -58,12 +64,10 @@ object ParquetWriterAdapter extends LogSupport {
   def recordWriterBuilder(
       path: String,
       schema: MessageType,
-      knownSurfaces: Seq[Surface],
-      conf: Configuration
+      knownSurfaces: Seq[Surface]
   ): RecordWriterBuilder = {
-    val fsPath = new Path(path)
-    val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new RecordWriterBuilder(schema, file, knownSurfaces).withConf(conf)
+    val file = new LocalOutputFile(Paths.get(path))
+    val b    = new RecordWriterBuilder(schema, file, knownSurfaces)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
@@ -84,6 +88,10 @@ class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] wi
     val extraMetadata: Map[String, String] = Map.empty
     new WriteContext(schema, extraMetadata.asJava)
   }
+  override def init(configuration: ParquetConfiguration): WriteSupport.WriteContext = {
+    val extraMetadata: Map[String, String] = Map.empty
+    new WriteContext(schema, extraMetadata.asJava)
+  }
 
   override def prepareForWrite(recordConsumer: RecordConsumer): Unit = {
     this.recordConsumer = recordConsumer
@@ -100,7 +108,11 @@ class ParquetRecordWriterSupportAdapter(schema: MessageType, knownSurfaces: Seq[
     with LogSupport {
   private var recordConsumer: RecordConsumer = null
 
-  override def init(configuration: Configuration): WriteContext = {
+  override def init(configuration: Configuration): WriteSupport.WriteContext = {
+    trace(s"schema: ${schema}")
+    new WriteContext(schema, Map.empty[String, String].asJava)
+  }
+  override def init(configuration: ParquetConfiguration): WriteContext = {
     trace(s"schema: ${schema}")
     new WriteContext(schema, Map.empty[String, String].asJava)
   }

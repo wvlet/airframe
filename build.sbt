@@ -1000,23 +1000,40 @@ lazy val parquet =
     .settings(buildSettings)
     .settings(
       name        := "airframe-parquet",
-      description := "Parquet columnar format reader/writer support",
+      description := "Parquet columnar format reader/writer support (Hadoop-free using LocalInputFile/LocalOutputFile)",
       libraryDependencies ++= Seq(
+        // Use parquet-hadoop with NioInputFile/LocalOutputFile for Hadoop-free operation
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
-        "org.apache.hadoop"  % "hadoop-client"  % "3.4.2" % Provided,
-        // For S3 support
-        "org.apache.hadoop"      % "hadoop-aws" % "3.4.2"   % Provided,
-        "software.amazon.awssdk" % "auth"       % "2.31.78" % Provided,
+        // This approach is based on the technique described at:
+        // https://blakesmith.me/2024/10/05/how-to-use-parquet-java-without-hadoop.html
+        //
+        // It relies on providing just enough of the Hadoop classes for parquet-hadoop to work with
+        // NioInputFile/LocalOutputFile for local and remote NIO filesystem I/O, while excluding all
+        // of their transitive dependencies. This achieves an 85%+ reduction in dependency size.
+        //
+        // Note: This is fragile and might break with future parquet-hadoop updates that introduce
+        // new Hadoop dependencies. If compilation fails after upgrading parquet-hadoop, check for
+        // new NoClassDefFoundError exceptions and add the missing dependencies here with exclusions.
+        ("org.apache.hadoop" % "hadoop-common" % "3.4.2")
+          .excludeAll(ExclusionRule(organization = "*")),
+        ("com.fasterxml.woodstox" % "woodstox-core" % "5.4.0")
+          .excludeAll(ExclusionRule(organization = "*")),
+        ("org.codehaus.woodstox" % "stax2-api" % "4.2.1")
+          .excludeAll(ExclusionRule(organization = "*")),
+        ("commons-collections" % "commons-collections" % "3.2.2")
+          .excludeAll(ExclusionRule(organization = "*")),
+        ("org.apache.commons" % "commons-collections4" % "4.4")
+          .excludeAll(ExclusionRule(organization = "*")),
+        ("org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.4.2")
+          .excludeAll(ExclusionRule(organization = "*")),
+        ("org.apache.hadoop.thirdparty" % "hadoop-shaded-guava" % "1.2.0")
+          .excludeAll(ExclusionRule(organization = "*")),
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.10.8",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
         "org.apache.parquet" % "parquet-avro" % PARQUET_VERSION % Test
       ),
-      // Add Java options to allow security manager for Hadoop/Parquet compatibility with Java 17+
-      Test / fork := true,
-      Test / javaOptions ++= Seq(
-        "-Djava.security.manager=allow"
-      )
+      Test / fork := true
     )
     .dependsOn(codec.jvm, sql)
 

@@ -1,14 +1,14 @@
 package wvlet.airframe.parquet
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.filter2.compat.FilterCompat
-import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.hadoop.{ParquetFileReader, ParquetReader, ParquetWriter}
+import org.apache.parquet.io.LocalOutputFile
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
+
+import java.nio.file.Paths
 
 object Parquet extends ParquetCompat with LogSupport {
 
@@ -17,8 +17,7 @@ object Parquet extends ParquetCompat with LogSupport {
     * @param path
     * @param schema
     * @param knownSurfaces
-    *   surfaces of objects that will be used for wrigin records
-    * @param hadoopConf
+    *   surfaces of objects that will be used for writing records
     * @param config
     * @return
     */
@@ -26,11 +25,10 @@ object Parquet extends ParquetCompat with LogSupport {
       path: String,
       schema: MessageType,
       knownSurfaces: Seq[Surface] = Seq.empty,
-      hadoopConf: Configuration = new Configuration(),
       config: ParquetWriterAdapter.RecordWriterBuilder => ParquetWriterAdapter.RecordWriterBuilder =
         identity[ParquetWriterAdapter.RecordWriterBuilder](_)
   ): ParquetWriter[Any] = {
-    val b       = ParquetWriterAdapter.recordWriterBuilder(path, schema, knownSurfaces, hadoopConf)
+    val b       = ParquetWriterAdapter.recordWriterBuilder(path, schema, knownSurfaces)
     val builder = config(b)
     builder.build()
   }
@@ -38,12 +36,10 @@ object Parquet extends ParquetCompat with LogSupport {
   def newObjectWriter[A](
       objectSurface: Surface,
       path: String,
-      // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
-      hadoopConf: Configuration = new Configuration(),
       config: ParquetWriterAdapter.Builder[A] => ParquetWriterAdapter.Builder[A] =
         identity[ParquetWriterAdapter.Builder[A]](_)
   ): ParquetWriter[A] = {
-    val b       = ParquetWriterAdapter.builder[A](objectSurface, path, hadoopConf)
+    val b       = ParquetWriterAdapter.builder[A](objectSurface, path)
     val builder = config(b)
     builder.build()
   }
@@ -51,11 +47,9 @@ object Parquet extends ParquetCompat with LogSupport {
   def newObjectReader[A](
       objectSurface: Surface,
       path: String,
-      // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
-      hadoopConf: Configuration = new Configuration(),
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
-    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](objectSurface, path, hadoopConf)
+    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](objectSurface, path)
     config(b).build()
   }
 
@@ -63,14 +57,13 @@ object Parquet extends ParquetCompat with LogSupport {
       objectSurface: Surface,
       path: String,
       sql: String,
-      hadoopConf: Configuration = new Configuration(),
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
     // Read Parquet schema for resolving column types
     val schema = readSchema(path)
     val plan   = ParquetQueryPlanner.parse(sql, schema)
     val b: ParquetReader.Builder[A] =
-      ParquetReaderAdapter.builder[A](objectSurface, path, conf = hadoopConf, plan = Some(plan))
+      ParquetReaderAdapter.builder[A](objectSurface, path, plan = Some(plan))
 
     val newConf = plan.predicate match {
       case Some(pred) =>
@@ -82,15 +75,15 @@ object Parquet extends ParquetCompat with LogSupport {
     newConf.build()
   }
 
-  def readSchema(path: String, hadoopConf: Configuration = new Configuration()): MessageType = {
-    val input = HadoopInputFile.fromPath(new Path(path), hadoopConf)
+  def readSchema(path: String): MessageType = {
+    val input = new NioInputFile(Paths.get(path))
     withResource(ParquetFileReader.open(input)) { reader =>
       reader.getFooter.getFileMetaData.getSchema
     }
   }
 
-  def readStatistics(path: String, hadoopConf: Configuration = new Configuration()): Map[String, ColumnStatistics] = {
-    val input = HadoopInputFile.fromPath(new Path(path), hadoopConf)
+  def readStatistics(path: String): Map[String, ColumnStatistics] = {
+    val input = new NioInputFile(Paths.get(path))
     ParquetStatsReader.readStatistics(input)
   }
 
