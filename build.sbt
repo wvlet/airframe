@@ -1022,7 +1022,7 @@ lazy val parquet =
           .excludeAll(ExclusionRule(organization = "*")),
         ("commons-collections" % "commons-collections" % "3.2.2")
           .excludeAll(ExclusionRule(organization = "*")),
-        ("org.apache.commons" % "commons-collections4" % "4.4")
+        ("org.apache.commons" % "commons-collections4" % "4.5.0")
           .excludeAll(ExclusionRule(organization = "*")),
         ("org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.4.2")
           .excludeAll(ExclusionRule(organization = "*")),
