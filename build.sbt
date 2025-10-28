@@ -1002,10 +1002,18 @@ lazy val parquet =
       name        := "airframe-parquet",
       description := "Parquet columnar format reader/writer support (Hadoop-free using LocalInputFile/LocalOutputFile)",
       libraryDependencies ++= Seq(
-        // Use parquet-hadoop with LocalInputFile/LocalOutputFile for Hadoop-free operation
+        // Use parquet-hadoop with NioInputFile/LocalOutputFile for Hadoop-free operation
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
-        // Explicitly include Hadoop transitive dependencies but exclude all their transitive dependencies
-        // This dramatically reduces dependency size while keeping Parquet functional
+        // This approach is based on the technique described at:
+        // https://blakesmith.me/2024/10/05/how-to-use-parquet-java-without-hadoop.html
+        //
+        // It relies on providing just enough of the Hadoop classes for parquet-hadoop to work with
+        // NioInputFile/LocalOutputFile for local and remote NIO filesystem I/O, while excluding all
+        // of their transitive dependencies. This achieves an 85%+ reduction in dependency size.
+        //
+        // Note: This is fragile and might break with future parquet-hadoop updates that introduce
+        // new Hadoop dependencies. If compilation fails after upgrading parquet-hadoop, check for
+        // new NoClassDefFoundError exceptions and add the missing dependencies here with exclusions.
         ("org.apache.hadoop" % "hadoop-common" % "3.4.2")
           .excludeAll(ExclusionRule(organization = "*")),
         ("com.fasterxml.woodstox" % "woodstox-core" % "5.4.0")
