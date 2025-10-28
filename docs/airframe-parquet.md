@@ -9,18 +9,13 @@ airframe-parquet is a library for reading and writing for Scala objects using Pa
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-parquet_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-parquet_2.12/)
 
+**Note**: Starting from version 24.x, airframe-parquet no longer requires explicit Hadoop dependencies for local file operations. It uses `NioInputFile`/`LocalOutputFile` which work with `java.nio.file.Path` directly. This dramatically reduces dependency size (85%+ reduction) and simplifies usage.
 
 ```scala
-libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %% "airframe-parquet" % "(version)"
-  // Use your own hadoop version
-  "org.apache.hadoop"  % "hadoop-client"  % "3.4.0",
-  // [Optional] For supporting S3
-  "org.apache.hadoop"  % "hadoop-aws"  % "3.4.0",
-  // [Optional] For using custom AWS credential provider
-  "software.amazon.awssdk" % "auth" % "2.25.13"
-)
+libraryDependencies += "org.wvlet.airframe" %% "airframe-parquet" % "(version)"
 ```
+
+For local file operations, no additional dependencies are needed. The library works out of the box with local filesystems.
 
 
 ```scala
@@ -94,27 +89,39 @@ nestedRecordWriter.write(Map("id" -> 2, "entry" -> MyEntry(2, "zzz"))
 nestedRecordWriter.close()
 ```
 
-### Using with AWS S3
+### Using with AWS S3 and Remote Filesystems
 
-airframe-parquet uses HadoopFileSystem for reading data from S3.
-hadoopConf needs to be configured for AWS authentication.
+airframe-parquet now uses `NioInputFile` which works with any Java NIO FileSystem provider, including S3.
+
+For S3 support, you can use AWS's Java NIO FileSystem SPI implementation:
 
 ```scala
-import org.apache.hadoop.conf.Configuration
-
-val conf = new Configuration()
-// Option 1: Using AWS keys
-conf.set("fs.s3a.access.key", "...")
-conf.set("fs.s3a.secret.key", "...")
-
-// Option 2: Using a custom AWS credential provider implementing com.amazonaws.auth.AWSCredentialsProvider
-conf.set("fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain")
-
-// Use s3a:// prefix to specify an S3 path, and pass hadoopConf
-Parquet.newReader[MyEntry](path = "s3a://my-bucket/data.parquet", hadoopConf = conf)
+libraryDependencies ++= Seq(
+  "org.wvlet.airframe" %% "airframe-parquet" % "(version)",
+  // For S3 support via Java NIO FileSystem
+  "software.amazon.awssdk" % "s3" % "2.31.78"
+)
 ```
 
-For other configuration parameters, see also [hadoop-aws](https://hadoop.apache.org/docs/stable/hadoop-aws/tools/hadoop-aws/index.html) documentation.
+Then use S3 paths directly with the NIO FileSystem:
+
+```scala
+import java.net.URI
+import java.nio.file.{FileSystems, Path}
+
+// Create S3 FileSystem
+val s3Uri = new URI("s3://my-bucket/")
+val s3FileSystem = FileSystems.newFileSystem(s3Uri, Map(
+  "aws.region" -> "us-east-1"
+  // Add other AWS configuration as needed
+).asJava)
+
+// Use S3 paths directly
+val s3Path = s3FileSystem.getPath("/data.parquet")
+val reader = Parquet.newReader[MyEntry](path = s3Path.toString)
+```
+
+For AWS credential configuration, see the [AWS SDK for Java documentation](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html).
 
 ## Querying Parquet with A Simple SQL
 
