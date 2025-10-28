@@ -9,7 +9,7 @@ airframe-parquet is a library for reading and writing for Scala objects using Pa
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-parquet_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-parquet_2.12/)
 
-**Note**: Starting from version 24.x, airframe-parquet no longer requires explicit Hadoop dependencies for local file operations. It uses `NioInputFile`/`LocalOutputFile` which work with `java.nio.file.Path` directly. This dramatically reduces dependency size (85%+ reduction) and simplifies usage.
+**Note**: Starting from version 2025.1.21, airframe-parquet no longer requires explicit Hadoop dependencies for local file operations. It uses `NioInputFile`/`LocalOutputFile` which work with `java.nio.file.Path` directly. This dramatically reduces dependency size (85%+ reduction), simplifies usage, and ensures compatibility with JDK 25+.
 
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-parquet" % "(version)"
