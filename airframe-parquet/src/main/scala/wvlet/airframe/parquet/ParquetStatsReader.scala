@@ -15,7 +15,7 @@ package wvlet.airframe.parquet
 
 import org.apache.parquet.column.statistics.Statistics
 import org.apache.parquet.hadoop.ParquetFileReader
-import org.apache.parquet.hadoop.util.HadoopInputFile
+import org.apache.parquet.io.InputFile
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.{LogicalTypeAnnotation, Type}
 import wvlet.log.LogSupport
@@ -52,7 +52,7 @@ object ParquetStatsReader extends LogSupport {
     }
   }
 
-  def readStatistics(inputFile: HadoopInputFile): Map[String, ColumnStatistics] = {
+  def readStatistics(inputFile: InputFile): Map[String, ColumnStatistics] = {
     val reader   = ParquetFileReader.open(inputFile)
     val metadata = reader.getFooter
 

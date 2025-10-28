@@ -14,27 +14,25 @@
 package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.hadoop.api.WriteSupport.WriteContext
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
-import org.apache.parquet.hadoop.util.HadoopOutputFile
 import org.apache.parquet.hadoop.{ParquetFileWriter, ParquetWriter}
-import org.apache.parquet.io.OutputFile
+import org.apache.parquet.io.{LocalOutputFile, OutputFile}
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import java.nio.file.Paths
 import scala.jdk.CollectionConverters.*
 
 /**
   */
 object ParquetWriterAdapter extends LogSupport {
-  def builder[A](surface: Surface, path: String, conf: Configuration): Builder[A] = {
-    val fsPath = new Path(path)
-    val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new Builder[A](surface, file).withConf(conf)
+  def builder[A](surface: Surface, path: String): Builder[A] = {
+    val file = new LocalOutputFile(Paths.get(path))
+    val b    = new Builder[A](surface, file)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
@@ -58,12 +56,10 @@ object ParquetWriterAdapter extends LogSupport {
   def recordWriterBuilder(
       path: String,
       schema: MessageType,
-      knownSurfaces: Seq[Surface],
-      conf: Configuration
+      knownSurfaces: Seq[Surface]
   ): RecordWriterBuilder = {
-    val fsPath = new Path(path)
-    val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new RecordWriterBuilder(schema, file, knownSurfaces).withConf(conf)
+    val file = new LocalOutputFile(Paths.get(path))
+    val b    = new RecordWriterBuilder(schema, file, knownSurfaces)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)

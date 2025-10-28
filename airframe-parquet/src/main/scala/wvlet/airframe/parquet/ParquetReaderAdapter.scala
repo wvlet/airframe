@@ -14,16 +14,15 @@
 package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
 import org.apache.parquet.hadoop.ParquetReader
 import org.apache.parquet.hadoop.api.ReadSupport.ReadContext
 import org.apache.parquet.hadoop.api.{InitContext, ReadSupport}
-import org.apache.parquet.hadoop.util.HadoopInputFile
-import org.apache.parquet.io.InputFile
+import org.apache.parquet.io.{InputFile, LocalInputFile}
 import org.apache.parquet.io.api.*
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.{CName, Surface}
 
+import java.nio.file.Paths
 import java.util
 import scala.jdk.CollectionConverters.*
 
@@ -32,13 +31,11 @@ object ParquetReaderAdapter {
   def builder[A](
       surface: Surface,
       path: String,
-      conf: Configuration,
       plan: Option[ParquetQueryPlan] = None
   ): Builder[A] = {
-    val fsPath  = new Path(path)
-    val file    = HadoopInputFile.fromPath(fsPath, conf)
+    val file    = new LocalInputFile(Paths.get(path))
     val builder = new Builder[A](surface, file, plan)
-    builder.withConf(conf).asInstanceOf[Builder[A]]
+    builder
   }
 
   class Builder[A](surface: Surface, inputFile: InputFile, plan: Option[ParquetQueryPlan])
