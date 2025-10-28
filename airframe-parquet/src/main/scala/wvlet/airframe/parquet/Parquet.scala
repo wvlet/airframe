@@ -2,7 +2,7 @@ package wvlet.airframe.parquet
 
 import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.hadoop.{ParquetFileReader, ParquetReader, ParquetWriter}
-import org.apache.parquet.io.{LocalInputFile, LocalOutputFile}
+import org.apache.parquet.io.LocalOutputFile
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.surface.Surface
@@ -76,14 +76,14 @@ object Parquet extends ParquetCompat with LogSupport {
   }
 
   def readSchema(path: String): MessageType = {
-    val input = new LocalInputFile(Paths.get(path))
+    val input = new NioInputFile(Paths.get(path))
     withResource(ParquetFileReader.open(input)) { reader =>
       reader.getFooter.getFileMetaData.getSchema
     }
   }
 
   def readStatistics(path: String): Map[String, ColumnStatistics] = {
-    val input = new LocalInputFile(Paths.get(path))
+    val input = new NioInputFile(Paths.get(path))
     ParquetStatsReader.readStatistics(input)
   }
 

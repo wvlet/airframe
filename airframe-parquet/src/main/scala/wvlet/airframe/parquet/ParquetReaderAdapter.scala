@@ -17,7 +17,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.hadoop.ParquetReader
 import org.apache.parquet.hadoop.api.ReadSupport.ReadContext
 import org.apache.parquet.hadoop.api.{InitContext, ReadSupport}
-import org.apache.parquet.io.{InputFile, LocalInputFile}
+import org.apache.parquet.io.InputFile
 import org.apache.parquet.io.api.*
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.{CName, Surface}
@@ -33,7 +33,7 @@ object ParquetReaderAdapter {
       path: String,
       plan: Option[ParquetQueryPlan] = None
   ): Builder[A] = {
-    val file    = new LocalInputFile(Paths.get(path))
+    val file    = new NioInputFile(Paths.get(path))
     val builder = new Builder[A](surface, file, plan)
     builder
   }
