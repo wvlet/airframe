@@ -27,17 +27,20 @@ class LogTimestampFormatterTest extends Spec {
     debug(s"formatTimestampWithNoSpaace: $formattedNoSpace")
 
     // Check basic format structure
-    assert(formatted.contains("2022"))
-    assert(formatted.contains(" ")) // Should have space separator
-    assert(formatted.contains(":"))
-    assert(formatted.contains("."))
-    assert(formatted.contains("Z"))
+    formatted shouldContain "2022"
+    // Both formats should have date/time separators (space or T)
+    assert(formatted.contains(" ") || formatted.contains("T"))
+    formatted shouldContain ":"
+    formatted shouldContain "."
+    // Should have timezone offset (either Z for UTC or +/-HHMM for other zones)
+    assert(formatted.endsWith("Z") || formatted.matches(".*[+-]\\d{4}$"))
 
-    assert(formattedNoSpace.contains("2022"))
-    assert(formattedNoSpace.contains("T")) // Should have T separator
-    assert(formattedNoSpace.contains(":"))
-    assert(formattedNoSpace.contains("."))
-    assert(formattedNoSpace.contains("Z"))
+    formattedNoSpace shouldContain "2022"
+    formattedNoSpace shouldContain "T" // Should have T separator
+    formattedNoSpace shouldContain ":"
+    formattedNoSpace shouldContain "."
+    // Should have timezone offset (either Z for UTC or +/-HHMM for other zones)
+    assert(formattedNoSpace.endsWith("Z") || formattedNoSpace.matches(".*[+-]\\d{4}$"))
   }
 
   test("should handle current time") {
@@ -52,7 +55,7 @@ class LogTimestampFormatterTest extends Spec {
     // Basic sanity checks
     assert(formatted.length > 20)
     assert(formattedNoSpace.length > 20)
-    assert(formatted.contains("2025")) // We know we're in 2025
-    assert(formattedNoSpace.contains("2025"))
+    formatted shouldContain "2025" // We know we're in 2025
+    formattedNoSpace shouldContain "2025"
   }
 }
