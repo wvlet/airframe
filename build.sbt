@@ -1018,7 +1018,7 @@ lazy val parquet =
           .excludeAll(ExclusionRule(organization = "*")),
         ("com.fasterxml.woodstox" % "woodstox-core" % "5.4.0")
           .excludeAll(ExclusionRule(organization = "*")),
-        ("org.codehaus.woodstox" % "stax2-api" % "4.2.1")
+        ("org.codehaus.woodstox" % "stax2-api" % "4.2.2")
           .excludeAll(ExclusionRule(organization = "*")),
         ("commons-collections" % "commons-collections" % "3.2.2")
           .excludeAll(ExclusionRule(organization = "*")),
