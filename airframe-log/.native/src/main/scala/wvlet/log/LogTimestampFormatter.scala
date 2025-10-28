@@ -79,6 +79,6 @@ object LogTimestampFormatter {
     
     // Format the timestamp
     val separator = if (withSpace) " " else "T"
-    f"$year%04d-$month%02d-$day%02d${separator}$hour%02d:$minute%02d:$second%02d.$millis%03dZ"
+    f"$year%04d-$month%02d-$day%02d$separator%s$hour%02d:$minute%02d:$second%02d.$millis%03dZ"
   }
 }
