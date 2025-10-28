@@ -27,17 +27,17 @@ class LogTimestampFormatterTest extends Spec {
     debug(s"formatTimestampWithNoSpaace: $formattedNoSpace")
 
     // Check basic format structure
-    assert(formatted.contains("2022"))
-    assert(formatted.contains(" ")) // Should have space separator
-    assert(formatted.contains(":"))
-    assert(formatted.contains("."))
-    assert(formatted.contains("Z"))
+    formatted shouldContain "2022"
+    formatted shouldContain " " // Should have space separator
+    formatted shouldContain ":"
+    formatted shouldContain "."
+    formatted shouldContain "Z"
 
-    assert(formattedNoSpace.contains("2022"))
-    assert(formattedNoSpace.contains("T")) // Should have T separator
-    assert(formattedNoSpace.contains(":"))
-    assert(formattedNoSpace.contains("."))
-    assert(formattedNoSpace.contains("Z"))
+    formattedNoSpace shouldContain "2022"
+    formattedNoSpace shouldContain "T" // Should have T separator
+    formattedNoSpace shouldContain ":"
+    formattedNoSpace shouldContain "."
+    formattedNoSpace shouldContain "Z"
   }
 
   test("should handle current time") {
@@ -50,9 +50,9 @@ class LogTimestampFormatterTest extends Spec {
     debug(s"Current time formatTimestampWithNoSpaace: $formattedNoSpace")
 
     // Basic sanity checks
-    assert(formatted.length > 20)
-    assert(formattedNoSpace.length > 20)
-    assert(formatted.contains("2025")) // We know we're in 2025
-    assert(formattedNoSpace.contains("2025"))
+    formatted.length should be > 20
+    formattedNoSpace.length should be > 20
+    formatted shouldContain "2025" // We know we're in 2025
+    formattedNoSpace shouldContain "2025"
   }
 }
