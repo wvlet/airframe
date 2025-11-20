@@ -29,14 +29,16 @@ class LogTest extends Spec {
   }
 
   test("Test setting root log level") {
-    val p            = new Properties()
-    val rootLogLevel = Logger.getDefaultLogLevel
-    try {
-      p.load(new StringReader("_root_ = trace"))
-      Logger.setLogLevels(p)
-      Logger.getDefaultLogLevel shouldBe LogLevel.TRACE
-    } finally {
-      Logger.setDefaultLogLevel(rootLogLevel)
+    Logger.synchronized {
+      val p            = new Properties()
+      val rootLogLevel = Logger.getDefaultLogLevel
+      try {
+        p.load(new StringReader("_root_ = trace"))
+        Logger.setLogLevels(p)
+        Logger.getDefaultLogLevel shouldBe LogLevel.TRACE
+      } finally {
+        Logger.setDefaultLogLevel(rootLogLevel)
+      }
     }
   }
 }
