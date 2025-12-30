@@ -342,14 +342,15 @@ object HttpMessage {
       * @return
       *   Response with SSE events
       */
-    def withEvents(events: Rx[ServerSentEvent]): Response = {
-      val newResponse = if (isContentTypeEventStream) {
-        this.copy()
+    def withEvents(newEvents: Rx[ServerSentEvent]): Response = {
+      if (isContentTypeEventStream) {
+        this.copy(events = newEvents)
       } else {
-        this.copy(header = header.set(HttpHeader.ContentType, HttpHeader.MediaType.TextEventStream))
+        this.copy(
+          header = header.set(HttpHeader.ContentType, HttpHeader.MediaType.TextEventStream),
+          events = newEvents
+        )
       }
-      newResponse.events = events
-      newResponse
     }
   }
 
