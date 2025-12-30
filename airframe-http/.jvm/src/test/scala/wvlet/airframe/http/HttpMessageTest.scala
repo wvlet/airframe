@@ -170,4 +170,33 @@ class HttpMessageTest extends AirSpec {
 
     req1.message.contentHash shouldBe req2.message.contentHash
   }
+
+  test("create SSE response with withEvents") {
+    import wvlet.airframe.rx.Rx
+
+    val events = Rx.sequence(
+      ServerSentEvent(data = "event1"),
+      ServerSentEvent(data = "event2"),
+      ServerSentEvent(data = "event3")
+    )
+
+    val response = Http.response().withEvents(events)
+
+    // Content-Type should be automatically set
+    response.isContentTypeEventStream shouldBe true
+    response.contentType shouldBe Some(HttpHeader.MediaType.TextEventStream)
+
+    // Events should be accessible
+    response.events.toSeq.size shouldBe 3
+  }
+
+  test("withEvents preserves existing event-stream content type") {
+    import wvlet.airframe.rx.Rx
+
+    val events   = Rx.single(ServerSentEvent(data = "test"))
+    val response = Http.response().withContentType("text/event-stream; charset=utf-8").withEvents(events)
+
+    // Should preserve the existing content type with charset
+    response.contentType shouldBe Some("text/event-stream; charset=utf-8")
+  }
 }
