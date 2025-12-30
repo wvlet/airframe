@@ -87,5 +87,6 @@ object HttpHeader {
     final val ApplicationJson    = "application/json;charset=utf-8"
     final val ApplicationMsgPack = "application/msgpack"
     final val OctetStream        = "application/octet-stream"
+    final val TextEventStream    = "text/event-stream"
   }
 }

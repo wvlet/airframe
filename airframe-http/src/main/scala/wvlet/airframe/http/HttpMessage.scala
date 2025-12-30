@@ -332,6 +332,26 @@ object HttpMessage {
 
     def statusCode: Int                             = status.code
     def withStatus(newStatus: HttpStatus): Response = this.copy(status = newStatus)
+
+    /**
+      * Set Server-Sent Events stream for SSE responses. This method also sets the Content-Type header to
+      * "text/event-stream" if not already set.
+      *
+      * @param events
+      *   Rx stream of ServerSentEvent
+      * @return
+      *   Response with SSE events
+      */
+    def withEvents(newEvents: Rx[ServerSentEvent]): Response = {
+      if (isContentTypeEventStream) {
+        this.copy(events = newEvents)
+      } else {
+        this.copy(
+          header = header.set(HttpHeader.ContentType, HttpHeader.MediaType.TextEventStream),
+          events = newEvents
+        )
+      }
+    }
   }
 
   object Response {
