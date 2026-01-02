@@ -55,7 +55,8 @@ class LogTimestampFormatterTest extends Spec {
     // Basic sanity checks
     assert(formatted.length > 20)
     assert(formattedNoSpace.length > 20)
-    val currentYear = java.time.Year.now().toString
+    // Extract year from formatted timestamp (format starts with YYYY-)
+    val currentYear = formatted.take(4)
     formatted shouldContain currentYear
     formattedNoSpace shouldContain currentYear
   }

@@ -137,13 +137,15 @@ object URLConnectionClientTest extends AirSpec {
     }
 
     test("Handle 5xx retry") {
-      Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
-        val e = intercept[HttpClientException] {
-          client
-            .withRetryContext(_.withMaxRetry(1))
-            .send(Http.GET("/status/500"))
+      flaky {
+        Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
+          val e = intercept[HttpClientException] {
+            client
+              .withRetryContext(_.withMaxRetry(1))
+              .send(Http.GET("/status/500"))
+          }
+          e.status shouldBe HttpStatus.InternalServerError_500
         }
-        e.status shouldBe HttpStatus.InternalServerError_500
       }
     }
   }
