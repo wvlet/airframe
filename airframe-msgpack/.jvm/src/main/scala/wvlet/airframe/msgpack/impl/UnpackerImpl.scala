@@ -202,6 +202,7 @@ object UnpackerImpl {
       case v: v8.FloatValue                      => DoubleValue(v.toDouble)
       case v: v8.StringValue                     => StringValue(v.toString)
       case v: v8.BinaryValue                     => BinaryValue(v.asByteArray())
+      case v: v8.TimestampValue                  => TimestampValue(v.toInstant)
       case v: v8.ExtensionValue                  => ExtensionValue(v.getType, v.getData)
       case v: v8.ArrayValue =>
         ArrayValue(v.asScala.map(fromMsgPackV8Value(_)).toIndexedSeq)
