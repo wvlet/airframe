@@ -138,7 +138,10 @@ case class NettyServerConfig(
   }
 
   def newHttpLogger: HttpLogger = {
-    httpLoggerProvider(httpLoggerConfig.withExtraEntries(() => ListMap("server_name" -> name)))
+    val config = httpLoggerConfig
+      .withExtraEntries(() => ListMap("server_name" -> name))
+      .withCustomCodec(customCodec)
+    httpLoggerProvider(config)
   }
 }
 

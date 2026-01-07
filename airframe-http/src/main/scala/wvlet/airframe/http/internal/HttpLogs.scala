@@ -198,6 +198,30 @@ object HttpLogs extends LogSupport {
       builder.result()
     }
 
+    /**
+      * Traverse a value based on its surface type to handle @secret in nested structures. This is used to traverse
+      * elements inside collections (Seq, Option) where we don't have Parameter info.
+      */
+    def traverseValue(s: Surface, arg: Any): Any = {
+      arg match {
+        case null =>
+          null
+        case seq: Seq[_] if s.isSeq && s.typeArgs.nonEmpty =>
+          // Traverse Seq elements to handle @secret in element types
+          val elemSurface = s.typeArgs.head
+          seq.map(elem => traverseValue(elemSurface, elem))
+        case opt: Option[_] if s.isOption && s.typeArgs.nonEmpty =>
+          // Traverse Option value to handle @secret in element type
+          val elemSurface = s.typeArgs.head
+          opt.map(elem => traverseValue(elemSurface, elem))
+        case _ if s.params.nonEmpty =>
+          // Traverse case class fields
+          traverseObject(s, arg)
+        case _ =>
+          arg
+      }
+    }
+
     def traverseParam(p: Parameter, arg: Any): ListMap[String, Any] = {
       arg match {
         case r: HttpMessage.Request =>
@@ -211,6 +235,16 @@ object HttpLogs extends LogSupport {
         case u: ULID =>
           // Fixes https://github.com/wvlet/airframe/issues/1715
           ListMap(p.name -> u)
+        case seq: Seq[_] if p.surface.isSeq && p.surface.typeArgs.nonEmpty =>
+          // Traverse Seq elements to handle @secret in element types
+          val elemSurface = p.surface.typeArgs.head
+          val traversed   = seq.map(elem => traverseValue(elemSurface, elem))
+          ListMap(p.name -> traversed)
+        case opt: Option[_] if p.surface.isOption && p.surface.typeArgs.nonEmpty =>
+          // Traverse Option value to handle @secret in element type
+          val elemSurface = p.surface.typeArgs.head
+          val traversed   = opt.map(elem => traverseValue(elemSurface, elem))
+          ListMap(p.name -> traversed)
         case _ if p.surface.params.length > 0 =>
           ListMap(p.name -> traverseObject(p.surface, arg))
         case _ =>
