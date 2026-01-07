@@ -22,13 +22,10 @@ import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
-class NettyResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty)
-    extends ResponseHandler[Request, Response]
+class NettyResponseHandler(
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+) extends ResponseHandler[Request, Response]
     with LogSupport {
-  private val codecFactory = {
-    MessageCodecFactory.defaultFactoryForJSON
-      .withCodecs(customCodec)
-  }
 
   override def toHttpResponse[A](route: Route, request: Request, responseSurface: Surface, a: A): Response = {
     a match {
