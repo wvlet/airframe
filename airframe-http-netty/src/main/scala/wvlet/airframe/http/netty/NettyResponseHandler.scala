@@ -26,8 +26,7 @@ class NettyResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[_]
     extends ResponseHandler[Request, Response]
     with LogSupport {
   private val codecFactory = {
-    MessageCodecFactory
-      .defaultFactoryForJSON
+    MessageCodecFactory.defaultFactoryForJSON
       .orElse(MessageCodecFactory.newFactory(customCodec))
   }
 
