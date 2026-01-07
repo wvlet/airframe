@@ -43,7 +43,12 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     with LogSupport {
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    warn(cause)
+    if (NettyRequestHandler.isBenignIOException(cause)) {
+      // Log benign I/O errors at DEBUG level to reduce log noise
+      debug(cause)
+    } else {
+      warn(cause)
+    }
     ctx.close()
   }
 
@@ -161,6 +166,29 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 }
 
 object NettyRequestHandler extends LogSupport {
+
+  private val benignIOExceptionMessages = Set(
+    "Connection reset",
+    "Connection reset by peer",
+    "Broken pipe"
+  )
+
+  /**
+   * Check if the exception is a benign I/O error that commonly occurs during normal operations, such as client
+   * disconnections or network interruptions. These exceptions should be logged at DEBUG level.
+   */
+  def isBenignIOException(cause: Throwable): Boolean = {
+    cause match {
+      case _: java.nio.channels.ClosedChannelException =>
+        true
+      case e: java.io.IOException =>
+        val msg = e.getMessage
+        msg != null && benignIOExceptionMessages.exists(m => msg.contains(m))
+      case _ =>
+        false
+    }
+  }
+
   def toNettyResponse(response: Response): DefaultHttpResponse = {
     val r = if (response.isContentTypeEventStream && response.message.isEmpty) {
       val res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
