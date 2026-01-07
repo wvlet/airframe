@@ -13,8 +13,9 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.HttpLogger.{ConsoleHttpLogger, InMemoryHttpLogger}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**
@@ -49,11 +50,13 @@ case class HttpLoggerConfig(
     // A filter for customizing the log contents
     logFilter: Map[String, Any] => Map[String, Any] = identity,
     // A formatter for converting log entries Map[String, Any] into a string line. The default behavior is producing JSON lines
-    logFormatter: Map[String, Any] => String = HttpLogger.jsonFormatter,
+    logFormatter: Map[String, Any] => String = HttpLogger.defaultJsonFormatter,
     // The max number of log files to preserve in the local disk
     maxNumFiles: Int = 100,
     // The max file size for log rotation. The default is 100MB
-    maxFileSize: Long = 100 * 1024 * 1024
+    maxFileSize: Long = 100 * 1024 * 1024,
+    // Custom codec factory for serializing log entries to JSON
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
 ) {
   def logFileExtension: String = {
     logFileName.lastIndexOf(".") match {
@@ -86,6 +89,21 @@ case class HttpLoggerConfig(
   def withLogFormatter(formatter: Map[String, Any] => String): HttpLoggerConfig = this.copy(logFormatter = formatter)
   def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig                       = this.copy(maxNumFiles = maxNumFiles)
   def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig                      = this.copy(maxFileSize = maxFileSize)
+
+  /**
+    * Set a custom codec factory for serializing log entries to JSON. This is useful for properly serializing custom
+    * types in the log entries.
+    */
+  def withCodecFactory(factory: MessageCodecFactory): HttpLoggerConfig =
+    this.copy(codecFactory = factory, logFormatter = HttpLogger.jsonFormatterWith(factory))
+
+  /**
+    * Add custom codecs for serializing specific types in log entries
+    */
+  def withCustomCodec(customCodec: PartialFunction[Surface, MessageCodec[_]]): HttpLoggerConfig = {
+    val newFactory = codecFactory.withCodecs(customCodec)
+    withCodecFactory(newFactory)
+  }
 
   /**
     * A log writer that writes logs to an in-memory buffer. Use this only for testing purpose.
@@ -139,10 +157,25 @@ object HttpLogger extends LogSupport {
     }
   }
 
-  private val mapCodec = MessageCodec.of[Map[String, Any]]
-  def jsonFormatter: Map[String, Any] => String = { (log: Map[String, Any]) =>
-    mapCodec.toJson(log)
+  private val defaultMapCodec = MessageCodec.of[Map[String, Any]]
+
+  /**
+    * Default JSON formatter using the standard codec
+    */
+  def defaultJsonFormatter: Map[String, Any] => String = { (log: Map[String, Any]) =>
+    defaultMapCodec.toJson(log)
   }
+
+  /**
+    * Create a JSON formatter with a custom codec factory
+    */
+  def jsonFormatterWith(codecFactory: MessageCodecFactory): Map[String, Any] => String = {
+    val mapCodec = codecFactory.of(Surface.of[Map[String, Any]]).asInstanceOf[MessageCodec[Map[String, Any]]]
+    (log: Map[String, Any]) => mapCodec.toJson(log)
+  }
+
+  @deprecated("Use defaultJsonFormatter instead", "25.1.0")
+  def jsonFormatter: Map[String, Any] => String = defaultJsonFormatter
 
   class ConsoleHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
     override protected def writeInternal(log: Map[String, Any]): Unit = {

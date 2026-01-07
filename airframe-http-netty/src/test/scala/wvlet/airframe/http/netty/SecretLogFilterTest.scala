@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpLogger.InMemoryHttpLogger
-import wvlet.airframe.http.{Http, HttpLogger, HttpServer, RPC, RxRouter}
+import wvlet.airframe.http.{Http, HttpServer, RPC, RxRouter}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.surface.secret
 import wvlet.airspec.AirSpec
@@ -24,7 +24,6 @@ import wvlet.airspec.AirSpec
   */
 object SecretLogFilterTest extends AirSpec {
 
-  // Test data models with @secret annotation
   case class Message(role: String, @secret content: String)
   case class ChatRequest(
       model: String,
@@ -65,17 +64,22 @@ object SecretLogFilterTest extends AirSpec {
     )
 
     val logs = serverLogger.getLogs
-    logs.nonEmpty shouldBe true
+    logs shouldNotBe empty
     val log = logs.head
     debug(log)
 
     val rpcArgs = log("rpc_args").asInstanceOf[Map[String, Any]]
-    // password should be hidden
-    rpcArgs.contains("password") shouldBe false
-    // userData should be present but pii should be hidden
-    val userData = rpcArgs("userData").asInstanceOf[Map[String, Any]]
-    userData("id") shouldBe 1
-    userData.contains("pii") shouldBe false
+
+    test("password should be hidden") {
+      rpcArgs shouldNotContain "password"
+    }
+
+    test("userData should be present but pii should be hidden") {
+      rpcArgs.contains("userData") shouldBe true
+      val userData = rpcArgs("userData").asInstanceOf[Map[String, Any]]
+      userData("id") shouldBe 1
+      userData shouldNotContain "pii"
+    }
   }
 
   test("hide @secret args in Seq and Option") { (client: SyncClient) =>
@@ -89,41 +93,36 @@ object SecretLogFilterTest extends AirSpec {
     )
 
     val logs = serverLogger.getLogs
-    logs.nonEmpty shouldBe true
+    logs shouldNotBe empty
     val log = logs.head
     debug(log)
 
     val rpcArgs = log("rpc_args").asInstanceOf[Map[String, Any]]
     val request = rpcArgs("request").asInstanceOf[Map[String, Any]]
 
-    // model should be visible
-    request("model") shouldBe "gpt-4"
-
-    // systemPrompt (Option with @secret) should be hidden
-    request.contains("systemPrompt") shouldBe false
-
-    // messages should be present but content should be hidden in each element
-    // After traversal, Seq elements should be converted to Maps with @secret fields removed
-    val messages = request("messages").asInstanceOf[Seq[?]]
-    messages.size shouldBe 2
-
-    // Each message should be a Map (traversed), not the original Message object
-    messages.head match {
-      case m: Map[?, ?] =>
-        val msgMap = m.asInstanceOf[Map[String, Any]]
-        msgMap("role") shouldBe "user"
-        msgMap.contains("content") shouldBe false // @secret field should be hidden
-      case other =>
-        fail(s"Expected Map but got ${other.getClass.getName}. Seq elements should be traversed to hide @secret fields.")
+    test("model should be visible") {
+      request("model") shouldBe "gpt-4"
     }
 
-    messages(1) match {
-      case m: Map[?, ?] =>
+    test("systemPrompt (Option with @secret) should be hidden") {
+      request shouldNotContain "systemPrompt"
+    }
+
+    test("messages Seq should be traversed with @secret fields hidden") {
+      val messages = request("messages").asInstanceOf[Seq[?]]
+      messages.size shouldBe 2
+
+      messages.head shouldMatch { case m: Map[?, ?] =>
+        val msgMap = m.asInstanceOf[Map[String, Any]]
+        msgMap("role") shouldBe "user"
+        msgMap shouldNotContain "content"
+      }
+
+      messages(1) shouldMatch { case m: Map[?, ?] =>
         val msgMap = m.asInstanceOf[Map[String, Any]]
         msgMap("role") shouldBe "assistant"
-        msgMap.contains("content") shouldBe false // @secret field should be hidden
-      case other =>
-        fail(s"Expected Map but got ${other.getClass.getName}. Seq elements should be traversed to hide @secret fields.")
+        msgMap shouldNotContain "content"
+      }
     }
   }
 }

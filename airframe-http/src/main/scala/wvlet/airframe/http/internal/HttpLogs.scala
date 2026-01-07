@@ -199,8 +199,8 @@ object HttpLogs extends LogSupport {
     }
 
     /**
-      * Traverse a value based on its surface type to handle @secret in nested structures.
-      * This is used to traverse elements inside collections (Seq, Option) where we don't have Parameter info.
+      * Traverse a value based on its surface type to handle @secret in nested structures. This is used to traverse
+      * elements inside collections (Seq, Option) where we don't have Parameter info.
       */
     def traverseValue(s: Surface, arg: Any): Any = {
       arg match {
