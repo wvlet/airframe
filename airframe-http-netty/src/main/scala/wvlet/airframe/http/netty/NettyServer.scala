@@ -106,9 +106,7 @@ case class NettyServerConfig(
   }
 
   def withCustomCodec(m: Map[Surface, MessageCodec[_]]): NettyServerConfig = {
-    withCustomCodec {
-      case s: Surface if m.contains(s) => m(s)
-    }
+    this.copy(customCodecFactory = customCodecFactory.withCodecs(m))
   }
 
   def newServer(session: Session): NettyServer = {
