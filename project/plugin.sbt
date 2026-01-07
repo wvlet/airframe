@@ -14,7 +14,7 @@ addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.20.1")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.20.2")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
