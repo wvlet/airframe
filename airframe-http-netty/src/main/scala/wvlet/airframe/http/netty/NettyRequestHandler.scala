@@ -174,10 +174,10 @@ object NettyRequestHandler extends LogSupport {
   )
 
   /**
-   * Check if the exception is a benign I/O error that commonly occurs during normal operations, such as client
-   * disconnections or network interruptions. These exceptions should be logged at DEBUG level. This method traverses
-   * the entire exception cause chain to handle cases where benign I/O exceptions are wrapped by other exceptions.
-   */
+    * Check if the exception is a benign I/O error that commonly occurs during normal operations, such as client
+    * disconnections or network interruptions. These exceptions should be logged at DEBUG level. This method traverses
+    * the entire exception cause chain to handle cases where benign I/O exceptions are wrapped by other exceptions.
+    */
   def isBenignIOException(cause: Throwable): Boolean = {
     @scala.annotation.tailrec
     def loop(ex: Throwable): Boolean = {
