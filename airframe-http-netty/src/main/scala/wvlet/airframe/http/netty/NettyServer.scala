@@ -52,7 +52,7 @@ case class NettyServerConfig(
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
       new LogRotationHttpLogger(config)
     },
-    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty,
+    private val customCodecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // Thread manager for handling Future[_] responses
     executionContext: ExecutionContext = {
       // Using the global thread pool causes an issue in sbt's layered class loader #918
@@ -63,6 +63,11 @@ case class NettyServerConfig(
     }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
+
+  /**
+    * Get the codec factory with map output enabled for JSON serialization
+    */
+  def codecFactory: MessageCodecFactory = customCodecFactory.withMapOutput
 
   private[netty] def canUseEpoll: Boolean = {
     useEpoll && Epoll.isAvailable
@@ -92,13 +97,18 @@ case class NettyServerConfig(
     )
   }
 
-  def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): NettyServerConfig = {
-    this.copy(customCodec = p)
+  def withCodecFactory(factory: MessageCodecFactory): NettyServerConfig = {
+    this.copy(customCodecFactory = factory)
   }
+
+  def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): NettyServerConfig = {
+    this.copy(customCodecFactory = customCodecFactory.withCodecs(p))
+  }
+
   def withCustomCodec(m: Map[Surface, MessageCodec[_]]): NettyServerConfig = {
-    this.copy(customCodec = customCodec.orElse {
+    withCustomCodec {
       case s: Surface if m.contains(s) => m(s)
-    })
+    }
   }
 
   def newServer(session: Session): NettyServer = {
@@ -140,7 +150,7 @@ case class NettyServerConfig(
   def newHttpLogger: HttpLogger = {
     val config = httpLoggerConfig
       .withExtraEntries(() => ListMap("server_name" -> name))
-      .withCustomCodec(customCodec)
+      .withCodecFactory(codecFactory)
     httpLoggerProvider(config)
   }
 }
@@ -235,9 +245,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
               config.router,
               config.controllerProvider,
               NettyBackend,
-              new NettyResponseHandler(config.customCodec),
-              // Set a custom codec and use JSON map output
-              MessageCodecFactory.defaultFactoryForJSON.withCodecs(config.customCodec),
+              new NettyResponseHandler(config.codecFactory),
+              config.codecFactory,
               config.executionContext
             )
           )
