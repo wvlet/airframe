@@ -38,8 +38,11 @@ import NettyRequestHandler.toNettyResponse
 
 import java.io.ByteArrayOutputStream
 
-class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
-    extends SimpleChannelInboundHandler[FullHttpRequest]
+class NettyRequestHandler(
+    config: NettyServerConfig,
+    dispatcher: NettyBackend.Filter,
+    connectionTracker: NettyConnectionTracker
+) extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
@@ -57,6 +60,12 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
   }
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
+    // Track the start of request processing
+    connectionTracker.requestStarted()
+
+    // Flag to track if this is a streaming response (which completes asynchronously)
+    var isStreaming = false
+
     try {
       var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name().toUpperCase match {
         case HttpMethod.GET     => Http.GET(msg.uri())
@@ -114,27 +123,43 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           writeResponse(msg, ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
+            // SSE streaming response - track completion asynchronously
+            isStreaming = true
             // Read SSE stream
             val c = RxRunner.run(resp.events) {
               case OnNext(e: ServerSentEvent) =>
                 val event = e.toContent
                 val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                 ctx.writeAndFlush(new DefaultHttpContent(buf))
-              case _ =>
+              case OnError(_) =>
+                // Stream error - mark request as completed and close
+                connectionTracker.requestCompleted()
+                val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                f.addListener(ChannelFutureListener.CLOSE)
+              case OnCompletion =>
+                // Stream completed - mark request as completed and close
+                connectionTracker.requestCompleted()
                 val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                 f.addListener(ChannelFutureListener.CLOSE)
             }
+          } else {
+            // Non-streaming response - mark as completed immediately
+            connectionTracker.requestCompleted()
           }
         case OnError(ex) =>
           // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
+          connectionTracker.requestCompleted()
         case OnCompletion =>
+          // If not streaming, the request was already marked as completed in OnNext
+          ()
       }
     } catch {
       case e: RPCException =>
         writeResponse(msg, ctx, toNettyResponse(e.toResponse))
+        connectionTracker.requestCompleted()
     } finally {
       // Need to clean up the TLS in case the same thread is reused for the next request
       NettyBackend.clearThreadLocal()

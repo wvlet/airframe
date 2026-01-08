@@ -17,11 +17,13 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.*
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
+import io.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.util.concurrent.GlobalEventExecutor
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.HttpMessage.Response
@@ -35,7 +37,7 @@ import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import java.util.concurrent.{Executors, TimeUnit}
 import javax.annotation.PostConstruct
 import scala.collection.immutable.ListMap
@@ -209,10 +211,98 @@ case class NettyServerConfig(
   }
 }
 
+/**
+  * Tracks active connections and in-flight requests for graceful shutdown. This class is thread-safe and can be shared
+  * between the server and request handlers.
+  */
+class NettyConnectionTracker extends LogSupport {
+  // Track all active client channels
+  private val channels: ChannelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE)
+
+  // Track in-flight requests (including streaming responses)
+  private val activeRequests = new AtomicLong(0)
+
+  /**
+    * Register a new channel when a client connects
+    */
+  def addChannel(channel: Channel): Unit = {
+    channels.add(channel)
+  }
+
+  /**
+    * Increment the active request count when a request starts processing
+    */
+  def requestStarted(): Unit = {
+    activeRequests.incrementAndGet()
+  }
+
+  /**
+    * Decrement the active request count when a request completes (including streaming)
+    */
+  def requestCompleted(): Unit = {
+    activeRequests.decrementAndGet()
+  }
+
+  /**
+    * Get the number of active client connections
+    */
+  def activeConnectionCount: Int = channels.size()
+
+  /**
+    * Get the number of in-flight requests (including streaming responses)
+    */
+  def activeRequestCount: Long = activeRequests.get()
+
+  /**
+    * Check if there are any active requests
+    */
+  def hasActiveRequests: Boolean = activeRequests.get() > 0
+
+  /**
+    * Wait for all active requests to complete with a timeout
+    * @param timeout
+    *   maximum time to wait
+    * @param unit
+    *   time unit
+    * @return
+    *   true if all requests completed, false if timeout occurred
+    */
+  def awaitCompletion(timeout: Long, unit: TimeUnit): Boolean = {
+    val deadlineNanos = System.nanoTime() + unit.toNanos(timeout)
+    val pollIntervalMs = 100L
+
+    while (hasActiveRequests) {
+      val remainingNanos = deadlineNanos - System.nanoTime()
+      if (remainingNanos <= 0) {
+        warn(s"Timeout waiting for ${activeRequests.get()} active requests to complete")
+        return false
+      }
+      try {
+        Thread.sleep(math.min(pollIntervalMs, unit.toMillis(timeout)))
+      } catch {
+        case _: InterruptedException =>
+          Thread.currentThread().interrupt()
+          return false
+      }
+    }
+    true
+  }
+
+  /**
+    * Close all active connections
+    */
+  def closeAllConnections(): ChannelGroupFuture = {
+    channels.close()
+  }
+}
+
 class NettyServer(config: NettyServerConfig, session: Session) extends HttpServer with LogSupport {
 
   private val httpLogger: HttpLogger  = config.newHttpLogger
   private val rpcFilter: RxHttpFilter = new RPCResponseFilter(httpLogger)
+
+  // Connection and request tracker for graceful shutdown
+  private[netty] val connectionTracker = new NettyConnectionTracker()
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
@@ -234,6 +324,21 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
   private var channelFuture: Option[Channel] = None
 
   override def localAddress: String = s"localhost:${config.port}"
+
+  /**
+    * Get the number of active client connections
+    */
+  def activeConnectionCount: Int = connectionTracker.activeConnectionCount
+
+  /**
+    * Get the number of in-flight requests (including streaming responses like SSE)
+    */
+  def activeRequestCount: Long = connectionTracker.activeRequestCount
+
+  /**
+    * Check if there are any active requests being processed
+    */
+  def hasActiveRequests: Boolean = connectionTracker.hasActiveRequests
 
   private def attachContextFilter = new RxHttpFilter {
     override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
@@ -338,6 +443,9 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       }
 
       override def initChannel(ch: Channel): Unit = {
+        // Track the new client connection
+        connectionTracker.addChannel(ch)
+
         val pipeline = ch.pipeline()
         pipeline.addLast(
           new HttpServerCodec(
@@ -353,7 +461,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new ChunkedWriteHandler())
-        pipeline.addLast(new NettyRequestHandler(config, dispatcher))
+        pipeline.addLast(new NettyRequestHandler(config, dispatcher, connectionTracker))
       }
     })
 
@@ -362,9 +470,12 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
   override def stop(): Unit = {
     if (stopped.compareAndSet(false, true)) {
+      val activeConns = connectionTracker.activeConnectionCount
+      val activeReqs = connectionTracker.activeRequestCount
       info(
         s"Stopping ${config.name} server at ${localAddress} " +
-          s"(graceful shutdown: quietPeriod=${config.shutdownQuietPeriodSeconds}s, timeout=${config.shutdownTimeoutSeconds}s)"
+          s"(activeConnections=$activeConns, activeRequests=$activeReqs, " +
+          s"quietPeriod=${config.shutdownQuietPeriodSeconds}s, timeout=${config.shutdownTimeoutSeconds}s)"
       )
 
       // Unregister shutdown hook to prevent double-stop during JVM shutdown
@@ -372,6 +483,17 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
       // Close the server channel first to stop accepting new connections
       channelFuture.foreach(_.close().await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS))
+
+      // Wait for active requests (including streaming responses) to complete
+      if (connectionTracker.hasActiveRequests) {
+        info(s"Waiting for ${connectionTracker.activeRequestCount} active requests to complete...")
+        val completed = connectionTracker.awaitCompletion(config.shutdownTimeoutSeconds, TimeUnit.SECONDS)
+        if (completed) {
+          info("All active requests completed")
+        } else {
+          warn(s"Timeout waiting for active requests, ${connectionTracker.activeRequestCount} requests still pending")
+        }
+      }
 
       // Gracefully shutdown worker group first to complete in-flight requests
       val workerFuture = workerGroup.shutdownGracefully(
