@@ -91,8 +91,7 @@ class NettyGracefulShutdownTest extends AirSpec {
   }
 
   test("server with shutdown hook enabled starts and stops correctly") {
-    val config = Netty.server
-      .withShutdownHook
+    val config = Netty.server.withShutdownHook
       .withGracefulShutdown(quietPeriodSeconds = 1, timeoutSeconds = 5)
       .noLogging
 
@@ -133,7 +132,7 @@ class NettyConnectionTrackingTest extends AirSpec {
   }
 
   test("connection tracker await completion returns true when no active requests") {
-    val tracker = new NettyConnectionTracker()
+    val tracker   = new NettyConnectionTracker()
     val completed = tracker.awaitCompletion(1, TimeUnit.SECONDS)
     completed shouldBe true
   }
@@ -156,15 +155,31 @@ class NettyConnectionTrackingTest extends AirSpec {
       .withRouter(router)
       .noLogging
 
-    config.designWithSyncClient.build[SyncClient] { client =>
-      // Make a request
-      val response = client.send(Http.GET("/hello"))
-      response.status shouldBe HttpStatus.Ok_200
+    config.design
+      .bind[SyncClient].toProvider { (server: HttpServer) =>
+        Http.client.newSyncClient(server.localAddress)
+      }
+      .build[NettyServer] { server =>
+        val client = Http.client.newSyncClient(server.localAddress)
+        try {
+          // Initially, the request count should be zero
+          server.activeRequestCount shouldBe 0
 
-      // After request completes, count should return to 0
-      // (there may be a small delay for async completion)
-      Thread.sleep(100)
-    }
+          // Make a request
+          val response = client.send(Http.GET("/hello"))
+          response.status shouldBe HttpStatus.Ok_200
+
+          // After the request completes, the count should return to 0.
+          // Poll until the count reaches 0 or timeout after 1 second.
+          val deadline = System.currentTimeMillis() + 1000
+          while (server.activeRequestCount > 0 && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10)
+          }
+          server.activeRequestCount shouldBe 0
+        } finally {
+          client.close()
+        }
+      }
   }
 }
 

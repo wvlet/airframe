@@ -17,7 +17,7 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.*
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
-import io.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
+import io.netty.channel.group.{ChannelGroup, ChannelGroupFuture, DefaultChannelGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
@@ -268,24 +268,37 @@ class NettyConnectionTracker extends LogSupport {
     *   true if all requests completed, false if timeout occurred
     */
   def awaitCompletion(timeout: Long, unit: TimeUnit): Boolean = {
-    val deadlineNanos = System.nanoTime() + unit.toNanos(timeout)
+    val deadlineNanos  = System.nanoTime() + unit.toNanos(timeout)
     val pollIntervalMs = 100L
 
-    while (hasActiveRequests) {
-      val remainingNanos = deadlineNanos - System.nanoTime()
-      if (remainingNanos <= 0) {
-        warn(s"Timeout waiting for ${activeRequests.get()} active requests to complete")
-        return false
-      }
+    def sleepUnlessInterrupted(): Boolean = {
       try {
         Thread.sleep(math.min(pollIntervalMs, unit.toMillis(timeout)))
+        true
       } catch {
         case _: InterruptedException =>
           Thread.currentThread().interrupt()
-          return false
+          false
       }
     }
-    true
+
+    @scala.annotation.tailrec
+    def loop(): Boolean = {
+      if (!hasActiveRequests) {
+        true
+      } else {
+        val remainingNanos = deadlineNanos - System.nanoTime()
+        if (remainingNanos <= 0) {
+          warn(s"Timeout waiting for ${activeRequests.get()} active requests to complete")
+          false
+        } else if (!sleepUnlessInterrupted()) {
+          false
+        } else {
+          loop()
+        }
+      }
+    }
+    loop()
   }
 
   /**
@@ -369,10 +382,13 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
   private def registerShutdownHookIfNeeded(): Unit = {
     if (config.registerShutdownHook) {
-      val hook = new Thread(() => {
-        info(s"Received shutdown signal for ${config.name} server")
-        stop()
-      }, s"airframe-netty-shutdown-${config.name}")
+      val hook = new Thread(
+        () => {
+          info(s"Received shutdown signal for ${config.name} server")
+          stop()
+        },
+        s"airframe-netty-shutdown-${config.name}"
+      )
       shutdownHook = Some(hook)
       Runtime.getRuntime.addShutdownHook(hook)
       debug(s"Registered shutdown hook for ${config.name} server")
@@ -471,7 +487,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
   override def stop(): Unit = {
     if (stopped.compareAndSet(false, true)) {
       val activeConns = connectionTracker.activeConnectionCount
-      val activeReqs = connectionTracker.activeRequestCount
+      val activeReqs  = connectionTracker.activeRequestCount
       info(
         s"Stopping ${config.name} server at ${localAddress} " +
           s"(activeConnections=$activeConns, activeRequests=$activeReqs, " +
@@ -481,13 +497,17 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       // Unregister shutdown hook to prevent double-stop during JVM shutdown
       unregisterShutdownHook()
 
+      // Use a single deadline to ensure total shutdown time respects the configured timeout
+      val deadline             = System.nanoTime() + TimeUnit.SECONDS.toNanos(config.shutdownTimeoutSeconds)
+      def remainingNanos: Long = math.max(0, deadline - System.nanoTime())
+
       // Close the server channel first to stop accepting new connections
-      channelFuture.foreach(_.close().await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS))
+      channelFuture.foreach(_.close().await(remainingNanos, TimeUnit.NANOSECONDS))
 
       // Wait for active requests (including streaming responses) to complete
       if (connectionTracker.hasActiveRequests) {
         info(s"Waiting for ${connectionTracker.activeRequestCount} active requests to complete...")
-        val completed = connectionTracker.awaitCompletion(config.shutdownTimeoutSeconds, TimeUnit.SECONDS)
+        val completed = connectionTracker.awaitCompletion(remainingNanos, TimeUnit.NANOSECONDS)
         if (completed) {
           info("All active requests completed")
         } else {
@@ -497,19 +517,19 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
       // Gracefully shutdown worker group first to complete in-flight requests
       val workerFuture = workerGroup.shutdownGracefully(
-        config.shutdownQuietPeriodSeconds,
-        config.shutdownTimeoutSeconds,
-        TimeUnit.SECONDS
+        TimeUnit.SECONDS.toNanos(config.shutdownQuietPeriodSeconds),
+        remainingNanos,
+        TimeUnit.NANOSECONDS
       )
-      workerFuture.await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS)
+      workerFuture.await(remainingNanos, TimeUnit.NANOSECONDS)
 
       // Then shutdown boss group
       val bossFuture = bossGroup.shutdownGracefully(
-        config.shutdownQuietPeriodSeconds,
-        config.shutdownTimeoutSeconds,
-        TimeUnit.SECONDS
+        TimeUnit.SECONDS.toNanos(config.shutdownQuietPeriodSeconds),
+        remainingNanos,
+        TimeUnit.NANOSECONDS
       )
-      bossFuture.await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS)
+      bossFuture.await(remainingNanos, TimeUnit.NANOSECONDS)
 
       // Close the HTTP logger
       httpLogger.close()

@@ -63,8 +63,8 @@ class NettyRequestHandler(
     // Track the start of request processing
     connectionTracker.requestStarted()
 
-    // Flag to track if this is a streaming response (which completes asynchronously)
-    var isStreaming = false
+    // Flag to track if OnNext was called (handles Rx.empty case)
+    var onNextCalled = false
 
     try {
       var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name().toUpperCase match {
@@ -118,13 +118,13 @@ class NettyRequestHandler(
 
       RxRunner.run(rxResponse) {
         case OnNext(v) =>
+          onNextCalled = true
           val resp          = v.asInstanceOf[Response]
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
-            // SSE streaming response - track completion asynchronously
-            isStreaming = true
+            // SSE streaming response - completion tracked asynchronously
             // Read SSE stream
             val c = RxRunner.run(resp.events) {
               case OnNext(e: ServerSentEvent) =>
@@ -153,8 +153,11 @@ class NettyRequestHandler(
           writeResponse(msg, ctx, nettyResponse)
           connectionTracker.requestCompleted()
         case OnCompletion =>
-          // If not streaming, the request was already marked as completed in OnNext
-          ()
+          // Handle Rx.empty case where OnNext was never called
+          if (!onNextCalled) {
+            connectionTracker.requestCompleted()
+          }
+        // Otherwise, request was already marked as completed in OnNext
       }
     } catch {
       case e: RPCException =>
