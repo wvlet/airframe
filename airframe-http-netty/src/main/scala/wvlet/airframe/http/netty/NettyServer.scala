@@ -17,7 +17,7 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.*
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
-import io.netty.channel.group.{ChannelGroup, ChannelGroupFuture, DefaultChannelGroup}
+import io.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
@@ -125,6 +125,7 @@ case class NettyServerConfig(
     *   quiet period in seconds (default: 2)
     */
   def withShutdownQuietPeriod(seconds: Long): NettyServerConfig = {
+    require(seconds >= 0, "shutdownQuietPeriodSeconds must be non-negative")
     this.copy(shutdownQuietPeriodSeconds = seconds)
   }
 
@@ -134,6 +135,7 @@ case class NettyServerConfig(
     *   timeout in seconds (default: 30)
     */
   def withShutdownTimeout(seconds: Long): NettyServerConfig = {
+    require(seconds > 0, "shutdownTimeoutSeconds must be positive")
     this.copy(shutdownTimeoutSeconds = seconds)
   }
 
@@ -145,6 +147,8 @@ case class NettyServerConfig(
     *   maximum time to wait for shutdown (default: 30)
     */
   def withGracefulShutdown(quietPeriodSeconds: Long = 2, timeoutSeconds: Long = 30): NettyServerConfig = {
+    require(quietPeriodSeconds >= 0, "quietPeriodSeconds must be non-negative")
+    require(timeoutSeconds > 0, "timeoutSeconds must be positive")
     this.copy(
       shutdownQuietPeriodSeconds = quietPeriodSeconds,
       shutdownTimeoutSeconds = timeoutSeconds
@@ -273,7 +277,7 @@ class NettyConnectionTracker extends LogSupport {
 
     def sleepUnlessInterrupted(): Boolean = {
       try {
-        Thread.sleep(math.min(pollIntervalMs, unit.toMillis(timeout)))
+        Thread.sleep(math.min(pollIntervalMs, math.max(1L, unit.toMillis(timeout))))
         true
       } catch {
         case _: InterruptedException =>
@@ -299,13 +303,6 @@ class NettyConnectionTracker extends LogSupport {
       }
     }
     loop()
-  }
-
-  /**
-    * Close all active connections
-    */
-  def closeAllConnections(): ChannelGroupFuture = {
-    channels.close()
   }
 }
 

@@ -131,6 +131,9 @@ class NettyRequestHandler(
                 val event = e.toContent
                 val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                 ctx.writeAndFlush(new DefaultHttpContent(buf))
+              case OnNext(_) =>
+                // Ignore non-ServerSentEvent values
+                ()
               case OnError(_) =>
                 // Stream error - mark request as completed and close
                 connectionTracker.requestCompleted()

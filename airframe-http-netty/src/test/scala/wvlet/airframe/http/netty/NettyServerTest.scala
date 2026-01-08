@@ -155,31 +155,27 @@ class NettyConnectionTrackingTest extends AirSpec {
       .withRouter(router)
       .noLogging
 
-    config.design
-      .bind[SyncClient].toProvider { (server: HttpServer) =>
-        Http.client.newSyncClient(server.localAddress)
-      }
-      .build[NettyServer] { server =>
-        val client = Http.client.newSyncClient(server.localAddress)
-        try {
-          // Initially, the request count should be zero
-          server.activeRequestCount shouldBe 0
+    config.design.build[NettyServer] { server =>
+      val client = Http.client.newSyncClient(server.localAddress)
+      try {
+        // Initially, the request count should be zero
+        server.activeRequestCount shouldBe 0
 
-          // Make a request
-          val response = client.send(Http.GET("/hello"))
-          response.status shouldBe HttpStatus.Ok_200
+        // Make a request
+        val response = client.send(Http.GET("/hello"))
+        response.status shouldBe HttpStatus.Ok_200
 
-          // After the request completes, the count should return to 0.
-          // Poll until the count reaches 0 or timeout after 1 second.
-          val deadline = System.currentTimeMillis() + 1000
-          while (server.activeRequestCount > 0 && System.currentTimeMillis() < deadline) {
-            Thread.sleep(10)
-          }
-          server.activeRequestCount shouldBe 0
-        } finally {
-          client.close()
+        // After the request completes, the count should return to 0.
+        // Poll until the count reaches 0 or timeout after 1 second.
+        val deadline = System.currentTimeMillis() + 1000
+        while (server.activeRequestCount > 0 && System.currentTimeMillis() < deadline) {
+          Thread.sleep(10)
         }
+        server.activeRequestCount shouldBe 0
+      } finally {
+        client.close()
       }
+    }
   }
 }
 
