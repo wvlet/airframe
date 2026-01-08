@@ -40,3 +40,64 @@ class NettyServerTest extends AirSpec {
     server.close()
   }
 }
+
+class NettyGracefulShutdownTest extends AirSpec {
+
+  test("configure graceful shutdown parameters") {
+    val config = Netty.server
+      .withGracefulShutdown(quietPeriodSeconds = 5, timeoutSeconds = 60)
+
+    config.shutdownQuietPeriodSeconds shouldBe 5
+    config.shutdownTimeoutSeconds shouldBe 60
+  }
+
+  test("configure shutdown quiet period individually") {
+    val config = Netty.server.withShutdownQuietPeriod(10)
+    config.shutdownQuietPeriodSeconds shouldBe 10
+    // Default timeout should remain
+    config.shutdownTimeoutSeconds shouldBe 30
+  }
+
+  test("configure shutdown timeout individually") {
+    val config = Netty.server.withShutdownTimeout(120)
+    config.shutdownTimeoutSeconds shouldBe 120
+    // Default quiet period should remain
+    config.shutdownQuietPeriodSeconds shouldBe 2
+  }
+
+  test("enable shutdown hook") {
+    val config = Netty.server.withShutdownHook
+    config.registerShutdownHook shouldBe true
+  }
+
+  test("disable shutdown hook") {
+    val config = Netty.server.withShutdownHook.noShutdownHook
+    config.registerShutdownHook shouldBe false
+  }
+
+  test("graceful shutdown completes with custom timeout") {
+    val config = Netty.server
+      .withGracefulShutdown(quietPeriodSeconds = 1, timeoutSeconds = 5)
+      .noLogging
+
+    config.design.build[NettyServer] { server =>
+      // Server should start successfully
+      server.localAddress.contains("localhost") shouldBe true
+      // Stop with graceful shutdown
+      server.stop()
+    }
+  }
+
+  test("server with shutdown hook enabled starts and stops correctly") {
+    val config = Netty.server
+      .withShutdownHook
+      .withGracefulShutdown(quietPeriodSeconds = 1, timeoutSeconds = 5)
+      .noLogging
+
+    config.design.build[NettyServer] { server =>
+      server.localAddress.contains("localhost") shouldBe true
+      // Explicitly stop to test shutdown hook unregistration
+      server.stop()
+    }
+  }
+}
