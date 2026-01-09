@@ -18,6 +18,8 @@ import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleCha
 import io.netty.handler.codec.http.*
 import io.netty.util.AttributeKey
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+
+import java.util.concurrent.atomic.AtomicInteger
 import wvlet.airframe.http.internal.RPCResponseFilter
 import wvlet.airframe.http.{
   Http,
@@ -46,7 +48,7 @@ class NettyRequestHandler(
 ) extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
 
-  import NettyRequestHandler.REQUEST_IN_FLIGHT
+  import NettyRequestHandler.REQUEST_IN_FLIGHT_COUNT
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     if (NettyRequestHandler.isBenignIOException(cause)) {
@@ -55,10 +57,14 @@ class NettyRequestHandler(
     } else {
       warn(cause)
     }
-    // If a request was in-flight when the exception occurred, decrement the counter
-    val inFlightAttr = ctx.channel().attr(REQUEST_IN_FLIGHT)
-    if (inFlightAttr.getAndSet(false)) {
-      connectionTracker.requestCompleted()
+    // If any requests were in-flight when the exception occurred, decrement the counter
+    val counter = ctx.channel().attr(REQUEST_IN_FLIGHT_COUNT).get()
+    if (counter != null) {
+      var remaining = counter.getAndSet(0)
+      while (remaining > 0) {
+        connectionTracker.requestCompleted()
+        remaining -= 1
+      }
     }
     ctx.close()
   }
@@ -70,16 +76,27 @@ class NettyRequestHandler(
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
     // Track the start of request processing
     connectionTracker.requestStarted()
-    // Mark this channel as having an in-flight request (for exceptionCaught handling)
-    val inFlightAttr = ctx.channel().attr(REQUEST_IN_FLIGHT)
-    inFlightAttr.set(true)
+
+    // Track in-flight request count per channel (for exceptionCaught handling and pipelining)
+    val counterAttr = ctx.channel().attr(REQUEST_IN_FLIGHT_COUNT)
+    var counter     = counterAttr.get()
+    if (counter == null) {
+      counter = new AtomicInteger(0)
+      counterAttr.set(counter)
+    }
+    counter.incrementAndGet()
 
     // Flag to track if OnNext was called (handles Rx.empty case)
     var onNextCalled = false
 
-    // Helper to mark request as completed and clear in-flight flag
+    // Flag to prevent double-completion
+    var completed = false
+
+    // Helper to mark request as completed and decrement in-flight counter
     def markCompleted(): Unit = {
-      if (inFlightAttr.getAndSet(false)) {
+      if (!completed) {
+        completed = true
+        counter.decrementAndGet()
         connectionTracker.requestCompleted()
       }
     }
@@ -223,9 +240,9 @@ class NettyRequestHandler(
 
 object NettyRequestHandler extends LogSupport {
 
-  // Channel attribute to track if a request is currently in-flight
-  private[netty] val REQUEST_IN_FLIGHT: AttributeKey[java.lang.Boolean] =
-    AttributeKey.valueOf("airframe.requestInFlight")
+  // Channel attribute to track count of in-flight requests (supports HTTP/1.1 pipelining)
+  private[netty] val REQUEST_IN_FLIGHT_COUNT: AttributeKey[AtomicInteger] =
+    AttributeKey.valueOf("airframe.requestInFlightCount")
 
   // "Connection reset" also matches "Connection reset by peer" via contains check
   private val benignIOExceptionMessages = Set(
