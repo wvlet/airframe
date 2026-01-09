@@ -275,9 +275,10 @@ class NettyConnectionTracker extends LogSupport {
     val deadlineNanos  = System.nanoTime() + unit.toNanos(timeout)
     val pollIntervalMs = 100L
 
-    def sleepUnlessInterrupted(): Boolean = {
+    def sleepUnlessInterrupted(remainingNanos: Long): Boolean = {
       try {
-        Thread.sleep(math.min(pollIntervalMs, math.max(1L, unit.toMillis(timeout))))
+        val sleepMillis = math.min(pollIntervalMs, math.max(1L, TimeUnit.NANOSECONDS.toMillis(remainingNanos)))
+        Thread.sleep(sleepMillis)
         true
       } catch {
         case _: InterruptedException =>
@@ -295,7 +296,7 @@ class NettyConnectionTracker extends LogSupport {
         if (remainingNanos <= 0) {
           warn(s"Timeout waiting for ${activeRequests.get()} active requests to complete")
           false
-        } else if (!sleepUnlessInterrupted()) {
+        } else if (!sleepUnlessInterrupted(remainingNanos)) {
           false
         } else {
           loop()
