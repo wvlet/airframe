@@ -377,25 +377,32 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       // Unregister shutdown hook to prevent double-stop during JVM shutdown
       unregisterShutdownHook()
 
+      // Use a shared deadline to ensure total shutdown time respects the configured timeout
+      val deadlineNanos              = System.nanoTime() + TimeUnit.SECONDS.toNanos(config.shutdownTimeoutSeconds)
+      def remainingSeconds: Long     = math.max(0, TimeUnit.NANOSECONDS.toSeconds(deadlineNanos - System.nanoTime()))
+      def remainingNanos: Long       = math.max(0, deadlineNanos - System.nanoTime())
+      def remainingMillis: Long      = math.max(0, TimeUnit.NANOSECONDS.toMillis(deadlineNanos - System.nanoTime()))
+      def effectiveQuietPeriod: Long = math.min(config.shutdownQuietPeriodSeconds, remainingSeconds)
+
       // Close the server channel first to stop accepting new connections
-      channelFuture.foreach(_.close().await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS))
+      channelFuture.foreach(_.close().await(remainingMillis, TimeUnit.MILLISECONDS))
 
       // Gracefully shutdown worker group first to complete in-flight requests
       // Netty's shutdownGracefully handles waiting for in-flight tasks during the quiet period
       val workerFuture = workerGroup.shutdownGracefully(
-        config.shutdownQuietPeriodSeconds,
-        config.shutdownTimeoutSeconds,
+        effectiveQuietPeriod,
+        remainingSeconds,
         TimeUnit.SECONDS
       )
-      workerFuture.await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS)
+      workerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
 
       // Then shutdown boss group
       val bossFuture = bossGroup.shutdownGracefully(
-        config.shutdownQuietPeriodSeconds,
-        config.shutdownTimeoutSeconds,
+        effectiveQuietPeriod,
+        remainingSeconds,
         TimeUnit.SECONDS
       )
-      bossFuture.await(config.shutdownTimeoutSeconds, TimeUnit.SECONDS)
+      bossFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
 
       // Close the HTTP logger
       httpLogger.close()

@@ -13,13 +13,8 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.control.Control
-import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.{Http, HttpMethod, HttpServer, HttpStatus, RxRouter}
+import wvlet.airframe.http.HttpServer
 import wvlet.airspec.AirSpec
-
-import java.util.concurrent.TimeUnit
 
 class NettyServerTest extends AirSpec {
   initDesign(_ + Netty.server.design)
