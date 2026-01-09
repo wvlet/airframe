@@ -16,10 +16,7 @@ package wvlet.airframe.http.netty
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.*
-import io.netty.util.AttributeKey
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-
-import java.util.concurrent.atomic.AtomicInteger
 import wvlet.airframe.http.internal.RPCResponseFilter
 import wvlet.airframe.http.{
   Http,
@@ -41,14 +38,9 @@ import NettyRequestHandler.toNettyResponse
 
 import java.io.ByteArrayOutputStream
 
-class NettyRequestHandler(
-    config: NettyServerConfig,
-    dispatcher: NettyBackend.Filter,
-    connectionTracker: NettyConnectionTracker
-) extends SimpleChannelInboundHandler[FullHttpRequest]
+class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
+    extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
-
-  import NettyRequestHandler.REQUEST_IN_FLIGHT_COUNT
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     if (NettyRequestHandler.isBenignIOException(cause)) {
@@ -56,15 +48,6 @@ class NettyRequestHandler(
       debug(cause)
     } else {
       warn(cause)
-    }
-    // If any requests were in-flight when the exception occurred, decrement the counter
-    val counter = ctx.channel().attr(REQUEST_IN_FLIGHT_COUNT).get()
-    if (counter != null) {
-      var remaining = counter.getAndSet(0)
-      while (remaining > 0) {
-        connectionTracker.requestCompleted()
-        remaining -= 1
-      }
     }
     ctx.close()
   }
@@ -74,33 +57,6 @@ class NettyRequestHandler(
   }
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
-    // Track the start of request processing
-    connectionTracker.requestStarted()
-
-    // Track in-flight request count per channel (for exceptionCaught handling and pipelining)
-    val counterAttr = ctx.channel().attr(REQUEST_IN_FLIGHT_COUNT)
-    var counter     = counterAttr.get()
-    if (counter == null) {
-      counter = new AtomicInteger(0)
-      counterAttr.set(counter)
-    }
-    counter.incrementAndGet()
-
-    // Flag to track if OnNext was called (handles Rx.empty case)
-    var onNextCalled = false
-
-    // Flag to prevent double-completion
-    var completed = false
-
-    // Helper to mark request as completed and decrement in-flight counter
-    def markCompleted(): Unit = {
-      if (!completed) {
-        completed = true
-        counter.decrementAndGet()
-        connectionTracker.requestCompleted()
-      }
-    }
-
     try {
       var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name().toUpperCase match {
         case HttpMethod.GET     => Http.GET(msg.uri())
@@ -153,61 +109,32 @@ class NettyRequestHandler(
 
       RxRunner.run(rxResponse) {
         case OnNext(v) =>
-          onNextCalled = true
           val resp          = v.asInstanceOf[Response]
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
-            // SSE streaming response - completion tracked asynchronously
             // Read SSE stream
             val c = RxRunner.run(resp.events) {
               case OnNext(e: ServerSentEvent) =>
                 val event = e.toContent
                 val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                 ctx.writeAndFlush(new DefaultHttpContent(buf))
-              case OnNext(_) =>
-                // Ignore non-ServerSentEvent values
-                ()
-              case OnError(_) =>
-                // Stream error - mark request as completed and close
-                markCompleted()
-                val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                f.addListener(ChannelFutureListener.CLOSE)
-              case OnCompletion =>
-                // Stream completed - mark request as completed and close
-                markCompleted()
+              case _ =>
                 val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                 f.addListener(ChannelFutureListener.CLOSE)
             }
-          } else {
-            // Non-streaming response - mark as completed immediately
-            markCompleted()
           }
         case OnError(ex) =>
           // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
-          markCompleted()
         case OnCompletion =>
-          // Handle Rx.empty case where OnNext was never called
-          if (!onNextCalled) {
-            markCompleted()
-          }
-        // Otherwise, request was already marked as completed in OnNext
       }
     } catch {
       case e: RPCException =>
         writeResponse(msg, ctx, toNettyResponse(e.toResponse))
-        markCompleted()
-      case e: Exception =>
-        // Handle any other exception to prevent request count leak
-        warn(s"Unexpected exception during request processing: ${e.getMessage}", e)
-        val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(e.getMessage, e).toResponse
-        val nettyResponse = toNettyResponse(resp)
-        writeResponse(msg, ctx, nettyResponse)
-        markCompleted()
     } finally {
       // Need to clean up the TLS in case the same thread is reused for the next request
       NettyBackend.clearThreadLocal()
@@ -239,10 +166,6 @@ class NettyRequestHandler(
 }
 
 object NettyRequestHandler extends LogSupport {
-
-  // Channel attribute to track count of in-flight requests (supports HTTP/1.1 pipelining)
-  private[netty] val REQUEST_IN_FLIGHT_COUNT: AttributeKey[AtomicInteger] =
-    AttributeKey.valueOf("airframe.requestInFlightCount")
 
   // "Connection reset" also matches "Connection reset by peer" via contains check
   private val benignIOExceptionMessages = Set(
