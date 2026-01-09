@@ -16,6 +16,7 @@ package wvlet.airframe.http.netty
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.*
+import io.netty.util.AttributeKey
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.internal.RPCResponseFilter
 import wvlet.airframe.http.{
@@ -45,12 +46,19 @@ class NettyRequestHandler(
 ) extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
 
+  import NettyRequestHandler.REQUEST_IN_FLIGHT
+
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     if (NettyRequestHandler.isBenignIOException(cause)) {
       // Log benign I/O errors at DEBUG level to reduce log noise
       debug(cause)
     } else {
       warn(cause)
+    }
+    // If a request was in-flight when the exception occurred, decrement the counter
+    val inFlightAttr = ctx.channel().attr(REQUEST_IN_FLIGHT)
+    if (inFlightAttr.getAndSet(false)) {
+      connectionTracker.requestCompleted()
     }
     ctx.close()
   }
@@ -62,9 +70,19 @@ class NettyRequestHandler(
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
     // Track the start of request processing
     connectionTracker.requestStarted()
+    // Mark this channel as having an in-flight request (for exceptionCaught handling)
+    val inFlightAttr = ctx.channel().attr(REQUEST_IN_FLIGHT)
+    inFlightAttr.set(true)
 
     // Flag to track if OnNext was called (handles Rx.empty case)
     var onNextCalled = false
+
+    // Helper to mark request as completed and clear in-flight flag
+    def markCompleted(): Unit = {
+      if (inFlightAttr.getAndSet(false)) {
+        connectionTracker.requestCompleted()
+      }
+    }
 
     try {
       var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name().toUpperCase match {
@@ -136,36 +154,43 @@ class NettyRequestHandler(
                 ()
               case OnError(_) =>
                 // Stream error - mark request as completed and close
-                connectionTracker.requestCompleted()
+                markCompleted()
                 val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                 f.addListener(ChannelFutureListener.CLOSE)
               case OnCompletion =>
                 // Stream completed - mark request as completed and close
-                connectionTracker.requestCompleted()
+                markCompleted()
                 val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                 f.addListener(ChannelFutureListener.CLOSE)
             }
           } else {
             // Non-streaming response - mark as completed immediately
-            connectionTracker.requestCompleted()
+            markCompleted()
           }
         case OnError(ex) =>
           // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
           val nettyResponse = toNettyResponse(resp)
           writeResponse(msg, ctx, nettyResponse)
-          connectionTracker.requestCompleted()
+          markCompleted()
         case OnCompletion =>
           // Handle Rx.empty case where OnNext was never called
           if (!onNextCalled) {
-            connectionTracker.requestCompleted()
+            markCompleted()
           }
         // Otherwise, request was already marked as completed in OnNext
       }
     } catch {
       case e: RPCException =>
         writeResponse(msg, ctx, toNettyResponse(e.toResponse))
-        connectionTracker.requestCompleted()
+        markCompleted()
+      case e: Exception =>
+        // Handle any other exception to prevent request count leak
+        warn(s"Unexpected exception during request processing: ${e.getMessage}", e)
+        val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(e.getMessage, e).toResponse
+        val nettyResponse = toNettyResponse(resp)
+        writeResponse(msg, ctx, nettyResponse)
+        markCompleted()
     } finally {
       // Need to clean up the TLS in case the same thread is reused for the next request
       NettyBackend.clearThreadLocal()
@@ -197,6 +222,10 @@ class NettyRequestHandler(
 }
 
 object NettyRequestHandler extends LogSupport {
+
+  // Channel attribute to track if a request is currently in-flight
+  private[netty] val REQUEST_IN_FLIGHT: AttributeKey[java.lang.Boolean] =
+    AttributeKey.valueOf("airframe.requestInFlight")
 
   // "Connection reset" also matches "Connection reset by peer" via contains check
   private val benignIOExceptionMessages = Set(
