@@ -60,7 +60,14 @@ case class NettyServerConfig(
       ExecutionContext.fromExecutorService(
         Executors.newCachedThreadPool(ThreadUtil.newDaemonThreadFactory("airframe-netty"))
       )
-    }
+    },
+    // Graceful shutdown configuration for Kubernetes SIGTERM handling
+    // The quiet period ensures no new tasks are submitted before shutdown
+    shutdownQuietPeriodSeconds: Long = 2,
+    // Maximum time to wait for graceful shutdown completion
+    shutdownTimeoutSeconds: Long = 30,
+    // Whether to register a JVM shutdown hook for SIGTERM/SIGINT handling
+    registerShutdownHook: Boolean = false
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -107,6 +114,59 @@ case class NettyServerConfig(
 
   def withCustomCodec(m: Map[Surface, MessageCodec[_]]): NettyServerConfig = {
     this.copy(customCodecFactory = customCodecFactory.withCodecs(m))
+  }
+
+  /**
+    * Set the quiet period for graceful shutdown. During this period, the server will reject new connections while
+    * waiting for in-flight requests to complete.
+    * @param seconds
+    *   quiet period in seconds (default: 2)
+    */
+  def withShutdownQuietPeriod(seconds: Long): NettyServerConfig = {
+    require(seconds >= 0, "shutdownQuietPeriodSeconds must be non-negative")
+    this.copy(shutdownQuietPeriodSeconds = seconds)
+  }
+
+  /**
+    * Set the maximum time to wait for graceful shutdown completion.
+    * @param seconds
+    *   timeout in seconds (default: 30)
+    */
+  def withShutdownTimeout(seconds: Long): NettyServerConfig = {
+    require(seconds > 0, "shutdownTimeoutSeconds must be positive")
+    this.copy(shutdownTimeoutSeconds = seconds)
+  }
+
+  /**
+    * Configure graceful shutdown parameters for Kubernetes environments.
+    * @param quietPeriodSeconds
+    *   quiet period before shutdown (default: 2)
+    * @param timeoutSeconds
+    *   maximum time to wait for shutdown (default: 30)
+    */
+  def withGracefulShutdown(quietPeriodSeconds: Long = 2, timeoutSeconds: Long = 30): NettyServerConfig = {
+    require(quietPeriodSeconds >= 0, "quietPeriodSeconds must be non-negative")
+    require(timeoutSeconds > 0, "timeoutSeconds must be positive")
+    this.copy(
+      shutdownQuietPeriodSeconds = quietPeriodSeconds,
+      shutdownTimeoutSeconds = timeoutSeconds
+    )
+  }
+
+  /**
+    * Enable automatic shutdown hook registration. When enabled, the server will automatically register a JVM shutdown
+    * hook to handle SIGTERM/SIGINT signals gracefully. This is useful for Kubernetes deployments where pods receive
+    * SIGTERM signals during termination.
+    */
+  def withShutdownHook: NettyServerConfig = {
+    this.copy(registerShutdownHook = true)
+  }
+
+  /**
+    * Disable automatic shutdown hook registration (default behavior).
+    */
+  def noShutdownHook: NettyServerConfig = {
+    this.copy(registerShutdownHook = false)
   }
 
   def newServer(session: Session): NettyServer = {
@@ -191,6 +251,9 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
   private val started = new AtomicBoolean(false)
   private val stopped = new AtomicBoolean(false)
 
+  // Shutdown hook thread for SIGTERM/SIGINT handling
+  @volatile private var shutdownHook: Option[Thread] = None
+
   @PostConstruct
   def start: Unit = {
     if (stopped.get()) {
@@ -199,6 +262,37 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
     if (started.compareAndSet(false, true)) {
       startInternal
+      registerShutdownHookIfNeeded()
+    }
+  }
+
+  private def registerShutdownHookIfNeeded(): Unit = {
+    if (config.registerShutdownHook) {
+      val hook = new Thread(
+        () => {
+          info(s"Received shutdown signal for ${config.name} server")
+          stop()
+        },
+        s"airframe-netty-shutdown-${config.name}"
+      )
+      shutdownHook = Some(hook)
+      Runtime.getRuntime.addShutdownHook(hook)
+      debug(s"Registered shutdown hook for ${config.name} server")
+    }
+  }
+
+  private def unregisterShutdownHook(): Unit = {
+    shutdownHook.foreach { hook =>
+      Try(Runtime.getRuntime.removeShutdownHook(hook)) match {
+        case Success(_) =>
+          debug(s"Unregistered shutdown hook for ${config.name} server")
+        case Failure(_: IllegalStateException) =>
+          // JVM is already shutting down, hook cannot be removed
+          ()
+        case Failure(e) =>
+          warn(s"Failed to unregister shutdown hook: ${e.getMessage}")
+      }
+      shutdownHook = None
     }
   }
 
@@ -275,11 +369,45 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
 
   override def stop(): Unit = {
     if (stopped.compareAndSet(false, true)) {
-      info(s"Stopping ${config.name} server at ${localAddress}")
-      workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
-      bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+      info(
+        s"Stopping ${config.name} server at ${localAddress} " +
+          s"(quietPeriod=${config.shutdownQuietPeriodSeconds}s, timeout=${config.shutdownTimeoutSeconds}s)"
+      )
+
+      // Unregister shutdown hook to prevent double-stop during JVM shutdown
+      unregisterShutdownHook()
+
+      // Use a shared deadline to ensure total shutdown time respects the configured timeout
+      val deadlineNanos              = System.nanoTime() + TimeUnit.SECONDS.toNanos(config.shutdownTimeoutSeconds)
+      def remainingSeconds: Long     = math.max(0, TimeUnit.NANOSECONDS.toSeconds(deadlineNanos - System.nanoTime()))
+      def remainingNanos: Long       = math.max(0, deadlineNanos - System.nanoTime())
+      def remainingMillis: Long      = math.max(0, TimeUnit.NANOSECONDS.toMillis(deadlineNanos - System.nanoTime()))
+      def effectiveQuietPeriod: Long = math.min(config.shutdownQuietPeriodSeconds, remainingSeconds)
+
+      // Close the server channel first to stop accepting new connections
+      channelFuture.foreach(_.close().await(remainingMillis, TimeUnit.MILLISECONDS))
+
+      // Gracefully shutdown worker group first to complete in-flight requests
+      // Netty's shutdownGracefully handles waiting for in-flight tasks during the quiet period
+      val workerFuture = workerGroup.shutdownGracefully(
+        effectiveQuietPeriod,
+        remainingSeconds,
+        TimeUnit.SECONDS
+      )
+      workerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
+
+      // Then shutdown boss group
+      val bossFuture = bossGroup.shutdownGracefully(
+        effectiveQuietPeriod,
+        remainingSeconds,
+        TimeUnit.SECONDS
+      )
+      bossFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
+
+      // Close the HTTP logger
       httpLogger.close()
-      channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
+
+      info(s"${config.name} server stopped")
     }
   }
 
