@@ -12,13 +12,18 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.control.ResultClass.{Failed, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend}
 import wvlet.airframe.http.internal.{LocalRPCContext, LogRotationHttpLogger}
 
-import java.net.URLEncoder
+import java.io.IOException
+import java.lang.reflect.InvocationTargetException
+import java.net.*
+import java.nio.channels.ClosedChannelException
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, ThreadFactory}
+import java.util.concurrent.{ExecutionException, Executors, ThreadFactory}
+import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import scala.concurrent.ExecutionContext
 
 /**
@@ -66,4 +71,63 @@ object Compat extends CompatApi {
   override def currentRPCContext: RPCContext                     = LocalRPCContext.current
   override def attachRPCContext(context: RPCContext): RPCContext = LocalRPCContext.attach(context)
   override def detachRPCContext(previous: RPCContext): Unit      = LocalRPCContext.detach(previous)
+
+  /**
+    * SSL exception classifier for JVM platform. This handles SSL-specific exceptions that are only available on JVM.
+    */
+  override def sslExceptionClassifier: PartialFunction[Throwable, Failed] = { case e: SSLException =>
+    e match {
+      // Deterministic SSL exceptions are not retryable
+      case se: SSLHandshakeException      => nonRetryableFailure(e)
+      case se: SSLKeyException            => nonRetryableFailure(e)
+      case s3: SSLPeerUnverifiedException => nonRetryableFailure(e)
+      case other                          =>
+        // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
+        retryableFailure(e)
+    }
+  }
+
+  /**
+    * Connection exception classifier for JVM platform. This handles java.net exceptions.
+    */
+  override def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = {
+    // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
+    case e: java.lang.InterruptedException =>
+      // Retryable when the http client thread execution is interrupted.
+      retryableFailure(e)
+    case e: ProtocolException      => retryableFailure(e)
+    case e: ConnectException       => retryableFailure(e)
+    case e: ClosedChannelException => retryableFailure(e)
+    case e: SocketTimeoutException => retryableFailure(e)
+    case e: SocketException =>
+      e match {
+        case se: BindException            => retryableFailure(e)
+        case se: ConnectException         => retryableFailure(e)
+        case se: NoRouteToHostException   => retryableFailure(e)
+        case se: PortUnreachableException => retryableFailure(e)
+        case se if se.getMessage() == "Socket closed" => retryableFailure(e)
+        case other =>
+          nonRetryableFailure(e)
+      }
+    // HTTP/2 may disconnects the connection with "GOAWAY received" error https://github.com/wvlet/airframe/issues/3421
+    // See also the code of jdk.internal.net.http.Http2Connection.handleGoAway
+    case e: IOException if Option(e.getMessage()).exists(_.contains("GOAWAY received")) =>
+      retryableFailure(e)
+    // Exceptions from Finagle. Using the string class names so as not to include Finagle dependencies.
+    case e: Throwable if HttpClientException.isRetryableFinagleException(e) =>
+      retryableFailure(e)
+  }
+
+  /**
+    * Root cause exception classifier for JVM platform. This handles java.lang.reflect exceptions.
+    */
+  override def rootCauseExceptionClassifier: PartialFunction[Throwable, Failed] = {
+    case e: ExecutionException if e.getCause != null =>
+      HttpClientException.classifyExecutionFailure(e.getCause)
+    case e: InvocationTargetException =>
+      HttpClientException.classifyExecutionFailure(e.getTargetException)
+    case e if e.getCause != null =>
+      // Trace the true cause
+      HttpClientException.classifyExecutionFailure(e.getCause)
+  }
 }

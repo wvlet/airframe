@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.control.ResultClass.Failed
 import wvlet.airframe.http.client.{HttpClientBackend, NativeHttpClientBackend}
 import wvlet.airframe.http.internal.LocalRPCContext
 
@@ -110,4 +111,25 @@ private object Compat extends CompatApi {
     * Detach the current RPC context and restore the previous one.
     */
   override def detachRPCContext(previous: RPCContext): Unit = LocalRPCContext.detach(previous)
+
+  /**
+    * SSL exception classifier for Scala Native. Returns an empty classifier since javax.net.ssl classes are not
+    * available on Native.
+    */
+  override def sslExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
+
+  /**
+    * Connection exception classifier for Scala Native. Returns an empty classifier since java.net exception classes
+    * may not be fully available on Native.
+    */
+  override def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
+
+  /**
+    * Root cause exception classifier for Scala Native. Uses a simpler implementation without java.lang.reflect.
+    */
+  override def rootCauseExceptionClassifier: PartialFunction[Throwable, Failed] = {
+    case e if e.getCause != null =>
+      // Trace the true cause
+      HttpClientException.classifyExecutionFailure(e.getCause)
+  }
 }

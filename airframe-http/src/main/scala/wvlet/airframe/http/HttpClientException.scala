@@ -17,12 +17,8 @@ import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.control.{CircuitBreakerOpenException, ResultClass}
 import wvlet.log.LogSupport
 
-import java.io.{IOException, EOFException}
-import java.lang.reflect.InvocationTargetException
-import java.net.*
-import java.nio.channels.ClosedChannelException
-import java.util.concurrent.{ExecutionException, TimeoutException}
-import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
+import java.io.EOFException
+import java.util.concurrent.TimeoutException
 import scala.annotation.tailrec
 import scala.language.existentials
 
@@ -161,9 +157,9 @@ object HttpClientException extends LogSupport {
 
   def executionFailureClassifier: PartialFunction[Throwable, Failed] = {
     scalajsCompatibleFailureClassifier orElse
-      connectionExceptionClassifier orElse
-      sslExceptionClassifier orElse
-      rootCauseExceptionClassifier
+      Compat.connectionExceptionClassifier orElse
+      Compat.sslExceptionClassifier orElse
+      Compat.rootCauseExceptionClassifier
   }
 
   def scalajsCompatibleFailureClassifier: PartialFunction[Throwable, Failed] = {
@@ -171,34 +167,6 @@ object HttpClientException extends LogSupport {
     case e: CircuitBreakerOpenException => nonRetryableFailure(e)
     case e: EOFException                => retryableFailure(e)
     case e: TimeoutException            => retryableFailure(e)
-  }
-
-  def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = {
-    // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
-    case e: java.lang.InterruptedException =>
-      // Retryable when the http client thread execution is interrupted.
-      retryableFailure(e)
-    case e: ProtocolException      => retryableFailure(e)
-    case e: ConnectException       => retryableFailure(e)
-    case e: ClosedChannelException => retryableFailure(e)
-    case e: SocketTimeoutException => retryableFailure(e)
-    case e: SocketException =>
-      e match {
-        case se: BindException                        => retryableFailure(e)
-        case se: ConnectException                     => retryableFailure(e)
-        case se: NoRouteToHostException               => retryableFailure(e)
-        case se: PortUnreachableException             => retryableFailure(e)
-        case se if se.getMessage() == "Socket closed" => retryableFailure(e)
-        case other =>
-          nonRetryableFailure(e)
-      }
-    // HTTP/2 may disconnects the connection with "GOAWAY received" error https://github.com/wvlet/airframe/issues/3421
-    // See also the code of jdk.internal.net.http.Http2Connection.handleGoAway
-    case e: IOException if Option(e.getMessage()).exists(_.contains("GOAWAY received")) =>
-      retryableFailure(e)
-    // Exceptions from Finagle. Using the string class names so as not to include Finagle dependencies.
-    case e: Throwable if isRetryableFinagleException(e) =>
-      retryableFailure(e)
   }
 
   private[http] val finagleRetryableExceptionClasses = Set(
@@ -227,35 +195,11 @@ object HttpClientException extends LogSupport {
     iter(e)
   }
 
-  def sslExceptionClassifier: PartialFunction[Throwable, Failed] = { case e: SSLException =>
-    e match {
-      // Deterministic SSL exceptions are not retryable
-      case se: SSLHandshakeException      => nonRetryableFailure(e)
-      case se: SSLKeyException            => nonRetryableFailure(e)
-      case s3: SSLPeerUnverifiedException => nonRetryableFailure(e)
-      case other                          =>
-        // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
-        retryableFailure(e)
-    }
-  }
-
-  def rootCauseExceptionClassifier: PartialFunction[Throwable, Failed] = {
-    case e: ExecutionException if e.getCause != null =>
-      classifyExecutionFailure(e.getCause)
-    case e: InvocationTargetException =>
-      classifyExecutionFailure(e.getTargetException)
-    case e if e.getCause != null =>
-      // Trace the true cause
-      classifyExecutionFailure(e.getCause)
-  }
-
   /**
-    * For ScalaJs, which doesn't have InvocationTargetException
+    * For ScalaJs and Scala Native, which don't have InvocationTargetException or ExecutionException
     * @return
     */
   def rootCauseExceptionClassifierScalaJS: PartialFunction[Throwable, Failed] = {
-    case e: ExecutionException if e.getCause != null =>
-      classifyExecutionFailureScalaJS(e.getCause)
     case e if e.getCause != null =>
       // Trace the true cause
       classifyExecutionFailureScalaJS(e.getCause)

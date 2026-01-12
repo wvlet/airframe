@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 
 import org.scalajs.dom.window
+import wvlet.airframe.control.ResultClass.Failed
 import wvlet.airframe.http.client.{HttpClientBackend, JSHttpClientBackend}
 
 import scala.concurrent.ExecutionContext
@@ -63,4 +64,25 @@ private object Compat extends CompatApi {
   override def currentRPCContext: RPCContext                     = ???
   override def attachRPCContext(context: RPCContext): RPCContext = ???
   override def detachRPCContext(previous: RPCContext): Unit      = ???
+
+  /**
+    * SSL exception classifier for Scala.js. Returns an empty classifier since javax.net.ssl classes are not available
+    * on JS.
+    */
+  override def sslExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
+
+  /**
+    * Connection exception classifier for Scala.js. Returns an empty classifier since java.net exception classes are
+    * not available on JS.
+    */
+  override def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
+
+  /**
+    * Root cause exception classifier for Scala.js. Uses a simpler implementation without java.lang.reflect.
+    */
+  override def rootCauseExceptionClassifier: PartialFunction[Throwable, Failed] = {
+    case e if e.getCause != null =>
+      // Trace the true cause
+      HttpClientException.classifyExecutionFailureScalaJS(e.getCause)
+  }
 }
