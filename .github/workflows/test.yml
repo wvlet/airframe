@@ -267,6 +267,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
       - name: Scala Native test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 3; projectNative/test"
       - name: Publish Test Report
@@ -288,6 +290,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
       - name: Scala JVM and Scala.js Test
         run: ../sbt "++airspecJVM/test; ++airspecJS/test"
         working-directory: ./airspec

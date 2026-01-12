@@ -20,6 +20,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
