@@ -101,10 +101,10 @@ object Compat extends CompatApi {
     case e: SocketTimeoutException => retryableFailure(e)
     case e: SocketException =>
       e match {
-        case se: BindException            => retryableFailure(e)
-        case se: ConnectException         => retryableFailure(e)
-        case se: NoRouteToHostException   => retryableFailure(e)
-        case se: PortUnreachableException => retryableFailure(e)
+        case se: BindException                        => retryableFailure(e)
+        case se: ConnectException                     => retryableFailure(e)
+        case se: NoRouteToHostException               => retryableFailure(e)
+        case se: PortUnreachableException             => retryableFailure(e)
         case se if se.getMessage() == "Socket closed" => retryableFailure(e)
         case other =>
           nonRetryableFailure(e)

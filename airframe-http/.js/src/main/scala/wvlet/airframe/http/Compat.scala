@@ -72,8 +72,8 @@ private object Compat extends CompatApi {
   override def sslExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
 
   /**
-    * Connection exception classifier for Scala.js. Returns an empty classifier since java.net exception classes are
-    * not available on JS.
+    * Connection exception classifier for Scala.js. Returns an empty classifier since java.net exception classes are not
+    * available on JS.
     */
   override def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
 
