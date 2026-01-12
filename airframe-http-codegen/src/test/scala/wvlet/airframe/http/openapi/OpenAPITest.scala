@@ -347,6 +347,8 @@ class OpenAPITest extends AirSpec {
         |              properties:
         |                p1:
         |                  type: string""".stripMargin,
+      // post5 is a unary endpoint call - single non-primitive parameter for REST endpoint
+      // The request body schema should be the parameter type directly, not wrapped in an object
       """  /v1/post5:
         |    post:
         |      summary: post5
@@ -356,20 +358,10 @@ class OpenAPITest extends AirSpec {
         |        content:
         |          application/json:
         |            schema:
-        |              type: object
-        |              required:
-        |                - p1
-        |              properties:
-        |                p1:
-        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
+        |              $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |          application/x-msgpack:
         |            schema:
-        |              type: object
-        |              required:
-        |                - p1
-        |              properties:
-        |                p1:
-        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
+        |              $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |        required: true
         |      responses:
         |        '200':
@@ -381,6 +373,8 @@ class OpenAPITest extends AirSpec {
         |            application/x-msgpack:
         |              schema:
         |                $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
+      // post6 is also a unary endpoint call - path param id is separate, body has single non-primitive p1
+      // The request body schema should be the parameter type directly
       """  /v1/post6/{id}:
         |    post:
         |      summary: post6
@@ -397,22 +391,10 @@ class OpenAPITest extends AirSpec {
         |        content:
         |          application/json:
         |            schema:
-        |              type: object
-        |              required:
-        |                - id
-        |                - p1
-        |              properties:
-        |                p1:
-        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
+        |              $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |          application/x-msgpack:
         |            schema:
-        |              type: object
-        |              required:
-        |                - id
-        |                - p1
-        |              properties:
-        |                p1:
-        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
+        |              $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |        required: true
         |      responses:
         |        '200':
