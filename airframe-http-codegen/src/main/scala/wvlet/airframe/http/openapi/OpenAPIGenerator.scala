@@ -261,17 +261,35 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       }.orElse {
         Try(controllerSurface.rawType.getDeclaredConstructor().newInstance())
       }.toOption
-      val requestMediaType = MediaType(
-        schema = Schema(
-          `type` = "object",
-          required = requiredParams(methodOwner, routeAnalysis.userInputParameters),
-          properties = Some(
-            routeAnalysis.httpClientCallInputs.map { p =>
-              p.name -> getOpenAPISchemaOfParameter(p, componentTypes)
-            }.toMap
+      // Check if this is a "unary endpoint call" - a REST endpoint with a single non-primitive body parameter
+      // In this case, the request body should be the parameter type directly, not wrapped in an object
+      def isPrimitive(s: Surface): Boolean =
+        s.isPrimitive || (s.isOption && s.typeArgs.forall(_.isPrimitive))
+      val isUnaryEndpointCall = !route.isRPC && (routeAnalysis.httpClientCallInputs match {
+        case Seq(p) => !isPrimitive(p.surface)
+        case _      => false
+      })
+
+      val requestMediaType = if (isUnaryEndpointCall) {
+        // For unary REST endpoint calls, use the parameter type directly
+        val singleParam = routeAnalysis.httpClientCallInputs.head
+        MediaType(
+          schema = getOpenAPISchemaOfParameter(singleParam, componentTypes)
+        )
+      } else {
+        // For RPC calls or multiple parameters, wrap in an object
+        MediaType(
+          schema = Schema(
+            `type` = "object",
+            required = requiredParams(methodOwner, routeAnalysis.userInputParameters),
+            properties = Some(
+              routeAnalysis.httpClientCallInputs.map { p =>
+                p.name -> getOpenAPISchemaOfParameter(p, componentTypes)
+              }.toMap
+            )
           )
         )
-      )
+      }
       val requestBodyContent: Map[String, MediaType] = {
         if (route.httpMethod == HttpMethod.GET) {
           // GET should have no request body
