@@ -14,7 +14,6 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.http.ServerAddress
-import scala.scalanative.unsafe.CInt
 
 /**
   * HTTP client backend for Scala Native using libcurl.
@@ -36,6 +35,7 @@ import scala.scalanative.unsafe.CInt
   */
 object NativeHttpClientBackend extends HttpClientBackend {
   import CurlBindings.*
+  import scala.scalanative.unsafe.CInt
 
   // Initialize curl globally when this object is loaded
   // CURL_GLOBAL_DEFAULT initializes both SSL and Win32 sockets (on Windows)

@@ -18,9 +18,9 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
+import java.io.IOException
 import scala.concurrent.duration.Duration
 import scala.scalanative.unsafe.*
-import scala.scalanative.unsigned.*
 
 /**
   * HTTP channel implementation using libcurl for Scala Native.
@@ -46,16 +46,12 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
   override def send(request: Request, channelConfig: HttpChannelConfig): Response = {
     val curl = curl_easy_init()
     if (curl == null) {
-      throw new HttpClientException(
-        destination,
-        HttpStatus.InternalServerError_500,
-        "Failed to initialize curl handle"
-      )
+      throw new IOException("Failed to initialize curl handle")
     }
 
-    var headerList: Ptr[curl_slist] = null
-    val bodyBuffer                  = allocResponseBuffer()
-    val headerBuffer                = allocResponseBuffer()
+    var headerList: Ptr[CurlSlist] = null
+    val bodyBuffer                 = allocResponseBuffer()
+    val headerBuffer               = allocResponseBuffer()
 
     try {
       // Build the full URL
@@ -63,22 +59,22 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
       val uri        = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
       val url        = s"${targetDest.uri}${uri}"
 
-      Zone { implicit z =>
+      Zone.acquire { implicit z =>
         // Set URL
-        checkCurlError(curl_easy_setopt(curl, CURLOPT_URL, toCString(url)), "setting URL")
+        checkCurlError(curl_easy_setopt_str(curl, CURLOPT_URL, toCString(url)), "setting URL")
 
         // Set HTTP method
         request.method match {
           case HttpMethod.GET =>
-            curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L)
+            curl_easy_setopt_long(curl, CURLOPT_HTTPGET, 1L)
           case HttpMethod.POST =>
-            curl_easy_setopt(curl, CURLOPT_POST, 1L)
+            curl_easy_setopt_long(curl, CURLOPT_POST, 1L)
           case HttpMethod.HEAD =>
-            curl_easy_setopt(curl, CURLOPT_NOBODY, 1L)
+            curl_easy_setopt_long(curl, CURLOPT_NOBODY, 1L)
           case HttpMethod.PUT | HttpMethod.DELETE | HttpMethod.PATCH | HttpMethod.OPTIONS =>
-            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, toCString(request.method))
+            curl_easy_setopt_str(curl, CURLOPT_CUSTOMREQUEST, toCString(request.method))
           case other =>
-            curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, toCString(other))
+            curl_easy_setopt_str(curl, CURLOPT_CUSTOMREQUEST, toCString(other))
         }
 
         // Set request headers
@@ -93,7 +89,7 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
         }
 
         if (headerList != null) {
-          curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList)
+          curl_easy_setopt_slist(curl, CURLOPT_HTTPHEADER, headerList)
         }
 
         // Set request body
@@ -105,8 +101,8 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
             !(bodyPtr + i) = contentBytes(i)
             i += 1
           }
-          curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bodyPtr)
-          curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, contentBytes.length.toLong)
+          curl_easy_setopt_ptr(curl, CURLOPT_POSTFIELDS, bodyPtr)
+          curl_easy_setopt_long(curl, CURLOPT_POSTFIELDSIZE, contentBytes.length.toLong)
         }
 
         // Set timeouts
@@ -114,28 +110,28 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
         val readTimeoutMs    = timeoutMillis(channelConfig.readTimeout)
 
         if (connectTimeoutMs > 0) {
-          curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, connectTimeoutMs.toLong)
+          curl_easy_setopt_long(curl, CURLOPT_CONNECTTIMEOUT_MS, connectTimeoutMs.toLong)
         }
         if (readTimeoutMs > 0) {
-          curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, readTimeoutMs.toLong)
+          curl_easy_setopt_long(curl, CURLOPT_TIMEOUT_MS, readTimeoutMs.toLong)
         }
 
         // Follow redirects
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L)
-        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 10L)
+        curl_easy_setopt_long(curl, CURLOPT_FOLLOWLOCATION, 1L)
+        curl_easy_setopt_long(curl, CURLOPT_MAXREDIRS, 10L)
 
         // Use HTTP/1.1 if configured
         if (config.useHttp1) {
-          curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1)
+          curl_easy_setopt_long(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1)
         }
 
         // Set write callback for response body
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback)
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, bodyBuffer.asInstanceOf[Ptr[Byte]])
+        curl_easy_setopt_callback(curl, CURLOPT_WRITEFUNCTION, writeCallback)
+        curl_easy_setopt_ptr(curl, CURLOPT_WRITEDATA, bodyBuffer.asInstanceOf[Ptr[Byte]])
 
         // Set header callback for response headers
-        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback)
-        curl_easy_setopt(curl, CURLOPT_HEADERDATA, headerBuffer.asInstanceOf[Ptr[Byte]])
+        curl_easy_setopt_callback(curl, CURLOPT_HEADERFUNCTION, headerCallback)
+        curl_easy_setopt_ptr(curl, CURLOPT_HEADERDATA, headerBuffer.asInstanceOf[Ptr[Byte]])
 
         // Perform the request
         val result = curl_easy_perform(curl)
@@ -154,12 +150,14 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
             case _ =>
               HttpStatus.InternalServerError_500
           }
-          throw new HttpClientException(targetDest, status, s"curl error: $errorMsg (code: $result)")
+          // Create a dummy response for the exception
+          val errorResponse = Http.response(status).withContent(s"curl error: $errorMsg (code: $result)")
+          throw new HttpClientException(errorResponse, status, s"curl error: $errorMsg (code: $result)")
         }
 
         // Get response status code
-        val statusCodePtr = stackalloc[CLong]()
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, statusCodePtr)
+        val statusCodePtr = stackalloc[Long]()
+        curl_easy_getinfo_long(curl, CURLINFO_RESPONSE_CODE, statusCodePtr)
         val statusCode = (!statusCodePtr).toInt
 
         // Parse response headers
@@ -209,11 +207,7 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
   private def checkCurlError(code: CInt, operation: String): Unit = {
     if (code != CURLE_OK) {
       val errorMsg = fromCString(curl_easy_strerror(code))
-      throw new HttpClientException(
-        destination,
-        HttpStatus.InternalServerError_500,
-        s"curl error while $operation: $errorMsg (code: $code)"
-      )
+      throw new IOException(s"curl error while $operation: $errorMsg (code: $code)")
     }
   }
 

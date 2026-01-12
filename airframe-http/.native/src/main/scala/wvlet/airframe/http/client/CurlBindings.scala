@@ -27,8 +27,6 @@ import scala.scalanative.libc.string
   * @see
   *   https://curl.se/libcurl/c/
   */
-@link("curl")
-@extern
 object CurlBindings {
 
   /**
@@ -39,7 +37,7 @@ object CurlBindings {
   /**
     * Linked list structure for headers and other string lists
     */
-  type curl_slist = CStruct2[CString, Ptr[Byte]]
+  type CurlSlist = CStruct2[CString, Ptr[Byte]]
 
   // Return codes
   final val CURLE_OK: CInt                       = 0
@@ -54,177 +52,111 @@ object CurlBindings {
   final val CURLE_PEER_FAILED_VERIFICATION: CInt = 60
 
   // Global init flags
-  final val CURL_GLOBAL_DEFAULT: CLong = 3L
-  final val CURL_GLOBAL_SSL: CLong     = 1L
-  final val CURL_GLOBAL_WIN32: CLong   = 2L
-  final val CURL_GLOBAL_ALL: CLong     = 3L
-  final val CURL_GLOBAL_NOTHING: CLong = 0L
+  final val CURL_GLOBAL_DEFAULT: Long = 3L
 
   // CURLOPT options (using actual libcurl values)
-  // String options start at 10000
-  final val CURLOPT_URL: CInt             = 10002
-  final val CURLOPT_PROXY: CInt           = 10004
-  final val CURLOPT_USERPWD: CInt         = 10005
-  final val CURLOPT_POSTFIELDS: CInt      = 10015
-  final val CURLOPT_USERAGENT: CInt       = 10018
-  final val CURLOPT_CUSTOMREQUEST: CInt   = 10036
-  final val CURLOPT_WRITEDATA: CInt       = 10001
-  final val CURLOPT_HEADERDATA: CInt      = 10029
-  final val CURLOPT_COPYPOSTFIELDS: CInt  = 10165
-  final val CURLOPT_ACCEPT_ENCODING: CInt = 10102
-
-  // Long options start at 0
-  final val CURLOPT_PORT: CInt              = 3
-  final val CURLOPT_TIMEOUT: CInt           = 13
-  final val CURLOPT_CONNECTTIMEOUT: CInt    = 78
+  final val CURLOPT_URL: CInt               = 10002
+  final val CURLOPT_POSTFIELDS: CInt        = 10015
+  final val CURLOPT_CUSTOMREQUEST: CInt     = 10036
+  final val CURLOPT_WRITEDATA: CInt         = 10001
+  final val CURLOPT_HEADERDATA: CInt        = 10029
+  final val CURLOPT_HTTPHEADER: CInt        = 10023
+  final val CURLOPT_CONNECTTIMEOUT_MS: CInt = 156
+  final val CURLOPT_TIMEOUT_MS: CInt        = 155
   final val CURLOPT_FOLLOWLOCATION: CInt    = 52
   final val CURLOPT_MAXREDIRS: CInt         = 68
   final val CURLOPT_POST: CInt              = 47
   final val CURLOPT_POSTFIELDSIZE: CInt     = 60
   final val CURLOPT_HTTPGET: CInt           = 80
   final val CURLOPT_NOBODY: CInt            = 44
-  final val CURLOPT_HEADER: CInt            = 42
-  final val CURLOPT_VERBOSE: CInt           = 41
-  final val CURLOPT_SSL_VERIFYPEER: CInt    = 64
-  final val CURLOPT_SSL_VERIFYHOST: CInt    = 81
   final val CURLOPT_HTTP_VERSION: CInt      = 84
-  final val CURLOPT_TIMEOUT_MS: CInt        = 155
-  final val CURLOPT_CONNECTTIMEOUT_MS: CInt = 156
+  final val CURLOPT_WRITEFUNCTION: CInt     = 20011
+  final val CURLOPT_HEADERFUNCTION: CInt    = 20079
 
-  // Function pointer options start at 20000
-  final val CURLOPT_WRITEFUNCTION: CInt  = 20011
-  final val CURLOPT_HEADERFUNCTION: CInt = 20079
-
-  // Linked list options start at 10000
-  final val CURLOPT_HTTPHEADER: CInt = 10023
-
-  // CURLINFO codes for curl_easy_getinfo
-  final val CURLINFO_STRING: CInt = 0x100000
-  final val CURLINFO_LONG: CInt   = 0x200000
-  final val CURLINFO_DOUBLE: CInt = 0x300000
-
-  final val CURLINFO_EFFECTIVE_URL: CInt    = CURLINFO_STRING + 1
-  final val CURLINFO_RESPONSE_CODE: CInt    = CURLINFO_LONG + 2
-  final val CURLINFO_TOTAL_TIME: CInt       = CURLINFO_DOUBLE + 3
-  final val CURLINFO_CONTENT_TYPE: CInt     = CURLINFO_STRING + 18
-  final val CURLINFO_CONTENT_LENGTH_DOWNLOAD: CInt = CURLINFO_DOUBLE + 15
+  // CURLINFO codes
+  final val CURLINFO_RESPONSE_CODE: CInt = 0x200002
 
   // HTTP version options
-  final val CURL_HTTP_VERSION_NONE: CLong = 0L
-  final val CURL_HTTP_VERSION_1_0: CLong  = 1L
-  final val CURL_HTTP_VERSION_1_1: CLong  = 2L
-  final val CURL_HTTP_VERSION_2_0: CLong  = 3L
+  final val CURL_HTTP_VERSION_1_1: Long = 2L
 
-  /**
-    * Global curl initialization. Must be called before any other curl functions.
-    */
-  def curl_global_init(flags: CLong): CInt = extern
+  @link("curl")
+  @extern
+  private[client] object Extern {
+    @name("curl_global_init")
+    def globalInit(flags: Long): CInt = extern
 
-  /**
-    * Global curl cleanup. Should be called when done with all curl operations.
-    */
-  def curl_global_cleanup(): Unit = extern
+    @name("curl_global_cleanup")
+    def globalCleanup(): Unit = extern
 
-  /**
-    * Create a new curl easy handle.
-    */
-  def curl_easy_init(): CURL = extern
+    @name("curl_easy_init")
+    def easyInit(): CURL = extern
 
-  /**
-    * Clean up and free a curl easy handle.
-    */
-  def curl_easy_cleanup(curl: CURL): Unit = extern
+    @name("curl_easy_cleanup")
+    def easyCleanup(curl: CURL): Unit = extern
 
-  /**
-    * Reset a curl handle to its initial state.
-    */
-  def curl_easy_reset(curl: CURL): Unit = extern
+    @name("curl_easy_perform")
+    def easyPerform(curl: CURL): CInt = extern
 
-  /**
-    * Duplicate a curl handle with all its options.
-    */
-  def curl_easy_duphandle(curl: CURL): CURL = extern
+    @name("curl_easy_setopt")
+    def easySetoptLong(curl: CURL, option: CInt, parameter: Long): CInt = extern
 
-  /**
-    * Set options for a curl easy handle (string parameter).
-    */
-  def curl_easy_setopt(curl: CURL, option: CInt, parameter: CString): CInt = extern
+    @name("curl_easy_setopt")
+    def easySetoptPtr(curl: CURL, option: CInt, parameter: Ptr[Byte]): CInt = extern
 
-  /**
-    * Set options for a curl easy handle (long parameter).
-    */
-  def curl_easy_setopt(curl: CURL, option: CInt, parameter: CLong): CInt = extern
+    @name("curl_easy_setopt")
+    def easySetoptCallback(curl: CURL, option: CInt, parameter: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize]): CInt = extern
 
-  /**
-    * Set options for a curl easy handle (function pointer parameter).
-    */
-  def curl_easy_setopt(curl: CURL, option: CInt, parameter: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize]): CInt =
-    extern
+    @name("curl_easy_setopt")
+    def easySetoptSlist(curl: CURL, option: CInt, parameter: Ptr[CurlSlist]): CInt = extern
 
-  /**
-    * Set options for a curl easy handle (pointer parameter).
-    */
-  def curl_easy_setopt(curl: CURL, option: CInt, parameter: Ptr[Byte]): CInt = extern
+    @name("curl_easy_getinfo")
+    def easyGetinfoLong(curl: CURL, info: CInt, result: Ptr[Long]): CInt = extern
 
-  /**
-    * Set options for a curl easy handle (curl_slist parameter).
-    */
-  def curl_easy_setopt(curl: CURL, option: CInt, parameter: Ptr[curl_slist]): CInt = extern
+    @name("curl_easy_strerror")
+    def easyStrerror(code: CInt): CString = extern
 
-  /**
-    * Perform the curl request.
-    */
-  def curl_easy_perform(curl: CURL): CInt = extern
+    @name("curl_slist_append")
+    def slistAppend(list: Ptr[CurlSlist], string: CString): Ptr[CurlSlist] = extern
 
-  /**
-    * Get information about a completed transfer (long result).
-    */
-  def curl_easy_getinfo(curl: CURL, info: CInt, result: Ptr[CLong]): CInt = extern
+    @name("curl_slist_free_all")
+    def slistFreeAll(list: Ptr[CurlSlist]): Unit = extern
 
-  /**
-    * Get information about a completed transfer (string result).
-    */
-  def curl_easy_getinfo(curl: CURL, info: CInt, result: Ptr[CString]): CInt = extern
+    @name("curl_version")
+    def version(): CString = extern
+  }
 
-  /**
-    * Get information about a completed transfer (double result).
-    */
-  def curl_easy_getinfo(curl: CURL, info: CInt, result: Ptr[CDouble]): CInt = extern
+  // Convenient wrapper functions
+  def curl_global_init(flags: Long): CInt = Extern.globalInit(flags)
+  def curl_global_cleanup(): Unit         = Extern.globalCleanup()
+  def curl_easy_init(): CURL              = Extern.easyInit()
+  def curl_easy_cleanup(curl: CURL): Unit = Extern.easyCleanup(curl)
+  def curl_easy_perform(curl: CURL): CInt = Extern.easyPerform(curl)
 
-  /**
-    * Get a human readable error message for a curl error code.
-    */
-  def curl_easy_strerror(code: CInt): CString = extern
+  def curl_easy_setopt_long(curl: CURL, option: CInt, parameter: Long): CInt =
+    Extern.easySetoptLong(curl, option, parameter)
 
-  /**
-    * URL encode a string.
-    */
-  def curl_easy_escape(curl: CURL, string: CString, length: CInt): CString = extern
+  def curl_easy_setopt_ptr(curl: CURL, option: CInt, parameter: Ptr[Byte]): CInt =
+    Extern.easySetoptPtr(curl, option, parameter)
 
-  /**
-    * URL decode a string.
-    */
-  def curl_easy_unescape(curl: CURL, string: CString, length: CInt, outlength: Ptr[CInt]): CString = extern
+  def curl_easy_setopt_str(curl: CURL, option: CInt, parameter: CString): CInt =
+    Extern.easySetoptPtr(curl, option, parameter.asInstanceOf[Ptr[Byte]])
 
-  /**
-    * Free memory allocated by curl.
-    */
-  def curl_free(ptr: Ptr[Byte]): Unit = extern
+  def curl_easy_setopt_callback(
+      curl: CURL,
+      option: CInt,
+      parameter: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize]
+  ): CInt = Extern.easySetoptCallback(curl, option, parameter)
 
-  /**
-    * Append a string to a curl_slist.
-    */
-  def curl_slist_append(list: Ptr[curl_slist], string: CString): Ptr[curl_slist] = extern
+  def curl_easy_setopt_slist(curl: CURL, option: CInt, parameter: Ptr[CurlSlist]): CInt =
+    Extern.easySetoptSlist(curl, option, parameter)
 
-  /**
-    * Free an entire curl_slist.
-    */
-  def curl_slist_free_all(list: Ptr[curl_slist]): Unit = extern
+  def curl_easy_getinfo_long(curl: CURL, info: CInt, result: Ptr[Long]): CInt =
+    Extern.easyGetinfoLong(curl, info, result)
 
-  /**
-    * Get the curl version string.
-    */
-  def curl_version(): CString = extern
+  def curl_easy_strerror(code: CInt): CString       = Extern.easyStrerror(code)
+  def curl_slist_append(list: Ptr[CurlSlist], str: CString): Ptr[CurlSlist] = Extern.slistAppend(list, str)
+  def curl_slist_free_all(list: Ptr[CurlSlist]): Unit = Extern.slistFreeAll(list)
+  def curl_version(): CString = Extern.version()
 }
 
 /**
@@ -234,30 +166,35 @@ object CurlCallbacks {
   import CurlBindings.*
 
   /**
-    * Write callback for collecting response body data
+    * Write callback type for curl
     */
-  val writeCallback: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize] =
-    (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) => {
+  type WriteCallback = CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize]
+
+  /**
+    * Write callback for collecting response data
+    */
+  val writeCallback: WriteCallback = {
+    (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) =>
       val realSize = size * nmemb
-      val buffer   = userdata.asInstanceOf[Ptr[ResponseBuffer]]
-      if (buffer != null && realSize > 0.toULong) {
+      if (userdata != null && realSize.toLong > 0L) {
+        val buffer = userdata.asInstanceOf[Ptr[ResponseBuffer]]
         appendToBuffer(buffer, ptr, realSize.toLong)
       }
       realSize
-    }
+  }
 
   /**
     * Header callback for collecting response headers
     */
-  val headerCallback: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize] =
-    (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) => {
+  val headerCallback: WriteCallback = {
+    (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) =>
       val realSize = size * nmemb
-      val buffer   = userdata.asInstanceOf[Ptr[ResponseBuffer]]
-      if (buffer != null && realSize > 0.toULong) {
+      if (userdata != null && realSize.toLong > 0L) {
+        val buffer = userdata.asInstanceOf[Ptr[ResponseBuffer]]
         appendToBuffer(buffer, ptr, realSize.toLong)
       }
       realSize
-    }
+  }
 
   private def appendToBuffer(buffer: Ptr[ResponseBuffer], data: Ptr[Byte], size: Long): Unit = {
     val currentSize = buffer._2
@@ -265,13 +202,12 @@ object CurlCallbacks {
     val newSize     = currentSize + size
 
     if (newSize > currentCap) {
-      // Need to grow the buffer
-      val newCap    = math.max(newSize * 2, 1024L)
-      val newData   = stdlib.malloc(newCap.toULong)
-      val oldData   = buffer._1
+      val newCap  = math.max(newSize * 2, 1024L)
+      val newData = stdlib.malloc(newCap)
+      val oldData = buffer._1
 
       if (currentSize > 0 && oldData != null) {
-        string.memcpy(newData, oldData, currentSize.toULong)
+        string.memcpy(newData, oldData, currentSize.toCSize)
         stdlib.free(oldData)
       }
 
@@ -279,14 +215,14 @@ object CurlCallbacks {
       buffer._3 = newCap
     }
 
-    string.memcpy(buffer._1 + currentSize, data, size.toULong)
+    string.memcpy(buffer._1 + currentSize, data, size.toCSize)
     buffer._2 = newSize
   }
 
   /**
     * Buffer for accumulating response data. Structure: (data pointer, current size, capacity)
     */
-  type ResponseBuffer = CStruct3[Ptr[Byte], CLong, CLong]
+  type ResponseBuffer = CStruct3[Ptr[Byte], Long, Long]
 
   def allocResponseBuffer(): Ptr[ResponseBuffer] = {
     val buffer = stdlib.malloc(sizeof[ResponseBuffer]).asInstanceOf[Ptr[ResponseBuffer]]

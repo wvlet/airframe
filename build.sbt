@@ -788,7 +788,7 @@ lazy val http =
     .nativeSettings(
       nativeBuildSettings,
       // Link against libcurl for HTTP client support
-      nativeLinkingOptions ++= Seq("-lcurl")
+      nativeConfig ~= { _.withLinkingOptions(_ :+ "-lcurl") }
     )
     .dependsOn(rx, control, surface, json, codec, di)
 
