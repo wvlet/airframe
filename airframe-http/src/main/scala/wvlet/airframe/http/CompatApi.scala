@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.client.HttpClientBackend
+import wvlet.airframe.control.ResultClass.Failed
 
 import scala.concurrent.ExecutionContext
 
@@ -31,4 +32,22 @@ private[http] trait CompatApi {
   def currentRPCContext: RPCContext
   def attachRPCContext(context: RPCContext): RPCContext
   def detachRPCContext(previous: RPCContext): Unit
+
+  /**
+    * Platform-specific SSL exception classifier for retry logic. JVM provides full SSL exception handling, while
+    * Native/JS return an empty classifier since javax.net.ssl classes are not available.
+    */
+  def sslExceptionClassifier: PartialFunction[Throwable, Failed]
+
+  /**
+    * Platform-specific connection exception classifier for retry logic. JVM provides full java.net exception handling,
+    * while Native/JS return an empty classifier since these classes may not be fully available.
+    */
+  def connectionExceptionClassifier: PartialFunction[Throwable, Failed]
+
+  /**
+    * Platform-specific root cause exception classifier for retry logic. JVM provides java.lang.reflect handling, while
+    * Native/JS return a simpler classifier.
+    */
+  def rootCauseExceptionClassifier: PartialFunction[Throwable, Failed]
 }
