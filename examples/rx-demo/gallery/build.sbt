@@ -1,6 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val AIRFRAME_VERSION = "2025.1.27"
+val AIRFRAME_VERSION = "2026.1.0"
 ThisBuild / scalaVersion := "2.13.18"
 
 lazy val gallery =
