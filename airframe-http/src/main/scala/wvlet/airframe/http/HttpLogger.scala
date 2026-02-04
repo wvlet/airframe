@@ -124,6 +124,7 @@ object HttpLogger extends LogSupport {
     HttpHeader.Cookie,
     HttpHeader.SetCookie,
     HttpHeader.SetCookie2,
+    HttpHeader.xApiKey,
     "X-XSRF-Token",
     "X-Auth-Token"
   )
