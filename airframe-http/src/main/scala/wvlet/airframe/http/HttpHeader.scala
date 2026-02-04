@@ -79,6 +79,7 @@ object HttpHeader {
   final val WwwAuthenticate               = "Www-Authenticate"
   final val xForwardedFor                 = "X-Forwarded-For"
   final val xForwardedProto               = "X-Forwarded-Proto"
+  final val xApiKey                       = "X-Api-Key"
 
   // Airframe RPC specific status code
   final val xAirframeRPCStatus = "x-airframe-rpc-status"
