@@ -33,6 +33,8 @@ import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunne
 import wvlet.log.LogSupport
 
 import java.net.InetSocketAddress
+import java.util.concurrent.{SynchronousQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.atomic.AtomicInteger
 import scala.jdk.CollectionConverters.*
 import NettyRequestHandler.toNettyResponse
 
@@ -114,15 +116,35 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           writeResponse(msg, ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
-            // Read SSE stream
-            val c = RxRunner.run(resp.events) {
-              case OnNext(e: ServerSentEvent) =>
-                val event = e.toContent
-                val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
-                ctx.writeAndFlush(new DefaultHttpContent(buf))
-              case _ =>
-                val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                f.addListener(ChannelFutureListener.CLOSE)
+            // Run SSE stream consumption in a separate thread to avoid blocking the Netty worker.
+            // ctx.writeAndFlush() is thread-safe in Netty and can be called from any thread.
+            try {
+              NettyRequestHandler.sseExecutor.execute { () =>
+                RxRunner.run(resp.events) {
+                  case OnNext(e: ServerSentEvent) =>
+                    val event = e.toContent
+                    val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
+                    ctx.writeAndFlush(new DefaultHttpContent(buf))
+                  case OnError(e) =>
+                    if (!NettyRequestHandler.isBenignIOException(e)) {
+                      warn(s"SSE stream processing error", e)
+                    }
+                    if (ctx.channel().isActive) {
+                      ctx
+                        .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                        .addListener(ChannelFutureListener.CLOSE)
+                    }
+                  case _ =>
+                    val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                    f.addListener(ChannelFutureListener.CLOSE)
+                }
+              }
+            } catch {
+              case _: java.util.concurrent.RejectedExecutionException =>
+                warn(s"SSE executor is saturated; closing stream")
+                ctx
+                  .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                  .addListener(ChannelFutureListener.CLOSE)
             }
           }
         case OnError(ex) =>
@@ -166,6 +188,25 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 }
 
 object NettyRequestHandler extends LogSupport {
+
+  // Thread pool for SSE stream consumption to avoid blocking Netty worker threads.
+  // Bounded to 64 threads to prevent unbounded creation under high SSE load.
+  // Idle threads are reclaimed after 60 seconds. Daemon threads don't prevent JVM shutdown.
+  private[netty] val sseExecutor = new ThreadPoolExecutor(
+    0,
+    64,
+    60L,
+    TimeUnit.SECONDS,
+    new SynchronousQueue[Runnable](),
+    new ThreadFactory {
+      private val counter = new AtomicInteger(0)
+      override def newThread(r: Runnable): Thread = {
+        val t = new Thread(r, s"airframe-netty-sse-${counter.getAndIncrement()}")
+        t.setDaemon(true)
+        t
+      }
+    }
+  )
 
   // "Connection reset" also matches "Connection reset by peer" via contains check
   private val benignIOExceptionMessages = Set(
