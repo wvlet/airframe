@@ -120,30 +120,23 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
             // ctx.writeAndFlush() is thread-safe in Netty and can be called from any thread.
             try {
               NettyRequestHandler.sseExecutor.execute { () =>
-                try {
-                  RxRunner.run(resp.events) {
-                    case OnNext(e: ServerSentEvent) =>
-                      val event = e.toContent
-                      val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
-                      ctx.writeAndFlush(new DefaultHttpContent(buf))
-                    case _ =>
-                      val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                      f.addListener(ChannelFutureListener.CLOSE)
-                  }
-                } catch {
-                  case e: Exception =>
+                RxRunner.run(resp.events) {
+                  case OnNext(e: ServerSentEvent) =>
+                    val event = e.toContent
+                    val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
+                    ctx.writeAndFlush(new DefaultHttpContent(buf))
+                  case OnError(e) =>
                     if (!NettyRequestHandler.isBenignIOException(e)) {
                       warn(s"SSE stream processing error", e)
                     }
-                    try {
-                      if (ctx.channel().isActive) {
-                        ctx
-                          .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                          .addListener(ChannelFutureListener.CLOSE)
-                      }
-                    } catch {
-                      case _: Exception => ()
+                    if (ctx.channel().isActive) {
+                      ctx
+                        .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                        .addListener(ChannelFutureListener.CLOSE)
                     }
+                  case _ =>
+                    val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                    f.addListener(ChannelFutureListener.CLOSE)
                 }
               }
             } catch {
