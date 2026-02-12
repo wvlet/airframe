@@ -15,11 +15,31 @@ package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.{Endpoint, Http, HttpMethod, RxRouter, ServerSentEvent, ServerSentEventHandler}
 import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.client.AsyncClient
-import wvlet.airframe.rx.{Rx, RxBlockingQueue}
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
+import wvlet.airframe.rx.{OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airspec.AirSpec
 
+import java.util.concurrent.{CountDownLatch, TimeUnit}
+
 class SSEApi {
+  @Endpoint(path = "/v1/health")
+  def health(): String = "ok"
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/slow-sse-stream")
+  def slowSseStream(): Rx[ServerSentEvent] = {
+    val queue = new RxBlockingQueue[ServerSentEvent]()
+    new Thread(new Runnable {
+      override def run(): Unit = {
+        queue.put(ServerSentEvent(data = "start"))
+        // Simulate a slow stream that takes a while to complete
+        Thread.sleep(3000)
+        queue.put(ServerSentEvent(data = "end"))
+        queue.stop()
+      }
+    }).start()
+    queue
+  }
+
   @Endpoint(path = "/v1/sse")
   def sse(): Response = {
     Http
@@ -77,6 +97,9 @@ class SSETest extends AirSpec {
         .withRouter(RxRouter.of[SSEApi])
         .designWithAsyncClient
     )
+      .bind[SyncClient].toProvider { (server: NettyServer) =>
+        Http.client.newSyncClient(server.localAddress)
+      }
   }
 
   test("read sse-events") { (client: AsyncClient) =>
@@ -151,6 +174,40 @@ class SSETest extends AirSpec {
       // trace(expected.mkString("\n"))
       events shouldBe expected
     }
+  }
+
+  test("SSE streaming should not block concurrent requests") { (asyncClient: AsyncClient, syncClient: SyncClient) =>
+    // Start a slow SSE stream in the background
+    val streamStarted = new CountDownLatch(1)
+    val streamThread = new Thread(new Runnable {
+      override def run(): Unit = {
+        val rx = asyncClient.send(
+          Http
+            .POST("/v1/slow-sse-stream")
+            .withEventHandler(new ServerSentEventHandler {
+              override def onError(e: Throwable): Unit   = {}
+              override def onCompletion(): Unit           = {}
+              override def onEvent(e: ServerSentEvent): Unit = {
+                // Signal that SSE stream has started
+                streamStarted.countDown()
+              }
+            })
+        )
+        // Subscribe to actually trigger the request
+        RxRunner.run(rx) { case _ => }
+      }
+    })
+    streamThread.setDaemon(true)
+    streamThread.start()
+
+    // Wait for the SSE stream to start
+    streamStarted.await(5, TimeUnit.SECONDS) shouldBe true
+
+    // While the slow SSE stream is active, send a regular GET request.
+    // Before the fix, this would hang because the Netty worker thread was blocked.
+    val resp = syncClient.send(Http.GET("/v1/health"))
+    resp.statusCode shouldBe 200
+    resp.contentString shouldBe "ok"
   }
 
 }
