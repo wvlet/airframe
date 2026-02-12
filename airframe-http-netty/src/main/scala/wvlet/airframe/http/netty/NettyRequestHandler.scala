@@ -118,32 +118,40 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Run SSE stream consumption in a separate thread to avoid blocking the Netty worker.
             // ctx.writeAndFlush() is thread-safe in Netty and can be called from any thread.
-            NettyRequestHandler.sseExecutor.execute { () =>
-              try {
-                RxRunner.run(resp.events) {
-                  case OnNext(e: ServerSentEvent) =>
-                    val event = e.toContent
-                    val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
-                    ctx.writeAndFlush(new DefaultHttpContent(buf))
-                  case _ =>
-                    val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                    f.addListener(ChannelFutureListener.CLOSE)
-                }
-              } catch {
-                case e: Exception =>
-                  if (!NettyRequestHandler.isBenignIOException(e)) {
-                    warn(s"SSE stream processing error", e)
+            try {
+              NettyRequestHandler.sseExecutor.execute { () =>
+                try {
+                  RxRunner.run(resp.events) {
+                    case OnNext(e: ServerSentEvent) =>
+                      val event = e.toContent
+                      val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
+                      ctx.writeAndFlush(new DefaultHttpContent(buf))
+                    case _ =>
+                      val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                      f.addListener(ChannelFutureListener.CLOSE)
                   }
-                  try {
-                    if (ctx.channel().isActive) {
-                      ctx
-                        .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                        .addListener(ChannelFutureListener.CLOSE)
+                } catch {
+                  case e: Exception =>
+                    if (!NettyRequestHandler.isBenignIOException(e)) {
+                      warn(s"SSE stream processing error", e)
                     }
-                  } catch {
-                    case _: Exception => ()
-                  }
+                    try {
+                      if (ctx.channel().isActive) {
+                        ctx
+                          .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                          .addListener(ChannelFutureListener.CLOSE)
+                      }
+                    } catch {
+                      case _: Exception => ()
+                    }
+                }
               }
+            } catch {
+              case _: java.util.concurrent.RejectedExecutionException =>
+                warn(s"SSE executor is saturated; closing stream")
+                ctx
+                  .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                  .addListener(ChannelFutureListener.CLOSE)
             }
           }
         case OnError(ex) =>
