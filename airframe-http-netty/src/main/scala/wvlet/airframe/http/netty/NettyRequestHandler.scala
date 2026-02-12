@@ -33,7 +33,7 @@ import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunne
 import wvlet.log.LogSupport
 
 import java.net.InetSocketAddress
-import java.util.concurrent.{ExecutorService, Executors, ThreadFactory}
+import java.util.concurrent.{SynchronousQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
 import scala.jdk.CollectionConverters.*
 import NettyRequestHandler.toNettyResponse
@@ -136,7 +136,8 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                   }
                   try {
                     if (ctx.channel().isActive) {
-                      ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                      ctx
+                        .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                         .addListener(ChannelFutureListener.CLOSE)
                     }
                   } catch {
@@ -188,8 +189,14 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 object NettyRequestHandler extends LogSupport {
 
   // Thread pool for SSE stream consumption to avoid blocking Netty worker threads.
-  // Uses daemon threads so they don't prevent JVM shutdown.
-  private[netty] val sseExecutor: ExecutorService = Executors.newCachedThreadPool {
+  // Bounded to 64 threads to prevent unbounded creation under high SSE load.
+  // Idle threads are reclaimed after 60 seconds. Daemon threads don't prevent JVM shutdown.
+  private[netty] val sseExecutor = new ThreadPoolExecutor(
+    0,
+    64,
+    60L,
+    TimeUnit.SECONDS,
+    new SynchronousQueue[Runnable](),
     new ThreadFactory {
       private val counter = new AtomicInteger(0)
       override def newThread(r: Runnable): Thread = {
@@ -198,7 +205,7 @@ object NettyRequestHandler extends LogSupport {
         t
       }
     }
-  }
+  )
 
   // "Connection reset" also matches "Connection reset by peer" via contains check
   private val benignIOExceptionMessages = Set(

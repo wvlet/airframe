@@ -185,8 +185,8 @@ class SSETest extends AirSpec {
           Http
             .POST("/v1/slow-sse-stream")
             .withEventHandler(new ServerSentEventHandler {
-              override def onError(e: Throwable): Unit   = {}
-              override def onCompletion(): Unit           = {}
+              override def onError(e: Throwable): Unit = {}
+              override def onCompletion(): Unit        = {}
               override def onEvent(e: ServerSentEvent): Unit = {
                 // Signal that SSE stream has started
                 streamStarted.countDown()
