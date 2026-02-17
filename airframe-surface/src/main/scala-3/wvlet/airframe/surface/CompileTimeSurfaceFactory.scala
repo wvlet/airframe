@@ -576,6 +576,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
     val methodName = method.name
     val methodArgs = methodArgsOf(t, method).flatten
     val argClasses = methodArgs.map { arg =>
+      // check if type is referencing t, which is something.InnerType, but via a base class, like Base.this.InnerType
       clsOf(arg.tpe.dealias)
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method
@@ -686,6 +687,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           methodArgAccessor = ${ methodArgAccessor }
         )
       }
+    println(paramExprs.map(_.show).mkString("\n"))
     Expr.ofSeq(paramExprs)
 
   private def getTree(e: Expr[?]): Tree =
@@ -756,7 +758,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
 
   private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
@@ -876,18 +878,27 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
           name != "<init>"
         }
 
-    allMethods.filter(m => isOwnedByTargetClass(m, t))
+    allMethods.filter(m => isOwnedByTargetClass(m, t) && !enumerationWorkaround(m, t))
 
   private def nonObject(x: Symbol): Boolean =
     !x.flags.is(Flags.Synthetic) &&
       !x.flags.is(Flags.Artifact) &&
       x.fullName != "scala.Any" &&
       x.fullName != "java.lang.Object" &&
-      // Exclude caes class methods
+      // Exclude case class methods
       x.fullName != "scala.Product"
 
   private def isOwnedByTargetClass(m: Symbol, t: TypeRepr): Boolean =
     m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
+
+  // workaround https://github.com/lampepfl/dotty/issues/19825 - surface of enumeration value methods fails
+  private def enumerationWorkaround(m: Symbol, t: TypeRepr): Boolean = {
+    val params = methodParametersOf(t, m)
+    val args = methodArgsOf(t, m).flatten
+    println(s"m $m ${args.map(_.tpe.show).mkString(",")}  ${params.show}")
+    t.baseClasses.exists(_.fullName.startsWith("scala.Enumeration.")) // this will match both Value and ValueSet
+  }
+    // note: it would be possible to let id, hashCode and equals pass through if desired
 
   private def modifierBitMaskOf(m: Symbol): Int =
     var mod = 0
