@@ -119,13 +119,14 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Capture request context and timing before handing off to SSE executor thread
-            val streamStartTime = System.currentTimeMillis()
-            val streamStartNano = System.nanoTime()
-            val requestMethod   = req.method.toString
-            val requestPath     = req.path
-            val requestUri      = req.uri
-            val remoteAddr      = req.remoteAddress.map(_.hostAndPort)
-            val eventCounter    = new AtomicInteger(0)
+            val streamStartTime    = System.currentTimeMillis()
+            val streamStartNano    = System.nanoTime()
+            val requestMethod      = req.method.toString
+            val requestPath        = req.path
+            val requestUri         = req.uri
+            val remoteAddr         = req.remoteAddress.map(_.hostAndPort)
+            val responseStatusCode = resp.statusCode
+            val eventCounter       = new AtomicInteger(0)
 
             def writeStreamLog(statusCode: Int, error: Option[Throwable]): Unit = {
               val m = ListMap.newBuilder[String, Any]
@@ -168,7 +169,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                         .addListener(ChannelFutureListener.CLOSE)
                     }
                   case _ =>
-                    writeStreamLog(200, None)
+                    writeStreamLog(responseStatusCode, None)
                     val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                     f.addListener(ChannelFutureListener.CLOSE)
                 }
