@@ -141,9 +141,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
               m += "status_code_name" -> status.reason
               error.foreach { e =>
                 m += "error_message" -> e.getMessage
-                if (!NettyRequestHandler.isBenignIOException(e)) {
-                  m += "exception" -> e
-                }
+                m += "exception"     -> e
               }
               httpStreamLogger.write(m.result())
             }
@@ -159,9 +157,6 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                     val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                     ctx.writeAndFlush(new DefaultHttpContent(buf))
                   case OnError(e) =>
-                    if (!NettyRequestHandler.isBenignIOException(e)) {
-                      warn(s"SSE stream processing error", e)
-                    }
                     writeStreamLog(HttpStatus.InternalServerError_500, Some(e))
                     if (ctx.channel().isActive) {
                       ctx
@@ -176,7 +171,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
               }
             } catch {
               case e: java.util.concurrent.RejectedExecutionException =>
-                warn(s"SSE executor is saturated; closing stream")
+                warn(s"SSE executor is saturated; closing stream", e)
                 writeStreamLog(HttpStatus.ServiceUnavailable_503, Some(e))
                 ctx
                   .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
