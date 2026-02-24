@@ -52,6 +52,11 @@ case class NettyServerConfig(
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
       new LogRotationHttpLogger(config)
     },
+    // Logger configuration for SSE stream lifecycle events (completion, errors, duration)
+    httpStreamLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_stream.json"),
+    httpStreamLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
+      new LogRotationHttpLogger(config)
+    },
     private val customCodecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // Thread manager for handling Future[_] responses
     executionContext: ExecutionContext = {
@@ -98,9 +103,16 @@ case class NettyServerConfig(
   def withExtraLogEntries(f: () => Map[String, Any]): NettyServerConfig = {
     withHttpLoggerConfig(_.withExtraEntries(f))
   }
+  def withHttpStreamLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): NettyServerConfig = {
+    this.copy(httpStreamLoggerConfig = f(httpStreamLoggerConfig))
+  }
+  def withHttpStreamLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
+    this.copy(httpStreamLoggerProvider = loggerProvider)
+  }
   def noLogging: NettyServerConfig = {
     this.copy(
-      httpLoggerProvider = HttpLogger.emptyLogger(_)
+      httpLoggerProvider = HttpLogger.emptyLogger(_),
+      httpStreamLoggerProvider = HttpLogger.emptyLogger(_)
     )
   }
 
@@ -205,18 +217,30 @@ case class NettyServerConfig(
     }
   }
 
-  def newHttpLogger: HttpLogger = {
-    val config = httpLoggerConfig
+  private def createLogger(
+      loggerConfig: HttpLoggerConfig,
+      loggerProvider: HttpLoggerConfig => HttpLogger
+  ): HttpLogger = {
+    val config = loggerConfig
       .withExtraEntries(() => ListMap("server_name" -> name))
       .withCodecFactory(codecFactory)
-    httpLoggerProvider(config)
+    loggerProvider(config)
+  }
+
+  def newHttpLogger: HttpLogger = {
+    createLogger(httpLoggerConfig, httpLoggerProvider)
+  }
+
+  def newHttpStreamLogger: HttpLogger = {
+    createLogger(httpStreamLoggerConfig, httpStreamLoggerProvider)
   }
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends HttpServer with LogSupport {
 
-  private val httpLogger: HttpLogger  = config.newHttpLogger
-  private val rpcFilter: RxHttpFilter = new RPCResponseFilter(httpLogger)
+  private val httpLogger: HttpLogger       = config.newHttpLogger
+  private val httpStreamLogger: HttpLogger = config.newHttpStreamLogger
+  private val rpcFilter: RxHttpFilter      = new RPCResponseFilter(httpLogger)
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
@@ -360,7 +384,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new ChunkedWriteHandler())
-        pipeline.addLast(new NettyRequestHandler(config, dispatcher))
+        pipeline.addLast(new NettyRequestHandler(config, dispatcher, httpStreamLogger))
       }
     })
 
@@ -404,8 +428,9 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       )
       bossFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
 
-      // Close the HTTP logger
+      // Close the HTTP loggers
       httpLogger.close()
+      httpStreamLogger.close()
 
       info(s"${config.name} server stopped")
     }
