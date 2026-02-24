@@ -217,18 +217,22 @@ case class NettyServerConfig(
     }
   }
 
-  def newHttpLogger: HttpLogger = {
-    val config = httpLoggerConfig
+  private def createLogger(
+      loggerConfig: HttpLoggerConfig,
+      loggerProvider: HttpLoggerConfig => HttpLogger
+  ): HttpLogger = {
+    val config = loggerConfig
       .withExtraEntries(() => ListMap("server_name" -> name))
       .withCodecFactory(codecFactory)
-    httpLoggerProvider(config)
+    loggerProvider(config)
+  }
+
+  def newHttpLogger: HttpLogger = {
+    createLogger(httpLoggerConfig, httpLoggerProvider)
   }
 
   def newHttpStreamLogger: HttpLogger = {
-    val config = httpStreamLoggerConfig
-      .withExtraEntries(() => ListMap("server_name" -> name))
-      .withCodecFactory(codecFactory)
-    httpStreamLoggerProvider(config)
+    createLogger(httpStreamLoggerConfig, httpStreamLoggerProvider)
   }
 }
 

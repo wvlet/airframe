@@ -28,9 +28,16 @@ import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.rx.{OnError, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airspec.AirSpec
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.TimeUnit
 
 object SSEStreamLoggingTest extends AirSpec {
+
+  private def waitForLogs(logger: InMemoryHttpLogger, timeout: Long = 5000): Unit = {
+    val deadline = System.currentTimeMillis() + timeout
+    while (logger.getLogs.isEmpty && System.currentTimeMillis() < deadline) {
+      Thread.sleep(10)
+    }
+  }
 
   class StreamLoggingApi {
     @Endpoint(method = HttpMethod.POST, path = "/v1/sse-stream")
@@ -99,8 +106,8 @@ object SSEStreamLoggingTest extends AirSpec {
       val events = eventQueue.toSeq.toList
       events.size shouldBe 3
 
-      // Allow time for stream log to be written on the server side
-      Thread.sleep(500)
+      // Wait for the stream log to be written on the server side
+      waitForLogs(streamLogger)
 
       val logs = streamLogger.getLogs
       logs.size shouldBe 1
@@ -137,8 +144,8 @@ object SSEStreamLoggingTest extends AirSpec {
       val events = eventQueue.toSeq.toList
       events.size shouldBe 1
 
-      // Allow time for stream log to be written on the server side
-      Thread.sleep(500)
+      // Wait for the stream log to be written on the server side
+      waitForLogs(streamLogger)
 
       val logs = streamLogger.getLogs
       logs.size shouldBe 1
