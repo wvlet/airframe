@@ -17,10 +17,11 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.*
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.internal.RPCResponseFilter
+import wvlet.airframe.http.internal.{HttpLogs, RPCResponseFilter}
 import wvlet.airframe.http.{
   Http,
   HttpHeader,
+  HttpLogger,
   HttpMethod,
   HttpServerException,
   HttpStatus,
@@ -35,12 +36,13 @@ import wvlet.log.LogSupport
 import java.net.InetSocketAddress
 import java.util.concurrent.{SynchronousQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.immutable.ListMap
 import scala.jdk.CollectionConverters.*
 import NettyRequestHandler.toNettyResponse
 
 import java.io.ByteArrayOutputStream
 
-class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
+class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter, httpStreamLogger: HttpLogger)
     extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
 
@@ -116,12 +118,42 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           writeResponse(msg, ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
+            // Capture request context and timing before handing off to SSE executor thread
+            val streamStartTime = System.currentTimeMillis()
+            val streamStartNano = System.nanoTime()
+            val requestMethod   = req.method.toString
+            val requestPath     = req.path
+            val requestUri      = req.uri
+            val remoteAddr      = req.remoteAddress.map(_.hostAndPort)
+            val eventCounter    = new AtomicInteger(0)
+
+            def writeStreamLog(statusCode: Int, error: Option[Throwable]): Unit = {
+              val m = ListMap.newBuilder[String, Any]
+              m ++= HttpLogs.unixTimeLogs(streamStartTime)
+              m += "method" -> requestMethod
+              m += "path"   -> requestPath
+              m += "uri"    -> requestUri
+              remoteAddr.foreach(a => m += "remote_address" -> a)
+              m ++= HttpLogs.durationLogs(streamStartTime, streamStartNano)
+              m += "event_count"      -> eventCounter.get()
+              m += "status_code"      -> statusCode
+              m += "status_code_name" -> HttpStatus.ofCode(statusCode).reason
+              error.foreach { e =>
+                m += "error_message" -> e.getMessage
+                if (!NettyRequestHandler.isBenignIOException(e)) {
+                  m += "exception" -> e
+                }
+              }
+              httpStreamLogger.write(m.result())
+            }
+
             // Run SSE stream consumption in a separate thread to avoid blocking the Netty worker.
             // ctx.writeAndFlush() is thread-safe in Netty and can be called from any thread.
             try {
               NettyRequestHandler.sseExecutor.execute { () =>
                 RxRunner.run(resp.events) {
                   case OnNext(e: ServerSentEvent) =>
+                    eventCounter.incrementAndGet()
                     val event = e.toContent
                     val buf   = Unpooled.copiedBuffer(event.getBytes("UTF-8"))
                     ctx.writeAndFlush(new DefaultHttpContent(buf))
@@ -129,12 +161,14 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                     if (!NettyRequestHandler.isBenignIOException(e)) {
                       warn(s"SSE stream processing error", e)
                     }
+                    writeStreamLog(500, Some(e))
                     if (ctx.channel().isActive) {
                       ctx
                         .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                         .addListener(ChannelFutureListener.CLOSE)
                     }
                   case _ =>
+                    writeStreamLog(200, None)
                     val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                     f.addListener(ChannelFutureListener.CLOSE)
                 }
@@ -142,6 +176,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
             } catch {
               case _: java.util.concurrent.RejectedExecutionException =>
                 warn(s"SSE executor is saturated; closing stream")
+                writeStreamLog(503, Some(new RuntimeException("SSE executor saturated")))
                 ctx
                   .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                   .addListener(ChannelFutureListener.CLOSE)
