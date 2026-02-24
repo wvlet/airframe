@@ -175,9 +175,9 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                 }
               }
             } catch {
-              case _: java.util.concurrent.RejectedExecutionException =>
+              case e: java.util.concurrent.RejectedExecutionException =>
                 warn(s"SSE executor is saturated; closing stream")
-                writeStreamLog(503, Some(new RuntimeException("SSE executor saturated")))
+                writeStreamLog(503, Some(e))
                 ctx
                   .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                   .addListener(ChannelFutureListener.CLOSE)
