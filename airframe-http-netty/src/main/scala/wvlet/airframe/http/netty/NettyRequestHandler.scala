@@ -119,16 +119,16 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Capture request context and timing before handing off to SSE executor thread
-            val streamStartTime    = System.currentTimeMillis()
-            val streamStartNano    = System.nanoTime()
-            val requestMethod      = req.method.toString
-            val requestPath        = req.path
-            val requestUri         = req.uri
-            val remoteAddr         = req.remoteAddress.map(_.hostAndPort)
-            val responseStatusCode = resp.statusCode
-            val eventCounter       = new AtomicInteger(0)
+            val streamStartTime = System.currentTimeMillis()
+            val streamStartNano = System.nanoTime()
+            val requestMethod   = req.method.toString
+            val requestPath     = req.path
+            val requestUri      = req.uri
+            val remoteAddr      = req.remoteAddress.map(_.hostAndPort)
+            val responseStatus  = resp.status
+            val eventCounter    = new AtomicInteger(0)
 
-            def writeStreamLog(statusCode: Int, error: Option[Throwable]): Unit = {
+            def writeStreamLog(status: HttpStatus, error: Option[Throwable]): Unit = {
               val m = ListMap.newBuilder[String, Any]
               m ++= HttpLogs.unixTimeLogs(streamStartTime)
               m += "method" -> requestMethod
@@ -137,8 +137,8 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
               remoteAddr.foreach(a => m += "remote_address" -> a)
               m ++= HttpLogs.durationLogs(streamStartTime, streamStartNano)
               m += "event_count"      -> eventCounter.get()
-              m += "status_code"      -> statusCode
-              m += "status_code_name" -> HttpStatus.ofCode(statusCode).reason
+              m += "status_code"      -> status.code
+              m += "status_code_name" -> status.reason
               error.foreach { e =>
                 m += "error_message" -> e.getMessage
                 if (!NettyRequestHandler.isBenignIOException(e)) {
@@ -162,14 +162,14 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                     if (!NettyRequestHandler.isBenignIOException(e)) {
                       warn(s"SSE stream processing error", e)
                     }
-                    writeStreamLog(500, Some(e))
+                    writeStreamLog(HttpStatus.InternalServerError_500, Some(e))
                     if (ctx.channel().isActive) {
                       ctx
                         .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                         .addListener(ChannelFutureListener.CLOSE)
                     }
                   case _ =>
-                    writeStreamLog(responseStatusCode, None)
+                    writeStreamLog(responseStatus, None)
                     val f = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                     f.addListener(ChannelFutureListener.CLOSE)
                 }
@@ -177,7 +177,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
             } catch {
               case e: java.util.concurrent.RejectedExecutionException =>
                 warn(s"SSE executor is saturated; closing stream")
-                writeStreamLog(503, Some(e))
+                writeStreamLog(HttpStatus.ServiceUnavailable_503, Some(e))
                 ctx
                   .writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                   .addListener(ChannelFutureListener.CLOSE)
