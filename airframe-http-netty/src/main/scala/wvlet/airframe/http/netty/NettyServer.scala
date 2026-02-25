@@ -447,17 +447,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       // Close the server channel first to stop accepting new connections
       channelFuture.foreach(_.close().await(remainingMillis, TimeUnit.MILLISECONDS))
 
-      // Gracefully shutdown worker group first to complete in-flight I/O and unregister channels
-      // Netty's shutdownGracefully handles waiting for in-flight tasks during the quiet period
-      val workerFuture = workerGroup.shutdownGracefully(
-        effectiveQuietPeriod,
-        remainingSeconds,
-        TimeUnit.SECONDS
-      )
-      workerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
-
-      // Shutdown the handler executor group after the worker group, so that the executor
-      // is still available during channel unregistration (pipeline teardown)
+      // Drain the handler executor group first (if configured) so that in-flight handlers
+      // complete and can write responses while the worker event loop is still alive
       handlerExecutorGroup.foreach { group =>
         val handlerFuture = group.shutdownGracefully(
           effectiveQuietPeriod,
@@ -466,6 +457,15 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         )
         handlerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
       }
+
+      // Then shutdown worker group to complete remaining I/O (response flushes)
+      // Netty's shutdownGracefully handles waiting for in-flight tasks during the quiet period
+      val workerFuture = workerGroup.shutdownGracefully(
+        effectiveQuietPeriod,
+        remainingSeconds,
+        TimeUnit.SECONDS
+      )
+      workerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
 
       // Then shutdown boss group
       val bossFuture = bossGroup.shutdownGracefully(
