@@ -17,6 +17,7 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.*
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
+import io.netty.util.concurrent.DefaultEventExecutorGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
@@ -72,7 +73,13 @@ case class NettyServerConfig(
     // Maximum time to wait for graceful shutdown completion
     shutdownTimeoutSeconds: Long = 30,
     // Whether to register a JVM shutdown hook for SIGTERM/SIGINT handling
-    registerShutdownHook: Boolean = false
+    registerShutdownHook: Boolean = false,
+    // Number of threads for the handler executor group. When set, request handlers
+    // run on a separate thread pool instead of Netty's event loop threads. This prevents
+    // slow or blocking request handlers from starving the event loop and blocking other
+    // connections (e.g., health check endpoints).
+    // None (default) = handlers run on Netty worker threads (event loop).
+    handlerExecutorThreads: Option[Int] = None
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -181,6 +188,19 @@ case class NettyServerConfig(
     this.copy(registerShutdownHook = false)
   }
 
+  /**
+    * Set the number of threads for the handler executor group. When set, request handlers (NettyRequestHandler) will
+    * run on a separate thread pool instead of Netty's I/O event loop threads. This prevents slow or blocking handlers
+    * from starving the event loop and blocking other connections (e.g., health check endpoints).
+    *
+    * @param threads
+    *   number of handler executor threads (must be positive)
+    */
+  def withHandlerExecutorThreads(threads: Int): NettyServerConfig = {
+    require(threads > 0, "handlerExecutorThreads must be positive")
+    this.copy(handlerExecutorThreads = Some(threads))
+  }
+
   def newServer(session: Session): NettyServer = {
     val s = new NettyServer(this, session)
     s.start
@@ -259,6 +279,14 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       new NioEventLoopGroup(numWorkers, tf)
     }
   }
+  // Optional handler executor group for offloading request handler execution from
+  // the event loop threads. Created lazily based on config.handlerExecutorThreads.
+  private val handlerExecutorGroup: Option[DefaultEventExecutorGroup] =
+    config.handlerExecutorThreads.map { threads =>
+      val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-handler")
+      new DefaultEventExecutorGroup(threads, tf)
+    }
+
   private var channelFuture: Option[Channel] = None
 
   override def localAddress: String = s"localhost:${config.port}"
@@ -384,7 +412,15 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new ChunkedWriteHandler())
-        pipeline.addLast(new NettyRequestHandler(config, dispatcher, httpStreamLogger))
+        val handler = new NettyRequestHandler(config, dispatcher, httpStreamLogger)
+        handlerExecutorGroup match {
+          case Some(executor) =>
+            // Offload request handling to a separate thread pool so that
+            // slow handlers do not block Netty's I/O event loop threads
+            pipeline.addLast(executor, handler)
+          case None =>
+            pipeline.addLast(handler)
+        }
       }
     })
 
@@ -411,7 +447,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       // Close the server channel first to stop accepting new connections
       channelFuture.foreach(_.close().await(remainingMillis, TimeUnit.MILLISECONDS))
 
-      // Gracefully shutdown worker group first to complete in-flight requests
+      // Gracefully shutdown worker group first to complete in-flight I/O and unregister channels
       // Netty's shutdownGracefully handles waiting for in-flight tasks during the quiet period
       val workerFuture = workerGroup.shutdownGracefully(
         effectiveQuietPeriod,
@@ -419,6 +455,17 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         TimeUnit.SECONDS
       )
       workerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
+
+      // Shutdown the handler executor group after the worker group, so that the executor
+      // is still available during channel unregistration (pipeline teardown)
+      handlerExecutorGroup.foreach { group =>
+        val handlerFuture = group.shutdownGracefully(
+          effectiveQuietPeriod,
+          remainingSeconds,
+          TimeUnit.SECONDS
+        )
+        handlerFuture.await(remainingMillis, TimeUnit.MILLISECONDS)
+      }
 
       // Then shutdown boss group
       val bossFuture = bossGroup.shutdownGracefully(

@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.http.HttpServer
+import wvlet.airframe.http.{Endpoint, Http, HttpServer, HttpStatus, RxRouter}
+import wvlet.airframe.http.client.SyncClient
 import wvlet.airspec.AirSpec
 
 class NettyServerTest extends AirSpec {
@@ -36,6 +37,46 @@ class NettyServerTest extends AirSpec {
     server.close()
     server.close()
   }
+}
+
+class NettyHandlerExecutorTest extends AirSpec {
+
+  test("configure handler executor threads") {
+    val config = Netty.server.withHandlerExecutorThreads(16)
+    config.handlerExecutorThreads shouldBe Some(16)
+  }
+
+  test("default has no handler executor") {
+    val config = Netty.server
+    config.handlerExecutorThreads shouldBe None
+  }
+
+  test("reject non-positive thread count") {
+    intercept[IllegalArgumentException] {
+      Netty.server.withHandlerExecutorThreads(0)
+    }
+    intercept[IllegalArgumentException] {
+      Netty.server.withHandlerExecutorThreads(-1)
+    }
+  }
+
+  test("server with handler executor starts and handles requests") {
+    Netty.server
+      .withRouter(RxRouter.of[HandlerExecutorTestApi])
+      .withHandlerExecutorThreads(4)
+      .noLogging
+      .designWithSyncClient
+      .build[SyncClient] { client =>
+        val resp = client.send(Http.GET("/v1/hello"))
+        resp.status shouldBe HttpStatus.Ok_200
+        resp.contentString shouldBe "hello"
+      }
+  }
+}
+
+class HandlerExecutorTestApi {
+  @Endpoint(path = "/v1/hello")
+  def hello: String = "hello"
 }
 
 class NettyGracefulShutdownTest extends AirSpec {
