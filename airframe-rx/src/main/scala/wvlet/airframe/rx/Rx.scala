@@ -160,6 +160,16 @@ trait Rx[+A] extends RxOps[A] {
   def map[B](f: A => B): Rx[B] = MapOp(this, f)
 
   /**
+    * Applies `f` to the input value and return the result. The function can signal completion by returning None. When
+    * None is returned, the stream will complete gracefully.
+    * @param f
+    *   function that returns Some(result) to continue, or None to complete the stream
+    * @tparam B
+    * @return
+    */
+  def mapWithCompletion[B](f: A => Option[B]): Rx[B] = MapWithCompletionOp(this, f)
+
+  /**
     * Applies `f` to the input value that produces another Rx stream. This method is an alias of flatMap(f)
     * @param f
     * @tparam B
@@ -174,6 +184,16 @@ trait Rx[+A] extends RxOps[A] {
     * @return
     */
   def flatMap[B](f: A => RxOps[B]): Rx[B] = FlatMapOp(this, f)
+
+  /**
+    * Applies `f` to the input value that produces another Rx stream. The function can signal completion by returning
+    * None. When None is returned, the stream will complete gracefully.
+    * @param f
+    *   function that returns Some(Rx) to continue, or None to complete the stream
+    * @tparam B
+    * @return
+    */
+  def flatMapWithCompletion[B](f: A => Option[RxOps[B]]): Rx[B] = FlatMapWithCompletionOp(this, f)
 
   /**
     * Applies the given filter and emit the value only when the filter condition matches
@@ -880,9 +900,11 @@ object Rx extends LogSupport {
     override def parents: Seq[RxOps[_]] = Seq(input)
   }
 
-  case class MapOp[A, B](input: Rx[A], f: A => B)            extends UnaryRx[A, B]
-  case class FlatMapOp[A, B](input: Rx[A], f: A => RxOps[B]) extends UnaryRx[A, B]
-  case class FilterOp[A](input: Rx[A], cond: A => Boolean)   extends UnaryRx[A, A]
+  case class MapOp[A, B](input: Rx[A], f: A => B)                                  extends UnaryRx[A, B]
+  case class MapWithCompletionOp[A, B](input: Rx[A], f: A => Option[B])            extends UnaryRx[A, B]
+  case class FlatMapOp[A, B](input: Rx[A], f: A => RxOps[B])                       extends UnaryRx[A, B]
+  case class FlatMapWithCompletionOp[A, B](input: Rx[A], f: A => Option[RxOps[B]]) extends UnaryRx[A, B]
+  case class FilterOp[A](input: Rx[A], cond: A => Boolean)                         extends UnaryRx[A, A]
   case class ZipOp[A, B](a: RxOps[A], b: RxOps[B]) extends Rx[(A, B)] {
     override def parents: Seq[RxOps[_]] = Seq(a, b)
   }
