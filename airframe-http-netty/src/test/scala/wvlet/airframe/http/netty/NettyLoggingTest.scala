@@ -13,16 +13,19 @@
  */
 package wvlet.airframe.http.netty
 
+import wvlet.airframe.http.*
 import wvlet.airframe.http.HttpLogger.InMemoryHttpLogger
-import wvlet.airframe.http.{Http, HttpLogger, HttpServer, RPC, RPCContext, RxRouter}
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.netty.NettyRxFilterTest.router1
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil
 
 import scala.collection.immutable.ListMap
 
 object NettyLoggingTest extends AirSpec {
+  private val port = IOUtil.unusedPort
 
   @RPC
   class MyRPC extends LogSupport {
@@ -35,6 +38,14 @@ object NettyLoggingTest extends AirSpec {
       requestCount += 1
       trace("hello rpc")
     }
+
+    def async(): Rx[Response] = {
+      RPCContext.current.setThreadLocal("user", "zzzz-xxxx")
+      Http.client
+        .newAsyncClient(s"localhost:${port}").send(
+          Http.POST("/wvlet.airframe.http.netty.NettyLoggingTest.MyRPC/hello")
+        )
+    }
   }
 
   private var clientLogger: InMemoryHttpLogger = null
@@ -44,6 +55,7 @@ object NettyLoggingTest extends AirSpec {
     _.add(
       Netty.server
         .withRouter(RxRouter.of[MyRPC])
+        .withPort(port)
         .withHttpLogger { config =>
           serverLogger = new InMemoryHttpLogger(config)
           serverLogger
@@ -95,6 +107,13 @@ object NettyLoggingTest extends AirSpec {
       clientLogEntry shouldContain ("custom_log_entry" -> "log-test-client")
     }
 
+    test("async server response") {
+      syncClient.send(Http.POST("/wvlet.airframe.http.netty.NettyLoggingTest.MyRPC/async"))
+      val logEntry = serverLogger.getLogs.last
+      debug(logEntry)
+      logEntry shouldContain ("user"       -> "zzzz-xxxx")
+      logEntry shouldContain ("rpc_method" -> "async")
+    }
   }
 
 }
