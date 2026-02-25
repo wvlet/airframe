@@ -257,6 +257,8 @@ object NettyRequestHandler extends LogSupport {
         false
       } else {
         ex match {
+          case _: io.netty.handler.codec.PrematureChannelClosureException =>
+            true
           case _: java.nio.channels.ClosedChannelException =>
             true
           case e: java.io.IOException =>
