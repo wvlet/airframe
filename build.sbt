@@ -975,8 +975,8 @@ lazy val fluentd =
         // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
           exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
-        "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.18.5" % Provided,
-        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.18.5" % Provided,
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % "2.20.1" % Provided,
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8"     % "2.20.1" % Provided,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
