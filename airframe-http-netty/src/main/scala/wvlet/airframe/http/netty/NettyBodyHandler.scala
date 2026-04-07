@@ -87,7 +87,13 @@ class NettyBodyHandler(bodyBufferThresholdBytes: Long) extends ChannelInboundHan
 
     val state = if (useFile) {
       val tmpFile = Files.createTempFile("airframe-body-", ".tmp").toFile
-      new RequestState(req, bodyBuf = null, fileBuf = new FileOutputStream(tmpFile), tmpFile = Some(tmpFile))
+      try {
+        new RequestState(req, bodyBuf = null, fileBuf = new FileOutputStream(tmpFile), tmpFile = Some(tmpFile))
+      } catch {
+        case e: Exception =>
+          tmpFile.delete()
+          throw e
+      }
     } else {
       new RequestState(req, bodyBuf = null, fileBuf = null, tmpFile = None)
     }
@@ -125,11 +131,17 @@ class NettyBodyHandler(bodyBufferThresholdBytes: Long) extends ChannelInboundHan
           // Check if we should spill to file (Content-Length was unknown or chunked transfer)
           if (state.bodyBuf.size() > bodyBufferThresholdBytes) {
             val tmpFile = Files.createTempFile("airframe-body-", ".tmp").toFile
-            val fos     = new FileOutputStream(tmpFile)
-            state.bodyBuf.writeTo(fos)
-            state.fileBuf = fos
-            state.tmpFile = Some(tmpFile)
-            state.bodyBuf = null // Release in-memory buffer
+            try {
+              val fos = new FileOutputStream(tmpFile)
+              state.bodyBuf.writeTo(fos)
+              state.fileBuf = fos
+              state.tmpFile = Some(tmpFile)
+              state.bodyBuf = null // Release in-memory buffer
+            } catch {
+              case e: Exception =>
+                tmpFile.delete()
+                throw e
+            }
           }
         }
       }

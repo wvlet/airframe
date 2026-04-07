@@ -89,8 +89,11 @@ private[http] class TeeInputStream(underlying: InputStream, parent: InputStreamM
   override def available(): Int = underlying.available()
 
   override def close(): Unit = {
-    // Cache whatever has been read so far (do not drain remaining bytes to avoid memory issues)
-    parent.setCachedBytes(buffer.toByteArray)
-    underlying.close()
+    try {
+      // Cache whatever has been read so far (do not drain remaining bytes to avoid memory issues)
+      parent.setCachedBytes(buffer.toByteArray)
+    } finally {
+      underlying.close()
+    }
   }
 }
