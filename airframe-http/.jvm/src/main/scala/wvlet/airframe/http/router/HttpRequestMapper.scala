@@ -76,7 +76,7 @@ object HttpRequestMapper extends LogSupport {
           case cl if classOf[HttpContext[Req, Resp, F]].isAssignableFrom(cl) =>
             // Bind HttpContext
             Some(context)
-          case cl if cl == classOf[java.io.InputStream] =>
+          case cl if classOf[java.io.InputStream].isAssignableFrom(cl) =>
             // Bind the request body as an InputStream for streaming large bodies
             val msg = adapter.messageOf(request)
             msg match {

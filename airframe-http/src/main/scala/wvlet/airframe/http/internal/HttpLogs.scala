@@ -230,6 +230,9 @@ object HttpLogs extends LogSupport {
           ListMap.empty
         case c: HttpContext[_, _, _] =>
           ListMap.empty
+        case _ if p.surface.fullName == "java.io.InputStream" =>
+          // InputStream parameters are not serializable for logging
+          ListMap.empty
         case _ if p.isSecret =>
           ListMap.empty
         case u: ULID =>
