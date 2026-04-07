@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandlerAdapter}
-import io.netty.handler.codec.http.{HttpContent, HttpRequest, LastHttpContent}
+import io.netty.handler.codec.http.{HttpContent, HttpRequest, HttpUtil, LastHttpContent}
 import io.netty.util.{AttributeKey, ReferenceCountUtil}
 import wvlet.airframe.http.{Http, HttpMethod, InputStreamMessage, RPCException, RPCStatus, ServerAddress}
 import wvlet.log.LogSupport
@@ -82,14 +82,14 @@ class NettyBodyHandler(bodyBufferThresholdBytes: Long) extends ChannelInboundHan
     }
 
     // Determine buffering strategy based on Content-Length header
-    val contentLength = Option(httpRequest.headers().get("Content-Length")).flatMap(_.toLongOption).getOrElse(-1L)
+    val contentLength = HttpUtil.getContentLength(httpRequest, -1L)
     val useFile       = contentLength > bodyBufferThresholdBytes
 
     val state = if (useFile) {
       val tmpFile = Files.createTempFile("airframe-body-", ".tmp").toFile
-      RequestState(req, bodyBuf = null, fileBuf = new FileOutputStream(tmpFile), tmpFile = Some(tmpFile))
+      new RequestState(req, bodyBuf = null, fileBuf = new FileOutputStream(tmpFile), tmpFile = Some(tmpFile))
     } else {
-      RequestState(req, bodyBuf = null, fileBuf = null, tmpFile = None)
+      new RequestState(req, bodyBuf = null, fileBuf = null, tmpFile = None)
     }
 
     ctx.channel().attr(REQUEST_STATE_KEY).set(state)
@@ -113,10 +113,8 @@ class NettyBodyHandler(bodyBufferThresholdBytes: Long) extends ChannelInboundHan
         val size = buf.readableBytes()
 
         if (state.fileBuf != null) {
-          // File-backed path: write directly to file
-          val bytes = new Array[Byte](size)
-          buf.readBytes(bytes)
-          state.fileBuf.write(bytes)
+          // File-backed path: write directly to file using Netty's internal pooled buffer
+          buf.readBytes(state.fileBuf, size)
         } else {
           // In-memory path
           if (state.bodyBuf == null) {
@@ -193,8 +191,8 @@ object NettyBodyHandler {
     }
   }
 
-  private[netty] case class RequestState(
-      request: wvlet.airframe.http.HttpMessage.Request,
+  private[netty] class RequestState(
+      val request: wvlet.airframe.http.HttpMessage.Request,
       var bodyBuf: ByteArrayOutputStream,
       var fileBuf: FileOutputStream,
       var tmpFile: Option[File]

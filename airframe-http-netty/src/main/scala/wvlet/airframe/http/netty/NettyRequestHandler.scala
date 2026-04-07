@@ -68,11 +68,16 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         }
       )
 
+      // HTTP/1.1 defaults to keep-alive; only close if client explicitly sends "Connection: close"
+      val requestKeepAlive = !req.header
+        .get(HttpHeader.Connection)
+        .exists(_.toLowerCase().contains("close"))
+
       RxRunner.run(rxResponse) {
         case OnNext(v) =>
           val resp          = v.asInstanceOf[Response]
           val nettyResponse = toNettyResponse(resp)
-          writeResponse(ctx, nettyResponse)
+          writeResponse(req, requestKeepAlive, ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Capture request context and timing before handing off to SSE executor thread
@@ -139,12 +144,12 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
           val nettyResponse = toNettyResponse(resp)
-          writeResponse(ctx, nettyResponse)
+          writeResponse(req, requestKeepAlive, ctx, nettyResponse)
         case OnCompletion =>
       }
     } catch {
       case e: RPCException =>
-        writeResponse(ctx, toNettyResponse(e.toResponse))
+        writeResponse(req, requestKeepAlive = false, ctx, toNettyResponse(e.toResponse))
     } finally {
       // Clean up temp file if body was file-backed
       NettyBodyHandler.cleanupTempFile(ctx)
@@ -153,15 +158,20 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     }
   }
 
-  private def writeResponse(ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
+  private def writeResponse(
+      req: Request,
+      requestKeepAlive: Boolean,
+      ctx: ChannelHandlerContext,
+      resp: DefaultHttpResponse
+  ): Unit = {
     val isEventStream =
       Option(resp.headers())
         .flatMap(h => Option(h.get(HttpHeader.ContentType)))
         .exists(_.contains("text/event-stream"))
 
-    // HTTP/1.1 defaults to keep-alive. Close only on error responses (non-successful status).
+    // Respect client's Connection header. HTTP/1.1 defaults to keep-alive; HTTP/1.0 defaults to close.
     val keepAlive: Boolean =
-      HttpStatus.ofCode(resp.status().code()).isSuccessful || isEventStream
+      HttpStatus.ofCode(resp.status().code()).isSuccessful && (requestKeepAlive || isEventStream)
 
     if (!keepAlive) {
       resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)

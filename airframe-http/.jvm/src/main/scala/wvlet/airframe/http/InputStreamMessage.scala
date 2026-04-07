@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets
   * bytes as they are read, so toContentBytes can still work afterwards.
   */
 class InputStreamMessage(inputStream: InputStream) extends HttpMessage.Message {
-  @volatile private var cachedBytes: Array[Byte] = null
+  private var cachedBytes: Array[Byte] = null
 
   private def ensureCached(): Array[Byte] = synchronized {
     if (cachedBytes == null) {
@@ -89,11 +89,7 @@ private[http] class TeeInputStream(underlying: InputStream, parent: InputStreamM
   override def available(): Int = underlying.available()
 
   override def close(): Unit = {
-    // Cache whatever has been read so far plus any remaining bytes
-    val remaining = underlying.readAllBytes()
-    if (remaining.length > 0) {
-      buffer.write(remaining)
-    }
+    // Cache whatever has been read so far (do not drain remaining bytes to avoid memory issues)
     parent.setCachedBytes(buffer.toByteArray)
     underlying.close()
   }
