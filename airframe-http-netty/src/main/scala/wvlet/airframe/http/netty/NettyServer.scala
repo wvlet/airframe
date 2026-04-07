@@ -79,7 +79,10 @@ case class NettyServerConfig(
     // slow or blocking request handlers from starving the event loop and blocking other
     // connections (e.g., health check endpoints).
     // None (default) = handlers run on Netty worker threads (event loop).
-    handlerExecutorThreads: Option[Int] = None
+    handlerExecutorThreads: Option[Int] = None,
+    // Threshold in bytes for file-backed body buffering. Request bodies larger than this
+    // are written to a temp file instead of held in memory. Default: 8MB.
+    bodyBufferThresholdBytes: Long = 8L * 1024 * 1024
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -199,6 +202,18 @@ case class NettyServerConfig(
   def withHandlerExecutorThreads(threads: Int): NettyServerConfig = {
     require(threads > 0, "handlerExecutorThreads must be positive")
     this.copy(handlerExecutorThreads = Some(threads))
+  }
+
+  /**
+    * Set the threshold in bytes for file-backed body buffering. Request bodies larger than this are written to a temp
+    * file instead of held in memory.
+    *
+    * @param bytes
+    *   threshold in bytes (default: 8MB)
+    */
+  def withBodyBufferThreshold(bytes: Long): NettyServerConfig = {
+    require(bytes > 0, "bodyBufferThresholdBytes must be positive")
+    this.copy(bodyBufferThresholdBytes = bytes)
   }
 
   def newServer(session: Session): NettyServer = {
@@ -408,9 +423,9 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
           )
         )
         pipeline.addLast(new HttpServerKeepAliveHandler())
-        pipeline.addLast(new HttpObjectAggregator(Int.MaxValue))
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
+        pipeline.addLast(new NettyBodyHandler(config.bodyBufferThresholdBytes))
         pipeline.addLast(new ChunkedWriteHandler())
         val handler = new NettyRequestHandler(config, dispatcher, httpStreamLogger)
         handlerExecutorGroup match {

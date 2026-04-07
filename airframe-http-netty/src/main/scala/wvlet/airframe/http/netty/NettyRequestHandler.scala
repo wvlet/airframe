@@ -14,36 +14,25 @@
 package wvlet.airframe.http.netty
 
 import io.netty.buffer.Unpooled
-import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
+import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandlerAdapter}
 import io.netty.handler.codec.http.*
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.internal.{HttpLogs, RPCResponseFilter}
-import wvlet.airframe.http.{
-  Http,
-  HttpHeader,
-  HttpLogger,
-  HttpMethod,
-  HttpServerException,
-  HttpStatus,
-  RPCException,
-  RPCStatus,
-  ServerAddress,
-  ServerSentEvent
-}
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
+import wvlet.airframe.http.internal.HttpLogs
+import wvlet.airframe.http.{Http, HttpHeader, HttpLogger, HttpStatus, RPCException, RPCStatus, ServerSentEvent}
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
-import java.net.InetSocketAddress
 import java.util.concurrent.{SynchronousQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.immutable.ListMap
-import scala.jdk.CollectionConverters.*
 import NettyRequestHandler.toNettyResponse
 
-import java.io.ByteArrayOutputStream
-
+/**
+  * Handles fully-assembled HttpMessage.Request objects from NettyBodyHandler. The request body is already available as
+  * a Message (either ByteArrayMessage for small bodies or InputStreamMessage for large bodies backed by a temp file).
+  */
 class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter, httpStreamLogger: HttpLogger)
-    extends SimpleChannelInboundHandler[FullHttpRequest]
+    extends ChannelInboundHandlerAdapter
     with LogSupport {
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
@@ -60,49 +49,17 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     ctx.flush()
   }
 
-  override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
+  override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
+    msg match {
+      case req: Request =>
+        handleRequest(ctx, req)
+      case _ =>
+        ctx.fireChannelRead(msg)
+    }
+  }
+
+  private def handleRequest(ctx: ChannelHandlerContext, req: Request): Unit = {
     try {
-      var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name().toUpperCase match {
-        case HttpMethod.GET     => Http.GET(msg.uri())
-        case HttpMethod.POST    => Http.POST(msg.uri())
-        case HttpMethod.PUT     => Http.PUT(msg.uri())
-        case HttpMethod.DELETE  => Http.DELETE(msg.uri())
-        case HttpMethod.PATCH   => Http.PATCH(msg.uri())
-        case HttpMethod.TRACE   => Http.request(wvlet.airframe.http.HttpMethod.TRACE, msg.uri())
-        case HttpMethod.OPTIONS => Http.request(wvlet.airframe.http.HttpMethod.OPTIONS, msg.uri())
-        case HttpMethod.HEAD    => Http.request(wvlet.airframe.http.HttpMethod.HEAD, msg.uri())
-        case _ =>
-          throw RPCStatus.INVALID_REQUEST_U1.newException(s"Unsupported HTTP method: ${msg.method()}")
-      }
-
-      // Set remote address for logging purpose
-      ctx.channel().remoteAddress() match {
-        case x: InetSocketAddress =>
-          // TODO This address might be IPv6
-          req = req.withRemoteAddress(ServerAddress(s"${x.getHostString}:${x.getPort}"))
-        case _ =>
-      }
-
-      // Read request headers
-      msg.headers().names().asScala.map { x =>
-        req = req.withHeader(x, msg.headers().get(x))
-      }
-
-      // Read request body
-      var bodyBuf: ByteArrayOutputStream = null
-      val requestBody                    = msg.content()
-      while (requestBody.isReadable) {
-        // the returned size is greater than 0 when isReadable = true
-        val size = requestBody.readableBytes()
-        if (bodyBuf == null) {
-          bodyBuf = new ByteArrayOutputStream(size)
-        }
-        requestBody.readBytes(bodyBuf, size)
-      }
-      if (bodyBuf != null && bodyBuf.size() > 0) {
-        req = req.withContent(bodyBuf.toByteArray)
-      }
-
       // Dispatch the request and get an async response, Rx[Response]
       val rxResponse: Rx[Response] = dispatcher.apply(
         req,
@@ -115,7 +72,7 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         case OnNext(v) =>
           val resp          = v.asInstanceOf[Response]
           val nettyResponse = toNettyResponse(resp)
-          writeResponse(msg, ctx, nettyResponse)
+          writeResponse(ctx, nettyResponse)
 
           if (resp.isContentTypeEventStream && resp.message.isEmpty) {
             // Capture request context and timing before handing off to SSE executor thread
@@ -182,32 +139,31 @@ class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           // This path manages unhandled exceptions
           val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
           val nettyResponse = toNettyResponse(resp)
-          writeResponse(msg, ctx, nettyResponse)
+          writeResponse(ctx, nettyResponse)
         case OnCompletion =>
       }
     } catch {
       case e: RPCException =>
-        writeResponse(msg, ctx, toNettyResponse(e.toResponse))
+        writeResponse(ctx, toNettyResponse(e.toResponse))
     } finally {
+      // Clean up temp file if body was file-backed
+      NettyBodyHandler.cleanupTempFile(ctx)
       // Need to clean up the TLS in case the same thread is reused for the next request
       NettyBackend.clearThreadLocal()
     }
   }
 
-  private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
+  private def writeResponse(ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
     val isEventStream =
       Option(resp.headers())
         .flatMap(h => Option(h.get(HttpHeader.ContentType)))
         .exists(_.contains("text/event-stream"))
 
+    // HTTP/1.1 defaults to keep-alive. Close only on error responses (non-successful status).
     val keepAlive: Boolean =
-      HttpStatus.ofCode(resp.status().code()).isSuccessful && (HttpUtil.isKeepAlive(req) || isEventStream)
+      HttpStatus.ofCode(resp.status().code()).isSuccessful || isEventStream
 
-    if (keepAlive) {
-      if (!req.protocolVersion().isKeepAliveDefault) {
-        resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
-      }
-    } else {
+    if (!keepAlive) {
       resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
     }
     val f = ctx.writeAndFlush(resp)

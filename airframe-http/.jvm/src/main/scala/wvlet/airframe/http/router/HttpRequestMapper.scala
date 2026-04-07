@@ -76,6 +76,15 @@ object HttpRequestMapper extends LogSupport {
           case cl if classOf[HttpContext[Req, Resp, F]].isAssignableFrom(cl) =>
             // Bind HttpContext
             Some(context)
+          case cl if cl == classOf[java.io.InputStream] =>
+            // Bind the request body as an InputStream for streaming large bodies
+            val msg = adapter.messageOf(request)
+            msg match {
+              case ism: InputStreamMessage =>
+                Some(ism.getInputStream)
+              case _ =>
+                Some(new java.io.ByteArrayInputStream(msg.toContentBytes))
+            }
           case _ =>
             // Pass the String parameter to the method argument
             val argCodec = codecFactory.of(argSurface)
