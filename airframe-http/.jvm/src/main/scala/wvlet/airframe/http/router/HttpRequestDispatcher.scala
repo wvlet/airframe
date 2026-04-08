@@ -85,10 +85,7 @@ object HttpRequestDispatcher extends LogSupport {
     // Wrap with global filter so it runs before route matching.
     // This allows filters like CORS to intercept requests (e.g., OPTIONS preflight)
     // regardless of whether a route matches.
-    routingTable.globalFilter match {
-      case Some(gf) => gf.andThen(routeDispatcher)
-      case None     => routeDispatcher
-    }
+    routingTable.globalFilter.map(_.andThen(routeDispatcher)).getOrElse(routeDispatcher)
   }
 
   /**
@@ -105,10 +102,7 @@ object HttpRequestDispatcher extends LogSupport {
     def adaptFilter(router: Router): Option[HttpFilter[Req, Resp, F]] =
       router.filterInstance
         .orElse {
-          router.filterSurface
-            .map(fs => controllerProvider.findController(session, fs))
-            .filter(_.isDefined)
-            .map(_.get)
+          router.filterSurface.flatMap(fs => controllerProvider.findController(session, fs))
         }
         .map {
           case rxFilter: RxHttpFilter =>
@@ -128,17 +122,18 @@ object HttpRequestDispatcher extends LogSupport {
           acc: Option[HttpFilter[Req, Resp, F]]
       ): (Option[HttpFilter[Req, Resp, F]], Router) = {
         val localFilter = adaptFilter(r)
-        val newAcc      = localFilter.map(lf => acc.map(_.andThen(lf)).getOrElse(lf)).orElse(acc)
+        val newAcc = (acc, localFilter) match {
+          case (Some(a), Some(lf)) => Some(a.andThen(lf))
+          case (None, Some(lf))    => Some(lf)
+          case (a, None)           => a
+        }
 
-        if (localFilter.isDefined && r.localRoutes.isEmpty && r.children.size == 1) {
-          // Filter-only node with single child — extract and continue
+        if (r.localRoutes.isEmpty && r.children.size == 1) {
+          // Single child with no routes — continue walking
           walk(r.children.head, newAcc)
         } else if (localFilter.isDefined) {
           // Filter with routes or branching — extract filter, return node without it
           (newAcc, r.copy(filterInstance = None, filterSurface = None))
-        } else if (r.localRoutes.isEmpty && !r.isLeafFilter && r.children.size == 1) {
-          // No filter, single child, no routes — skip and continue
-          walk(r.children.head, acc)
         } else {
           (acc, r)
         }
