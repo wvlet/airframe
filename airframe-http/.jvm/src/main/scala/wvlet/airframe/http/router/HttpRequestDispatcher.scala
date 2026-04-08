@@ -30,7 +30,10 @@ object HttpRequestDispatcher extends LogSupport {
 
   case class RoutingTable[Req, Resp, F[_]](
       routeToFilterMappings: Map[Route, RouteFilter[Req, Resp, F]],
-      leafFilter: Option[HttpFilter[Req, Resp, F]]
+      leafFilter: Option[HttpFilter[Req, Resp, F]],
+      // Filter chain accumulated from non-leaf filter nodes (e.g., RxRouter.filter(corsFilter).andThen(RxRouter.of[...]))
+      // Used as fallback for unmatched requests so that global filters can intercept them
+      fallbackFilter: Option[HttpFilter[Req, Resp, F]] = None
   ) {
     def findFilter(route: Route): RouteFilter[Req, Resp, F] = {
       routeToFilterMappings(route)
@@ -67,8 +70,10 @@ object HttpRequestDispatcher extends LogSupport {
           val currentService = routeFilter.filter.andThen(context)
           currentService.apply(request)
         case None =>
-          // If no matching route is found, use the leaf filter if exists
-          routingTable.leafFilter match {
+          // If no matching route is found, use the leaf filter or fallback filter if exists.
+          // The fallback filter allows global filters (e.g., CORS) added via RxRouter.filter(...)
+          // to intercept requests even when route matching fails (e.g., OPTIONS preflight).
+          routingTable.leafFilter.orElse(routingTable.fallbackFilter) match {
             case Some(f) =>
               f.apply(request, context)
             case None =>
@@ -89,6 +94,8 @@ object HttpRequestDispatcher extends LogSupport {
       controllerProvider: ControllerProvider
   ): RoutingTable[Req, Resp, F] = {
     val leafFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
+    // Track the accumulated filter chain from non-leaf filter nodes
+    var fallbackFilterChain: Option[HttpFilter[Req, Resp, F]] = None
 
     def buildMappingsFromRouteToFilter(
         router: Router,
@@ -119,6 +126,11 @@ object HttpRequestDispatcher extends LogSupport {
           }
           .getOrElse(parentFilter)
 
+      // Track non-leaf filter nodes as fallback for unmatched requests
+      if (localFilterOpt.isDefined && !router.isLeafFilter) {
+        fallbackFilterChain = Some(currentFilter)
+      }
+
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
       for (route <- router.localRoutes) {
         val controllerOpt = router.controllerInstance.orElse {
@@ -146,7 +158,7 @@ object HttpRequestDispatcher extends LogSupport {
       warn(s"Multiple leaf filters are found in the router. Using the first one: ${lf.head}")
     }
 
-    RoutingTable(mappings, lf.headOption)
+    RoutingTable(mappings, lf.headOption, fallbackFilterChain)
   }
 
 }
