@@ -94,7 +94,7 @@ object HttpRequestDispatcher extends LogSupport {
       controllerProvider: ControllerProvider
   ): RoutingTable[Req, Resp, F] = {
     val leafFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
-    // Track the accumulated filter chain from non-leaf filter nodes
+    // The deepest non-leaf filter chain, used as fallback for unmatched requests
     var fallbackFilterChain: Option[HttpFilter[Req, Resp, F]] = None
 
     def buildMappingsFromRouteToFilter(
@@ -126,7 +126,7 @@ object HttpRequestDispatcher extends LogSupport {
           }
           .getOrElse(parentFilter)
 
-      // Track non-leaf filter nodes as fallback for unmatched requests
+      // Record the deepest non-leaf filter chain as fallback for unmatched requests
       if (localFilterOpt.isDefined && !router.isLeafFilter) {
         fallbackFilterChain = Some(currentFilter)
       }
