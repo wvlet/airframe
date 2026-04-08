@@ -18,6 +18,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.*
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
@@ -30,7 +31,10 @@ object HttpRequestDispatcher extends LogSupport {
 
   case class RoutingTable[Req, Resp, F[_]](
       routeToFilterMappings: Map[Route, RouteFilter[Req, Resp, F]],
-      leafFilter: Option[HttpFilter[Req, Resp, F]]
+      leafFilter: Option[HttpFilter[Req, Resp, F]],
+      // Global filter chain extracted from the root of the Router tree.
+      // Applied before route matching so filters like CORS can intercept all requests.
+      globalFilter: Option[HttpFilter[Req, Resp, F]] = None
   ) {
     def findFilter(route: Route): RouteFilter[Req, Resp, F] = {
       routeToFilterMappings(route)
@@ -49,7 +53,8 @@ object HttpRequestDispatcher extends LogSupport {
     // Generate a table for Route -> matching HttpFilter
     val routingTable = buildRoutingTable(backend, session, router, backend.defaultFilter, controllerProvider)
 
-    backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
+    // Route dispatcher: matches requests to routes and applies route-specific filters
+    val routeDispatcher = backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
       router.findRoute(request) match {
         case Some(routeMatch) =>
           // Find a filter for the matched route
@@ -76,6 +81,11 @@ object HttpRequestDispatcher extends LogSupport {
           }
       }
     }
+
+    // Wrap with global filter so it runs before route matching.
+    // This allows filters like CORS to intercept requests (e.g., OPTIONS preflight)
+    // regardless of whether a route matches.
+    routingTable.globalFilter.map(_.andThen(routeDispatcher)).getOrElse(routeDispatcher)
   }
 
   /**
@@ -88,29 +98,56 @@ object HttpRequestDispatcher extends LogSupport {
       baseFilter: HttpFilter[Req, Resp, F],
       controllerProvider: ControllerProvider
   ): RoutingTable[Req, Resp, F] = {
+
+    def adaptFilter(router: Router): Option[HttpFilter[Req, Resp, F]] =
+      router.filterInstance
+        .orElse {
+          router.filterSurface.flatMap(fs => controllerProvider.findController(session, fs))
+        }
+        .map {
+          case rxFilter: RxHttpFilter =>
+            backend.rxFilterAdapter(rxFilter)
+          case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
+            backend.filterAdapter(legacyFilter)
+          case other =>
+            throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other}")
+        }
+
+    // Extract global filters from the root's linear single-child path.
+    // These filters wrap the entire dispatch so they run before route matching.
+    val (globalFilter, routeRoot) = {
+      @tailrec
+      def walk(
+          r: Router,
+          acc: Option[HttpFilter[Req, Resp, F]]
+      ): (Option[HttpFilter[Req, Resp, F]], Router) = {
+        val localFilter = adaptFilter(r)
+        val newAcc = (acc, localFilter) match {
+          case (Some(a), Some(lf)) => Some(a.andThen(lf))
+          case (None, Some(lf))    => Some(lf)
+          case (a, None)           => a
+        }
+
+        if (r.localRoutes.isEmpty && r.children.size == 1) {
+          // Single child with no routes — continue walking
+          walk(r.children.head, newAcc)
+        } else if (localFilter.isDefined) {
+          // Filter with routes or branching — extract filter, return node without it
+          (newAcc, r.copy(filterInstance = None, filterSurface = None))
+        } else {
+          (acc, r)
+        }
+      }
+      walk(rootRouter, None)
+    }
+
     val leafFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
 
     def buildMappingsFromRouteToFilter(
         router: Router,
         parentFilter: HttpFilter[Req, Resp, F]
     ): Map[Route, RouteFilter[Req, Resp, F]] = {
-      val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
-        // Use a given filter instance or one created from the DI session
-        router.filterInstance
-          .orElse {
-            router.filterSurface
-              .map(fs => controllerProvider.findController(session, fs))
-              .filter(_.isDefined)
-              .map(_.get)
-          }
-          .map {
-            case rxFilter: RxHttpFilter =>
-              backend.rxFilterAdapter(rxFilter)
-            case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
-              backend.filterAdapter(legacyFilter)
-            case other =>
-              throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other}") //
-          }
+      val localFilterOpt = adaptFilter(router)
 
       val currentFilter: HttpFilter[Req, Resp, F] =
         localFilterOpt
@@ -139,14 +176,14 @@ object HttpRequestDispatcher extends LogSupport {
       m.result()
     }
 
-    val mappings = buildMappingsFromRouteToFilter(rootRouter, baseFilter)
+    val mappings = buildMappingsFromRouteToFilter(routeRoot, baseFilter)
 
     val lf = leafFilters.result()
     if (lf.size > 1) {
       warn(s"Multiple leaf filters are found in the router. Using the first one: ${lf.head}")
     }
 
-    RoutingTable(mappings, lf.headOption)
+    RoutingTable(mappings, lf.headOption, globalFilter)
   }
 
 }
