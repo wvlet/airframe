@@ -390,6 +390,53 @@ val router = RxRouter
 Using local variables inside filters will not work because the request processing will happen when Future[X] is evaluated, so we must use thead-local parmeter holder, which will be prepared for each request call.
 
 
+### CORS Filter
+
+airframe-http provides a built-in CORS filter for handling [Cross-Origin Resource Sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS). To use it, add the CORS filter to your router with `RxRouter.filter(...)`:
+
+```scala
+import wvlet.airframe.http.*
+import wvlet.airframe.http.filter.Cors
+import wvlet.airframe.http.netty.Netty
+
+@RPC
+class MyApi {
+  def hello(msg: String): String = s"Hello ${msg}!"
+}
+
+// Define a CORS policy
+val corsPolicy = Cors.Policy(
+  allowsOrigin = {
+    case origin if origin.endsWith(".mydomain.com") => Some(origin)
+    case _ => None
+  },
+  allowsMethods = _ => Some(Seq("GET", "POST")),
+  allowsHeaders = headers => Some(headers),
+  supportsCredentials = true
+)
+
+// Add the CORS filter to the router
+val router = RxRouter
+  .filter(Cors.newFilter(corsPolicy))
+  .andThen(RxRouter.of[MyApi])
+
+Netty.server
+  .withRouter(router)
+  .start { server =>
+    // Server handles CORS preflight (OPTIONS) and adds CORS headers to all responses
+  }
+```
+
+The CORS filter placed at the router level intercepts `OPTIONS` preflight requests before route matching, so it works correctly with `@RPC` and `@Endpoint` controller routes. For non-OPTIONS requests, it adds the appropriate CORS headers to responses.
+
+For development or testing, you can use the permissive policy that allows all origins (do not use in production):
+```scala
+val router = RxRouter
+  .filter(Cors.newFilter(Cors.unsafePermissivePolicy))
+  .andThen(RxRouter.of[MyApi])
+```
+
+
 ## Access Logs
 
 airframe-http stores HTTP access logs at `log/http-server.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.
