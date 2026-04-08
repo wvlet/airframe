@@ -93,9 +93,8 @@ object HttpRequestDispatcher extends LogSupport {
       baseFilter: HttpFilter[Req, Resp, F],
       controllerProvider: ControllerProvider
   ): RoutingTable[Req, Resp, F] = {
-    val leafFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
-    // The deepest non-leaf filter chain, used as fallback for unmatched requests
-    var fallbackFilterChain: Option[HttpFilter[Req, Resp, F]] = None
+    val leafFilters     = Seq.newBuilder[HttpFilter[Req, Resp, F]]
+    val fallbackFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
 
     def buildMappingsFromRouteToFilter(
         router: Router,
@@ -126,9 +125,10 @@ object HttpRequestDispatcher extends LogSupport {
           }
           .getOrElse(parentFilter)
 
-      // Record the deepest non-leaf filter chain as fallback for unmatched requests
-      if (localFilterOpt.isDefined && !router.isLeafFilter) {
-        fallbackFilterChain = Some(currentFilter)
+      // Collect filter nodes that wrap actual routes as fallback candidates for unmatched requests.
+      // Only routers with routes in their subtree need a fallback (leaf endpoint chains are handled by leafFilter).
+      if (localFilterOpt.isDefined && router.routes.nonEmpty) {
+        fallbackFilters += currentFilter
       }
 
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
@@ -158,7 +158,10 @@ object HttpRequestDispatcher extends LogSupport {
       warn(s"Multiple leaf filters are found in the router. Using the first one: ${lf.head}")
     }
 
-    RoutingTable(mappings, lf.headOption, fallbackFilterChain)
+    // Use the deepest fallback filter — it includes all ancestor filters via andThen
+    val ff = fallbackFilters.result()
+
+    RoutingTable(mappings, lf.headOption, ff.lastOption)
   }
 
 }
