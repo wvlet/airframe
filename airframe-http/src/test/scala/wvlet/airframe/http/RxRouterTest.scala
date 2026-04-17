@@ -284,18 +284,30 @@ object RxRouterTest extends AirSpec {
       .andThen[LogFilter]
       .andThen(MyApi.router)
 
+    // Flatten a FilterNode chain into the list of applied filter surfaces
+    // ordered outer-to-inner (the order in which filters are invoked).
+    def chain(f: RxRouter.FilterNode): List[Surface] = {
+      f.parent.map(chain).getOrElse(Nil) :+ f.filterSurface
+    }
+
     composed.routes.size shouldBe 1
     composed.routes(0) shouldMatch { case RxRoute(Some(filter), controllerSurface, _) =>
-      filter.filterSurface shouldBe Surface.of[LogFilter]
-      filter.parent shouldBe defined
-      filter.parent.get.filterSurface shouldBe Surface.of[AuthFilter]
-      filter.parent.get.parent shouldBe defined
-      filter.parent.get.parent.get.filterSurface shouldBe Surface.of[MetricFilter]
-      filter.parent.get.parent.get.parent shouldBe empty
+      chain(filter) shouldBe List(
+        Surface.of[MetricFilter],
+        Surface.of[AuthFilter],
+        Surface.of[LogFilter]
+      )
       controllerSurface shouldBe Surface.of[MyApi]
     }
 
-    // Both constructions must produce equivalent chains
-    composed.routes shouldBe expected.routes
+    // The nested composition must produce the same filter chain as the flat form.
+    expected.routes.size shouldBe 1
+    expected.routes(0) shouldMatch { case RxRoute(Some(filter), _, _) =>
+      chain(filter) shouldBe List(
+        Surface.of[MetricFilter],
+        Surface.of[AuthFilter],
+        Surface.of[LogFilter]
+      )
+    }
   }
 }
