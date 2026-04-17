@@ -51,6 +51,12 @@ object RxRouterTest extends AirSpec {
     }
   }
 
+  trait MetricFilter extends RxHttpFilter {
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+      next.apply(request)
+    }
+  }
+
   test("create a single route RxRouter") {
     val r = RxRouter.of[MyApi]
     r.children shouldBe empty
@@ -230,5 +236,66 @@ object RxRouterTest extends AirSpec {
       methodSurfaces(0).name shouldBe "hello2"
       methodSurfaces(1).name shouldBe "hello3"
     }
+  }
+
+  test("Preserve the outer filter when wrapping a pre-filtered router") {
+    // Simple 2-filter composition: outer filter must remain as parent of inner filter.
+    val r = RxRouter
+      .filter[AuthFilter]
+      .andThen(
+        RxRouter
+          .filter[LogFilter]
+          .andThen(MyApi.router)
+      )
+
+    r.filter shouldBe defined
+    r.filter.get.filterSurface shouldBe Surface.of[LogFilter]
+    r.filter.get.parent shouldBe defined
+    r.filter.get.parent.get.filterSurface shouldBe Surface.of[AuthFilter]
+
+    r.routes.size shouldBe 1
+    r.routes(0) shouldMatch { case RxRoute(Some(filter), controllerSurface, _) =>
+      filter.filterSurface shouldBe Surface.of[LogFilter]
+      filter.parent shouldBe defined
+      filter.parent.get.filterSurface shouldBe Surface.of[AuthFilter]
+      filter.parent.get.parent shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi]
+    }
+  }
+
+  test("Preserve the full inner filter chain when wrapped by an outer filter") {
+    // Regression test for silently dropped filters when composing filter chains.
+    // The inner router already has chain AuthFilter -> LogFilter.
+    // Wrapping with MetricFilter must yield MetricFilter -> AuthFilter -> LogFilter
+    // (not MetricFilter -> LogFilter, which would silently drop AuthFilter).
+    val composed = RxRouter
+      .filter[MetricFilter]
+      .andThen(
+        RxRouter
+          .filter[AuthFilter]
+          .andThen[LogFilter]
+          .andThen(MyApi.router)
+      )
+
+    // Expected to match a flat chain construction
+    val expected = RxRouter
+      .filter[MetricFilter]
+      .andThen[AuthFilter]
+      .andThen[LogFilter]
+      .andThen(MyApi.router)
+
+    composed.routes.size shouldBe 1
+    composed.routes(0) shouldMatch { case RxRoute(Some(filter), controllerSurface, _) =>
+      filter.filterSurface shouldBe Surface.of[LogFilter]
+      filter.parent shouldBe defined
+      filter.parent.get.filterSurface shouldBe Surface.of[AuthFilter]
+      filter.parent.get.parent shouldBe defined
+      filter.parent.get.parent.get.filterSurface shouldBe Surface.of[MetricFilter]
+      filter.parent.get.parent.get.parent shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi]
+    }
+
+    // Both constructions must produce equivalent chains
+    composed.routes shouldBe expected.routes
   }
 }

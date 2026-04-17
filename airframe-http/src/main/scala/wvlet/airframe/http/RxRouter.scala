@@ -140,7 +140,13 @@ object RxRouter extends RxRouterObjectBase {
     def name: String = filterSurface.name
 
     def andThen(next: FilterNode): FilterNode = {
-      next.copy(parent = Some(this))
+      // Attach `this` at the top of next's existing parent chain so composing
+      // chains (filter[A].andThen(filter[B].andThen[C])) does not drop B.
+      val newParent = next.parent match {
+        case None    => this
+        case Some(p) => this.andThen(p)
+      }
+      next.copy(parent = Some(newParent))
     }
     def andThenOpt(next: Option[FilterNode]): Option[FilterNode] = {
       next match {
