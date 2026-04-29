@@ -6,6 +6,9 @@ on:
       - v*
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   publish_js:
     name: Publish Scala Native

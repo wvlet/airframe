@@ -6,6 +6,9 @@ on:
       - v*
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   publish_jvm:
     name: Publish AirSpec
