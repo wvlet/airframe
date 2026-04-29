@@ -11,6 +11,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  # Push to gh-pages happens via the GIT_DEPLOY_KEY SSH key, not GITHUB_TOKEN
+  contents: read
+
 jobs:
   doc:
     name: Update docs

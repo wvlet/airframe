@@ -4,7 +4,11 @@ on:
   push:
     tags:
       - v*
-  workflow_dispatch:      
+  workflow_dispatch:
+
+permissions:
+  # Required by `gh release create` to publish a GitHub release
+  contents: write
 
 jobs:
   release:

@@ -6,6 +6,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  # Required by mikepenz/action-junit-report to publish check annotations
+  checks: write
+
 jobs:
   changes:
     name: Detect Changes
