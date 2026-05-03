@@ -31,6 +31,9 @@ jobs:
               - '.github/workflows/test.yml'
               - 'project/build.properties'
               - AIRSPEC_VERSION
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'scripts/setup-scalajs.sh'
 
   code_format:
     name: Code format
@@ -168,9 +171,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Integration Test
@@ -194,9 +201,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
@@ -220,9 +231,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
@@ -246,9 +261,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
