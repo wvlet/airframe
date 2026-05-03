@@ -1,0 +1,29 @@
+doc:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
+
+internal:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'project/**'
+          - 'scripts/**'
+          - 'sbt'
+          - '.scalafmt.conf'
+          - '.scalafix.conf'
+
+feature:
+  - head-branch:
+      - '^feature/'
+      - '^feat/'
+
+bug:
+  - head-branch:
+      - '^fix/'
+      - '^bug/'
+
+deprecation:
+  - head-branch:
+      - '^deprecate/'
