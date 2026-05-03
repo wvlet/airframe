@@ -31,6 +31,9 @@ jobs:
               - '.github/workflows/test.yml'
               - 'project/build.properties'
               - AIRSPEC_VERSION
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'scripts/setup-scalajs.sh'
 
   code_format:
     name: Code format
