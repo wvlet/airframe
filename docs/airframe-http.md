@@ -437,6 +437,84 @@ val router = RxRouter
 ```
 
 
+## WebSocket
+
+The Netty backend (`airframe-http-netty`) can serve WebSocket connections. Register a WebSocket route by
+path with `Netty.server.withWebSocketRoute(...)`. A fresh `WebSocketHandler` is created per connection, so
+your handler can hold per-connection state:
+
+```scala
+import wvlet.airframe.http.*
+import wvlet.airframe.http.netty.Netty
+
+Netty.server
+  .withPort(8080)
+  .withRouter(RxRouter.of[MyApi]) // [optional] regular HTTP/RPC routes can coexist
+  .withWebSocketRoute("/ws/echo") { request =>
+    new WebSocketHandler {
+      // Called once after the handshake completes
+      override def onOpen(ctx: WebSocketContext): Unit = {
+        ctx.send("welcome")
+      }
+      // Called for each text frame from the client
+      override def onTextMessage(ctx: WebSocketContext, message: String): Unit = {
+        ctx.send(s"echo:${message}")
+      }
+      // Called for each binary frame from the client
+      override def onBinaryMessage(ctx: WebSocketContext, message: Array[Byte]): Unit = {
+        ctx.send(message)
+      }
+      // Called once when the connection is closed (by either side)
+      override def onClose(ctx: WebSocketContext): Unit = {
+        // release per-connection resources here
+      }
+      override def onError(ctx: WebSocketContext, e: Throwable): Unit = {
+        warn(e)
+      }
+    }
+  }
+  .start { server =>
+    server.awaitTermination
+  }
+```
+
+`WebSocketContext` is the per-connection handle for interacting with the client. It is thread-safe, so you
+can call `send`/`close` from any thread (e.g. to push messages from a background task):
+
+- `send(text: String)` / `send(data: Array[Byte])` — send a text or binary frame
+- `close()` / `close(statusCode, reason)` — close the connection
+- `request` — the original HTTP upgrade request (headers, query parameters, attachments set by filters)
+
+All `WebSocketHandler` callbacks have no-op defaults, so override only the events you need. Callbacks run on
+the server's I/O thread (or the configured handler executor thread pool), so avoid blocking in them; offload
+long-running work to a separate thread.
+
+### Applying filters to the handshake
+
+WebSocket upgrades flow through the same [`RxHttpFilter`](#filters) chain as HTTP requests, so you can reuse
+auth/logging/metrics filters on the handshake. Pass a filter as the second argument; if it returns a non-2xx
+response, the upgrade is rejected with that response and no WebSocket connection is established:
+
+```scala
+val authFilter = new RxHttpFilter {
+  override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+    if (isAuthorized(request)) next(request)
+    else Rx.single(Http.response(HttpStatus.Unauthorized_401))
+  }
+}
+
+Netty.server
+  .withWebSocketRoute("/ws/secure", authFilter) { request =>
+    new WebSocketHandler {
+      override def onTextMessage(ctx: WebSocketContext, message: String): Unit = ctx.send(message)
+    }
+  }
+```
+
+Fragmented frames are aggregated into whole text/binary messages before reaching your handler, and the
+maximum frame payload size (default 1MB) can be tuned with `.withWebSocketMaxFrameSize(sizeInBytes)`.
+
+
 ## Access Logs
 
 airframe-http stores HTTP access logs at `log/http-server.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.
