@@ -16,7 +16,11 @@ package wvlet.airframe.http.netty
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFuture, ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.*
-import io.netty.handler.codec.http.websocketx.{WebSocketServerHandshaker, WebSocketServerHandshakerFactory}
+import io.netty.handler.codec.http.websocketx.{
+  WebSocketFrameAggregator,
+  WebSocketServerHandshaker,
+  WebSocketServerHandshakerFactory
+}
 import io.netty.util.concurrent.EventExecutorGroup
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.internal.{HttpLogs, RPCResponseFilter}
@@ -110,16 +114,28 @@ class NettyRequestHandler(
       req: Request,
       route: WebSocketRoute
   ): Unit = {
+    // Build the filter chain before retaining the request, so a synchronous failure here does not leak the buffer.
+    // The chain terminates in a 200 marker that signals "upgrade allowed".
+    val filtered: Rx[Response] =
+      try {
+        wsUpgradeFilter
+          .andThen(route.filter).andThen { (_: Request) => Rx.single(Http.response(HttpStatus.Ok_200)) }
+          .apply(req)
+      } catch {
+        case NonFatal(ex) =>
+          writeResponse(
+            msg,
+            ctx,
+            toNettyResponse(RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse)
+          )
+          return
+      }
+
     // The handshake may run later (async filter and/or event loop hop), so keep the request alive
     msg.retain()
     // Act on the first terminal outcome only: guards against a filter that emits multiple responses (double
     // handshake/release) or completes without emitting one (leaking the retained request)
     val handled = new java.util.concurrent.atomic.AtomicBoolean(false)
-    // Run the upgrade request through the filter chain, terminating in a 200 marker that signals "upgrade allowed"
-    val filtered: Rx[Response] =
-      wsUpgradeFilter
-        .andThen(route.filter).andThen { (_: Request) => Rx.single(Http.response(HttpStatus.Ok_200)) }
-        .apply(req)
     RxRunner.run(filtered) {
       case OnNext(v) =>
         if (handled.compareAndSet(false, true)) {
@@ -174,18 +190,22 @@ class NettyRequestHandler(
           val wsHandler   = new NettyWebSocketHandler(userHandler, wsContext)
           val future      = handshaker.handshake(ctx.channel(), msg)
           // The handshake reconfigures the pipeline with WebSocket codecs and drops the HTTP aggregator/codec.
-          // Install the frame handler and remove this HTTP request handler. Offload frame callbacks to the handler
-          // executor when configured, so blocking user callbacks do not stall the event loop (matching HTTP handlers).
+          // Add a frame aggregator so fragmented (continuation) frames are coalesced into whole text/binary messages,
+          // then install the frame handler and remove this HTTP request handler. Offload frame callbacks to the
+          // handler executor when configured, so blocking user callbacks do not stall the event loop (as for HTTP).
           val pipeline = ctx.pipeline()
+          pipeline.addLast("wsAggregator", new WebSocketFrameAggregator(config.webSocketMaxFrameSize))
           wsHandlerExecutor match {
             case Some(executor) => pipeline.addLast(executor, "wsHandler", wsHandler)
             case None           => pipeline.addLast("wsHandler", wsHandler)
           }
           pipeline.remove(NettyRequestHandler.this)
-          // Notify onOpen synchronously on the event loop so it always precedes any inbound frame (the event loop
-          // will not process the next read until this task returns). Outbound writes from onOpen are still queued
-          // after the handshake response, so frame ordering on the wire is preserved.
-          wsHandler.notifyOpen()
+          // Notify onOpen so it always precedes any inbound frame. Run it on the frame handler's own executor (the
+          // handler executor when configured, else the event loop); Netty serializes tasks per handler, so onOpen is
+          // enqueued before any frame dispatch and never blocks the event loop. Outbound writes from onOpen are still
+          // queued after the handshake response, so frame ordering on the wire is preserved.
+          val handlerExecutor = pipeline.context("wsHandler").executor()
+          handlerExecutor.execute { () => wsHandler.notifyOpen() }
           future.addListener { (f: ChannelFuture) =>
             // A failed handshake-response write is typically a benign client disconnect; close the channel and let
             // channelInactive deliver onClose rather than surfacing a noisy onError.

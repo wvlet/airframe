@@ -141,6 +141,29 @@ class WebSocketTest extends AirSpec {
       }
   }
 
+  test("fragmented text messages are aggregated") {
+    Netty.server
+      .withWebSocketRoute("/ws/echo") { _ =>
+        new WebSocketHandler {
+          override def onTextMessage(ctx: WebSocketContext, message: String): Unit = ctx.send(s"echo:${message}")
+        }
+      }
+      .noLogging
+      .design
+      .build[NettyServer] { server =>
+        val listener = new CollectingListener
+        val ws       = connect(server, "/ws/echo", listener)
+        try {
+          // Send the message in two fragments (last=false, then last=true); the server should see one whole message
+          ws.sendText("foo", false).get(10, TimeUnit.SECONDS)
+          ws.sendText("bar", true).get(10, TimeUnit.SECONDS)
+          listener.nextText shouldBe "echo:foobar"
+        } finally {
+          ws.sendClose(WebSocket.NORMAL_CLOSURE, "bye")
+        }
+      }
+  }
+
   test("server can push messages on open") {
     Netty.server
       .withWebSocketRoute("/ws/push") { _ =>
