@@ -426,6 +426,73 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
   .filter(<span class="hljs-type">Cors</span>.newFilter(<span class="hljs-type">Cors</span>.unsafePermissivePolicy))
   .andThen(<span class="hljs-type">RxRouter</span>.of[<span class="hljs-type">MyApi</span>])
 </code></pre>
+<h2><a class="anchor" aria-hidden="true" id="websocket"></a><a href="#websocket" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>WebSocket</h2>
+<p>The Netty backend (<code>airframe-http-netty</code>) can serve WebSocket connections. Register a WebSocket route by
+path with <code>Netty.server.withWebSocketRoute(...)</code>. A fresh <code>WebSocketHandler</code> is created per connection, so
+your handler can hold per-connection state:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.*
+<span class="hljs-keyword">import</span> wvlet.airframe.http.netty.<span class="hljs-type">Netty</span>
+
+<span class="hljs-type">Netty</span>.server
+  .withPort(<span class="hljs-number">8080</span>)
+  .withRouter(<span class="hljs-type">RxRouter</span>.of[<span class="hljs-type">MyApi</span>]) <span class="hljs-comment">// [optional] regular HTTP/RPC routes can coexist</span>
+  .withWebSocketRoute(<span class="hljs-string">"/ws/echo"</span>) { request =&gt;
+    <span class="hljs-keyword">new</span> <span class="hljs-type">WebSocketHandler</span> {
+      <span class="hljs-comment">// Called once after the handshake completes</span>
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onOpen</span></span>(ctx: <span class="hljs-type">WebSocketContext</span>): <span class="hljs-type">Unit</span> = {
+        ctx.send(<span class="hljs-string">"welcome"</span>)
+      }
+      <span class="hljs-comment">// Called for each text frame from the client</span>
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onTextMessage</span></span>(ctx: <span class="hljs-type">WebSocketContext</span>, message: <span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = {
+        ctx.send(<span class="hljs-string">s"echo:<span class="hljs-subst">${message}</span>"</span>)
+      }
+      <span class="hljs-comment">// Called for each binary frame from the client</span>
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onBinaryMessage</span></span>(ctx: <span class="hljs-type">WebSocketContext</span>, message: <span class="hljs-type">Array</span>[<span class="hljs-type">Byte</span>]): <span class="hljs-type">Unit</span> = {
+        ctx.send(message)
+      }
+      <span class="hljs-comment">// Called once when the connection is closed (by either side)</span>
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onClose</span></span>(ctx: <span class="hljs-type">WebSocketContext</span>): <span class="hljs-type">Unit</span> = {
+        <span class="hljs-comment">// release per-connection resources here</span>
+      }
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onError</span></span>(ctx: <span class="hljs-type">WebSocketContext</span>, e: <span class="hljs-type">Throwable</span>): <span class="hljs-type">Unit</span> = {
+        warn(e)
+      }
+    }
+  }
+  .start { server =&gt;
+    server.awaitTermination
+  }
+</code></pre>
+<p><code>WebSocketContext</code> is the per-connection handle for interacting with the client. It is thread-safe, so you
+can call <code>send</code>/<code>close</code> from any thread (e.g. to push messages from a background task):</p>
+<ul>
+<li><code>send(text: String)</code> / <code>send(data: Array[Byte])</code> — send a text or binary frame</li>
+<li><code>close()</code> / <code>close(statusCode, reason)</code> — close the connection</li>
+<li><code>request</code> — the original HTTP upgrade request (headers, query parameters, attachments set by filters)</li>
+</ul>
+<p>All <code>WebSocketHandler</code> callbacks have no-op defaults, so override only the events you need. Callbacks run on
+the server's I/O thread (or the configured handler executor thread pool), so avoid blocking in them; offload
+long-running work to a separate thread.</p>
+<h3><a class="anchor" aria-hidden="true" id="applying-filters-to-the-handshake"></a><a href="#applying-filters-to-the-handshake" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Applying filters to the handshake</h3>
+<p>WebSocket upgrades flow through the same <a href="#filters"><code>RxHttpFilter</code></a> chain as HTTP requests, so you can reuse
+auth/logging/metrics filters on the handshake. Pass a filter as the second argument; if it returns a non-2xx
+response, the upgrade is rejected with that response and no WebSocket connection is established:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> authFilter = <span class="hljs-keyword">new</span> <span class="hljs-type">RxHttpFilter</span> {
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
+    <span class="hljs-keyword">if</span> (isAuthorized(request)) next(request)
+    <span class="hljs-keyword">else</span> <span class="hljs-type">Rx</span>.single(<span class="hljs-type">Http</span>.response(<span class="hljs-type">HttpStatus</span>.<span class="hljs-type">Unauthorized_401</span>))
+  }
+}
+
+<span class="hljs-type">Netty</span>.server
+  .withWebSocketRoute(<span class="hljs-string">"/ws/secure"</span>, authFilter) { request =&gt;
+    <span class="hljs-keyword">new</span> <span class="hljs-type">WebSocketHandler</span> {
+      <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onTextMessage</span></span>(ctx: <span class="hljs-type">WebSocketContext</span>, message: <span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = ctx.send(message)
+    }
+  }
+</code></pre>
+<p>Fragmented frames are aggregated into whole text/binary messages before reaching your handler, and the
+maximum frame payload size (default 1MB) can be tuned with <code>.withWebSocketMaxFrameSize(sizeInBytes)</code>.</p>
 <h2><a class="anchor" aria-hidden="true" id="access-logs"></a><a href="#access-logs" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Access Logs</h2>
 <p>airframe-http stores HTTP access logs at <code>log/http-server.json</code> by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.</p>
 <p>The default logger will record request parameters, request headers (except Authorization headers), response parameters, and response headers.</p>
@@ -529,7 +596,7 @@ rx.toRxStream.map(x =&gt; x.contentString) <span class="hljs-comment">// Returns
 <span class="hljs-comment">// a Finagle-based sync client</span>
 <span class="hljs-type">Finagle</span>.client.newSyncClient(host_name)
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-rpc"><span class="arrow-prev">← </span><span>Airframe RPC</span></a><a class="docs-next button" href="/airframe/docs/airframe-rx"><span class="function-name-prevnext">airframe-rx: ReactiveX interface</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#defining-http-endpoints">Defining HTTP Endpoints</a><ul class="toc-headings"><li><a href="#path-parameter-types">Path Parameter Types</a></li><li><a href="#messagepack-support">MessagePack Support</a></li></ul></li><li><a href="#starting-a-netty-http-server">Starting A Netty HTTP Server</a></li><li><a href="#customizing-netty">Customizing Netty</a></li><li><a href="#integration-with-airframe-di">Integration with Airframe DI</a><ul class="toc-headings"><li><a href="#running-multiple-netty-servers-with-airframe-di">Running Multiple Netty Servers with Airframe DI</a></li></ul></li><li><a href="#static-content">Static Content</a></li><li><a href="#reporting-errors">Reporting Errors</a><ul class="toc-headings"><li><a href="#returning-custom-error-responses">Returning Custom Error Responses</a></li></ul></li><li><a href="#filters">Filters</a><ul class="toc-headings"><li><a href="#thread-local-storage">Thread-Local Storage</a></li><li><a href="#cors-filter">CORS Filter</a></li></ul></li><li><a href="#access-logs">Access Logs</a><ul class="toc-headings"><li><a href="#reading-access-logs-with-fluentd">Reading Access Logs with Fluentd</a></li></ul></li><li><a href="#default-http-client">Default Http Client</a></li><li><a href="#customizing-http-clients">Customizing HTTP clients</a></li><li><a href="#rx-based-async-client">Rx-based async client</a><ul class="toc-headings"><li><a href="#urlconnection-client-for-java-8">URLConnection client for Java 8</a></li></ul></li><li><a href="#okhttp-client">OkHttp Client</a></li><li><a href="#finagle-http-client">Finagle Http Client</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2026 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-rpc"><span class="arrow-prev">← </span><span>Airframe RPC</span></a><a class="docs-next button" href="/airframe/docs/airframe-rx"><span class="function-name-prevnext">airframe-rx: ReactiveX interface</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#defining-http-endpoints">Defining HTTP Endpoints</a><ul class="toc-headings"><li><a href="#path-parameter-types">Path Parameter Types</a></li><li><a href="#messagepack-support">MessagePack Support</a></li></ul></li><li><a href="#starting-a-netty-http-server">Starting A Netty HTTP Server</a></li><li><a href="#customizing-netty">Customizing Netty</a></li><li><a href="#integration-with-airframe-di">Integration with Airframe DI</a><ul class="toc-headings"><li><a href="#running-multiple-netty-servers-with-airframe-di">Running Multiple Netty Servers with Airframe DI</a></li></ul></li><li><a href="#static-content">Static Content</a></li><li><a href="#reporting-errors">Reporting Errors</a><ul class="toc-headings"><li><a href="#returning-custom-error-responses">Returning Custom Error Responses</a></li></ul></li><li><a href="#filters">Filters</a><ul class="toc-headings"><li><a href="#thread-local-storage">Thread-Local Storage</a></li><li><a href="#cors-filter">CORS Filter</a></li></ul></li><li><a href="#websocket">WebSocket</a><ul class="toc-headings"><li><a href="#applying-filters-to-the-handshake">Applying filters to the handshake</a></li></ul></li><li><a href="#access-logs">Access Logs</a><ul class="toc-headings"><li><a href="#reading-access-logs-with-fluentd">Reading Access Logs with Fluentd</a></li></ul></li><li><a href="#default-http-client">Default Http Client</a></li><li><a href="#customizing-http-clients">Customizing HTTP clients</a></li><li><a href="#rx-based-async-client">Rx-based async client</a><ul class="toc-headings"><li><a href="#urlconnection-client-for-java-8">URLConnection client for Java 8</a></li></ul></li><li><a href="#okhttp-client">OkHttp Client</a></li><li><a href="#finagle-http-client">Finagle Http Client</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2026 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
