@@ -179,7 +179,7 @@ class NettyRequestHandler(
   ): Unit = {
     ctx.channel().eventLoop().execute { () =>
       try {
-        val location  = NettyRequestHandler.webSocketLocation(msg)
+        val location  = NettyRequestHandler.webSocketLocation(ctx, msg)
         val wsFactory = new WebSocketServerHandshakerFactory(location, null, true, config.webSocketMaxFrameSize)
         val handshaker: WebSocketServerHandshaker = wsFactory.newHandshaker(msg)
         if (handshaker == null) {
@@ -388,17 +388,20 @@ object NettyRequestHandler extends LogSupport {
     */
   private[netty] def isWebSocketUpgrade(msg: HttpRequest): Boolean = {
     val headers = msg.headers()
+    // containsValue with ignoreCase handles comma-separated lists (e.g. "Connection: keep-alive, Upgrade"),
+    // so each token is matched individually - do not replace with an exact-match comparison.
     headers.containsValue(HttpHeaderNames.CONNECTION, HttpHeaderValues.UPGRADE, true) &&
     headers.containsValue(HttpHeaderNames.UPGRADE, HttpHeaderValues.WEBSOCKET, true)
   }
 
   /**
-    * Build the WebSocket URL used by Netty's handshaker. TLS is not yet supported by this server, so the scheme is
-    * ws://
+    * Build the WebSocket URL used by Netty's handshaker, using wss:// when the channel is TLS-secured (an SslHandler is
+    * present in the pipeline) and ws:// otherwise.
     */
-  private[netty] def webSocketLocation(req: HttpRequest): String = {
-    val host = Option(req.headers().get(HttpHeaderNames.HOST)).getOrElse("localhost")
-    s"ws://${host}${req.uri()}"
+  private[netty] def webSocketLocation(ctx: ChannelHandlerContext, req: HttpRequest): String = {
+    val scheme = if (ctx.pipeline().get(classOf[io.netty.handler.ssl.SslHandler]) != null) "wss" else "ws"
+    val host   = Option(req.headers().get(HttpHeaderNames.HOST)).getOrElse("localhost")
+    s"${scheme}://${host}${req.uri()}"
   }
 
   // Thread pool for SSE stream consumption to avoid blocking Netty worker threads.
