@@ -79,7 +79,12 @@ case class NettyServerConfig(
     // slow or blocking request handlers from starving the event loop and blocking other
     // connections (e.g., health check endpoints).
     // None (default) = handlers run on Netty worker threads (event loop).
-    handlerExecutorThreads: Option[Int] = None
+    handlerExecutorThreads: Option[Int] = None,
+    // WebSocket routes. An incoming HTTP upgrade request whose path matches a route is
+    // upgraded to a WebSocket connection after passing through the route's filter.
+    webSocketRoutes: List[WebSocketRoute] = Nil,
+    // Maximum WebSocket frame payload size in bytes (default: 1MB)
+    webSocketMaxFrameSize: Int = 1024 * 1024
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -100,6 +105,32 @@ case class NettyServerConfig(
   }
   def withRouter(rxRouter: RxRouter): NettyServerConfig = {
     this.copy(router = Router.fromRxRouter(rxRouter))
+  }
+
+  /**
+    * Register a WebSocket route at the given path. An incoming HTTP upgrade request whose path matches will be upgraded
+    * to a WebSocket connection, and a new [[WebSocketHandler]] is created per connection via the given factory.
+    */
+  def withWebSocketRoute(path: String)(handlerFactory: HttpMessage.Request => WebSocketHandler): NettyServerConfig = {
+    withWebSocketRoute(path, RxHttpFilter.identity)(handlerFactory)
+  }
+
+  /**
+    * Register a WebSocket route at the given path with a filter applied to the upgrade request. The filter can enforce
+    * auth, logging, or metrics on the handshake. If the filter returns a non-2xx response, the upgrade is rejected with
+    * that response and no WebSocket connection is established.
+    */
+  def withWebSocketRoute(path: String, filter: RxHttpFilter)(
+      handlerFactory: HttpMessage.Request => WebSocketHandler
+  ): NettyServerConfig = {
+    this.copy(webSocketRoutes = webSocketRoutes :+ WebSocketRoute(path, handlerFactory, filter))
+  }
+
+  /**
+    * Set the maximum WebSocket frame payload size in bytes (default: 1MB).
+    */
+  def withWebSocketMaxFrameSize(sizeInBytes: Int): NettyServerConfig = {
+    this.copy(webSocketMaxFrameSize = sizeInBytes)
   }
   def withHttpLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): NettyServerConfig = {
     this.copy(httpLoggerConfig = f(httpLoggerConfig))
@@ -412,7 +443,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new ChunkedWriteHandler())
-        val handler = new NettyRequestHandler(config, dispatcher, httpStreamLogger)
+        val handler =
+          new NettyRequestHandler(config, dispatcher, httpStreamLogger, attachContextFilter, handlerExecutorGroup)
         handlerExecutorGroup match {
           case Some(executor) =>
             // Offload request handling to a separate thread pool so that
