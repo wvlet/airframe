@@ -15,7 +15,7 @@ jobs:
     outputs:
       packaging: ${{ steps.filter.outputs.packaging }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
         with:
@@ -31,7 +31,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.packaging == 'true'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # Fetch all tags so that sbt-dynver can find the previous release version
           fetch-depth: 0
