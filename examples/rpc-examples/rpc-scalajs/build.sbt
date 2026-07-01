@@ -14,7 +14,7 @@ lazy val api =
     .in(file("api"))
     .settings(
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-http" % AIRFRAME_VERSION
       )
     )
 
@@ -24,9 +24,10 @@ lazy val apiJS  = api.js
 lazy val server =
   project
     .in(file("server"))
+    .enablePlugins(UniPlugin)
     .settings(
-      // For using the project root as a working folder
-      reStart / baseDirectory := (ThisBuild / baseDirectory).value,
+      // For using the project root as a working folder (background fork-run via sbt-uni)
+      uniRestart / baseDirectory := (ThisBuild / baseDirectory).value,
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-launcher"   % AIRFRAME_VERSION
@@ -43,7 +44,7 @@ lazy val ui =
       scalaJSUseMainModuleInitializer := true,
       airframeHttpClients             := Seq("example.api:rpc"),
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %%% "airframe-rx-html" % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-rx-html" % AIRFRAME_VERSION
       )
     )
     .dependsOn(apiJS)

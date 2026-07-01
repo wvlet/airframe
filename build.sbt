@@ -1,5 +1,5 @@
-import scalajsbundler.JSDOMNodeJSEnv
 import xerial.sbt.pack.PackPlugin.{projectSettings, publishPackArchiveTgz}
+import wvlet.uni.jsenv.playwright.PlaywrightJSEnv
 
 val SCALA_2_12          = "2.12.21"
 val SCALA_2_13          = "2.13.18"
@@ -78,6 +78,11 @@ Global / excludeLintKeys ++= Set(ideSkipProject)
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
+// sbt 2.x promotes dependency eviction conflicts to errors by default. Restore the sbt 1.x
+// behavior (warn), as Scala Native modules mix ABI-compatible test-interface 0.5.x patch
+// versions from the published airspec/scalacheck artifacts.
+ThisBuild / evictionErrorLevel := sbt.util.Level.Warn
+
 // Use Scala 3 by default as scala-2 specific source code is relatively small now
 ThisBuild / scalaVersion := SCALA_3
 
@@ -106,7 +111,7 @@ val buildSettings = Seq[Setting[?]](
   crossScalaVersions    := targetScalaVersions,
   crossPaths            := true,
   publishMavenStyle     := true,
-  mimaPreviousArtifacts := Set("org.wvlet.airframe" %%% s"${name.value}" % AIRFRAME_BINARY_COMPAT_VERSION),
+  mimaPreviousArtifacts := Set("org.wvlet.airframe" %% s"${name.value}" % AIRFRAME_BINARY_COMPAT_VERSION),
   mimaFailOnNoPrevious  := false,
   mimaBinaryIssueFilters ++= {
     import com.typesafe.tools.mima.core.*
@@ -134,13 +139,13 @@ val buildSettings = Seq[Setting[?]](
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
-    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
+    "org.wvlet.airframe" %% "airspec"    % AIRSPEC_VERSION    % Test,
+    "org.scalacheck"     %% "scalacheck" % SCALACHECK_VERSION % Test
   ) ++ {
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.14.0")
+      Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0")
   }
 )
 
@@ -166,9 +171,9 @@ ThisBuild / publishTo := {
 val jsBuildSettings = Seq[Setting[?]](
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
   libraryDependencies ++= Seq(
-    ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test).cross(CrossVersion.for3Use2_13),
+    ("org.scala-js" %% "scalajs-java-securerandom" % "1.0.0" % Test).cross(CrossVersion.for3Use2_13),
     // TODO It should be included in AirSpec
-    "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1" % Test
+    "org.scala-js" %% "scala-js-macrotask-executor" % "1.1.1" % Test
   )
 )
 
@@ -202,7 +207,7 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate((jvmProjects ++ jsProjects ++ itProjects): _*)
+    .aggregate((jvmProjects ++ jsProjects ++ itProjects)*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
@@ -290,7 +295,7 @@ lazy val communityBuild =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(communityBuildProjects: _*)
+    .aggregate(communityBuildProjects*)
 
 // For Scala 2.12
 lazy val projectJVM =
@@ -300,7 +305,7 @@ lazy val projectJVM =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(jvmProjects: _*)
+    .aggregate(jvmProjects*)
 
 lazy val projectJS =
   project
@@ -309,7 +314,7 @@ lazy val projectJS =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(jsProjects: _*)
+    .aggregate(jsProjects*)
 
 lazy val projectNative =
   project
@@ -318,7 +323,7 @@ lazy val projectNative =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(nativeProjects: _*)
+    .aggregate(nativeProjects*)
 
 lazy val projectIt =
   project
@@ -327,7 +332,7 @@ lazy val projectIt =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(itProjects: _*)
+    .aggregate(itProjects*)
 
 // A scoped project only for Dotty (Scala 3).
 // This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects
@@ -395,7 +400,7 @@ def parallelCollection(scalaVersion: String) = {
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, *}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
-def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
+def excludePomDependency(excludes: Seq[String]) = { (node: XmlNode) =>
   def isExcludeTarget(artifactId: String): Boolean =
     excludes.exists(artifactId.startsWith(_))
 
@@ -505,7 +510,7 @@ lazy val diMacros =
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 // lazy val airframeMacrosRef    = airframeMacros    % Optional
-val surfaceDependencies = { scalaVersion: String =>
+val surfaceDependencies = { (scalaVersion: String) =>
   scalaVersion match {
     case s if s.startsWith("3.") =>
       Seq.empty
@@ -584,7 +589,7 @@ lazy val ulid =
     .jsSettings(
       jsBuildSettings,
       // For using SecureRandom (requires `crypto` package)
-      libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
+      libraryDependencies += ("org.scala-js" %% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
     )
     .nativeSettings(nativeBuildSettings)
     .dependsOn(log % Test)
@@ -611,7 +616,7 @@ lazy val launcher =
     )
     .dependsOn(surface.jvm, control.jvm, codec.jvm)
 
-val logDependencies = { scalaVersion: String =>
+val logDependencies = { (scalaVersion: String) =>
   scalaVersion match {
     case s if s.startsWith("3.") =>
       Seq.empty
@@ -626,7 +631,7 @@ val logJVMDependencies = Seq(
 )
 
 // airframe-log should have minimum dependencies
-lazy val log: sbtcrossproject.CrossProject =
+lazy val log: wvlet.uni.sbt.crossproject.CrossProject =
   crossProject(JVMPlatform, JSPlatform, NativePlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-log"))
@@ -647,7 +652,7 @@ lazy val log: sbtcrossproject.CrossProject =
     .jsSettings(
       jsBuildSettings,
       libraryDependencies ++= Seq(
-        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
+        ("org.scala-js" %% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
     .nativeSettings(
@@ -682,12 +687,12 @@ lazy val msgpack =
     .jsSettings(
       jsBuildSettings,
       libraryDependencies +=
-        ("org.scala-js" %%% "scalajs-java-time" % JS_JAVA_TIME_VERSION).cross(CrossVersion.for3Use2_13)
+        ("org.scala-js" %% "scalajs-java-time" % JS_JAVA_TIME_VERSION).cross(CrossVersion.for3Use2_13)
     )
     .nativeSettings(
       nativeBuildSettings,
       // For using java.time libraries
-      libraryDependencies += "org.ekrich" %%% "sjavatime" % "1.3.0"
+      libraryDependencies += "org.ekrich" %% "sjavatime" % "1.3.0"
     )
     .dependsOn(log, json)
 
@@ -750,7 +755,7 @@ lazy val rx =
     .jsSettings(
       jsBuildSettings,
       // For addressing the fairness issue of the global ExecutorContext https://github.com/scala-js/scala-js/issues/4129
-      libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
+      libraryDependencies += "org.scala-js" %% "scala-js-macrotask-executor" % "1.1.1"
     )
     .nativeSettings(nativeBuildSettings)
     .dependsOn(log)
@@ -781,9 +786,9 @@ lazy val http =
     )
     .jsSettings(
       jsBuildSettings,
-      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      Test / jsEnv := Def.uncached(new PlaywrightJSEnv("chromium", headless = true)),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
+        "org.scala-js" %% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
     .nativeSettings(
@@ -933,10 +938,10 @@ lazy val benchmark =
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
       // Generate JMH benchmark cord before packaging and testing
-      Compile / pack        := (Compile / pack).dependsOn(Test / compile).value,
+      Compile / pack        := Def.uncached((Compile / pack).dependsOn(Test / compile).value),
       Jmh / sourceDirectory := (Compile / sourceDirectory).value,
-      Jmh / compile         := (Jmh / compile).triggeredBy(Compile / compile).value,
-      Test / compile        := ((Test / compile).dependsOn(Jmh / compile)).value,
+      Jmh / compile         := Def.uncached((Jmh / compile).triggeredBy(Compile / compile).value),
+      Test / compile        := Def.uncached(((Test / compile).dependsOn(Jmh / compile)).value),
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
       run / fork := true,
       libraryDependencies ++= Seq(
@@ -984,7 +989,7 @@ lazy val fluentd =
     )
     .dependsOn(codec.jvm, di.jvm)
 
-def sqlRefLib = { scalaVersion: String =>
+def sqlRefLib = { (scalaVersion: String) =>
   if (scalaVersion.startsWith("2.13")) {
     Seq(
       // Include Spark just as a reference implementation
@@ -1040,23 +1045,43 @@ lazy val parquet =
     )
     .dependsOn(codec.jvm, sql)
 
+val ANTLR4_VERSION      = "4.13.2"
+val ANTLR4_PACKAGE_NAME = "wvlet.airframe.sql.parser"
+
 lazy val sql =
   project
-    .enablePlugins(Antlr4Plugin)
     .in(file("airframe-sql"))
     .settings(buildSettings)
     .settings(
-      name                       := "airframe-sql",
-      description                := "SQL parser & analyzer",
-      Antlr4 / antlr4Version     := "4.13.2",
-      Antlr4 / antlr4PackageName := Some("wvlet.airframe.sql.parser"),
-      Antlr4 / antlr4GenListener := true,
-      Antlr4 / antlr4GenVisitor  := true,
+      name        := "airframe-sql",
+      description := "SQL parser & analyzer",
       libraryDependencies ++= Seq(
+        "org.antlr" % "antlr4-runtime" % ANTLR4_VERSION,
         // For parsing DataType strings
         "org.scala-lang.modules"   %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         "com.github.vertical-blank" % "sql-formatter"            % "2.0.5"
-      ) ++ sqlRefLib(scalaVersion.value)
+      ) ++ sqlRefLib(scalaVersion.value),
+      // Generate ANTLR4 Lexer/Parser sources. sbt-antlr4 has no sbt 2.x build, so the
+      // ANTLR4 tool (added to the meta-build classpath in project/plugin.sbt) is invoked directly.
+      Compile / sourceGenerators += Def.uncached(Def.task {
+        val grammarDir   = baseDirectory.value / "src" / "main" / "antlr4"
+        val outDir       = (Compile / sourceManaged).value / "antlr4"
+        val grammarFiles = (grammarDir ** "*.g4").get()
+        val gen = FileFunction.cached(streams.value.cacheDirectory / "antlr4") { (_: Set[File]) =>
+          IO.createDirectory(outDir)
+          val args = Array(
+            "-o",
+            outDir.getAbsolutePath,
+            "-package",
+            ANTLR4_PACKAGE_NAME,
+            "-visitor",
+            "-listener"
+          ) ++ grammarFiles.map(_.getAbsolutePath)
+          new org.antlr.v4.Tool(args).processGrammarsOnCommandLine()
+          (outDir ** "*.java").get().toSet
+        }
+        gen(grammarFiles.toSet).toSeq
+      }).taskValue
     )
     .dependsOn(msgpack.jvm, surface.jvm, config, launcher)
 
@@ -1077,9 +1102,9 @@ lazy val rxHtml =
     )
     .jsSettings(
       jsBuildSettings,
-      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      Test / jsEnv := Def.uncached(new PlaywrightJSEnv("chromium", headless = true)),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
+        "org.scala-js" %% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
     .dependsOn(log, rx, surface)
@@ -1093,7 +1118,7 @@ lazy val widgetJS =
       name        := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js",
       jsBuildSettings,
-      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+      Test / jsEnv := Def.uncached(new PlaywrightJSEnv("chromium", headless = true))
       // npmDependencies in Compile += "monaco-editor" -> "0.21.3",
       // useYarn := true
       //      npmDependencies in Test += "node" -> "12.14.1"
@@ -1182,10 +1207,6 @@ lazy val integrationTestJs =
       ideSkipProject := true,
       name           := "airframe-integration-test-js",
       description    := "browser integration test for Scala.js",
-      Test / jsEnv := new jsenv.playwright.PWEnv(
-        browserName = "chrome",
-        headless = true,
-        showLogs = false
-      )
+      Test / jsEnv := Def.uncached(new PlaywrightJSEnv("chromium", headless = true))
     )
     .dependsOn(integrationTestApi.js)

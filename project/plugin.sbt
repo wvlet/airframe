@@ -1,32 +1,29 @@
-addSbtPlugin("com.github.sbt"      % "sbt-pgp"                  % "2.3.1")
-addSbtPlugin("org.scalameta"       % "sbt-scalafmt"             % "2.5.6")
-addSbtPlugin("org.portable-scala"  % "sbt-scalajs-crossproject" % "1.3.2")
-addSbtPlugin("com.eed3si9n"        % "sbt-buildinfo"            % "0.13.1")
-addSbtPlugin("org.jetbrains.scala" % "sbt-ide-settings"         % "1.1.3")
+addSbtPlugin("com.github.sbt"      % "sbt-pgp"          % "2.3.1")
+addSbtPlugin("org.scalameta"       % "sbt-scalafmt"     % "2.5.6")
+addSbtPlugin("com.eed3si9n"        % "sbt-buildinfo"    % "0.13.1")
+addSbtPlugin("org.jetbrains.scala" % "sbt-ide-settings" % "1.1.4")
 
 // For auto-code rewrite
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.5")
 
-// For integration testing
-val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "24.12.2")
-addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
-
 addDependencyTreePlugin
 
-// For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.20.2")
-addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
-addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
-libraryDependencies ++= (
-  Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.1")
-)
+// For Scala.js and Scala Native cross-building (sbt 2.x native)
+addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.14")
 
-// For Scala.js + Playwright test
-libraryDependencies += "io.github.gmkumar2005" %% "scala-js-env-playwright" % "0.1.18"
+// For background fork-run (sbt-revolver replacement) and HTTP/RPC client code generation
+addSbtPlugin("org.wvlet.uni" % "sbt-uni" % "2026.1.14")
+
+// For Scala.js + Playwright test (also replaces scalajs-env-jsdom-nodejs, which has no Scala 3 build)
+addSbtPlugin("org.wvlet.uni" % "sbt-uni-playwright" % "2026.1.14")
+
+// For Scala.js
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.22.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
 
 // For Scala native
-addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
-addSbtPlugin("org.scala-native"   % "sbt-scala-native"              % "0.5.10")
+val SCALA_NATIVE_VERSION = sys.env.getOrElse("SCALA_NATIVE_VERSION", "0.5.12")
+addSbtPlugin("org.scala-native" % "sbt-scala-native" % SCALA_NATIVE_VERSION)
 
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
@@ -34,12 +31,17 @@ addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 // Documentation
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.8.2")
 
-// For generating Lexer/Parser from ANTLR4 grammar (.g4)
-addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")
-
 // For JMH benchmark
-addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.7")
-addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.23")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.8")
+addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "1.0.0")
+
+// For generating Lexer/Parser from ANTLR4 grammar (.g4) via a custom sourceGenerators task,
+// as sbt-antlr4 has no sbt 2.x build
+libraryDependencies += "org.antlr" % "antlr4" % "4.13.2"
+
+// For integration testing
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.1.7-0-938ab3b9-20260701-0115-SNAPSHOT")
+addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 
 scalacOptions ++= Seq("-deprecation", "-feature")
 
@@ -48,4 +50,6 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 //libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.10.8"
 
 // Binary compatibility checker
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.4")
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.6")
+
+conflictWarning := ConflictWarning.disable

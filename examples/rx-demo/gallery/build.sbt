@@ -14,6 +14,6 @@ lazy val gallery =
         "-Yrangepos"
       ),
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %%% "airframe-rx-html" % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-rx-html" % AIRFRAME_VERSION
       )
     )

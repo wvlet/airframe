@@ -1,6 +1,8 @@
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.1.7-0-938ab3b9-20260701-0115-SNAPSHOT")
+addSbtPlugin("org.wvlet.airframe" % "sbt-airframe"         % SBT_AIRFRAME_VERSION)
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"          % "1.22.0")
+addSbtPlugin("org.wvlet.uni"      % "sbt-uni-crossproject" % "2026.1.14")
+// Background fork-run (sbt-revolver replacement)
+addSbtPlugin("org.wvlet.uni" % "sbt-uni" % "2026.1.14")
 
-addSbtPlugin("org.wvlet.airframe" % "sbt-airframe"             % "2026.1.1")
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.20.2")
-addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.2")
-addSbtPlugin("io.spray"           % "sbt-revolver"             % "0.10.0")
+conflictWarning := ConflictWarning.disable

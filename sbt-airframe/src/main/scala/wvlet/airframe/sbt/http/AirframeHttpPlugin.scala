@@ -25,6 +25,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.OS
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
+import xsbti.FileConverter
 
 import scala.sys.process.*
 
@@ -93,12 +94,17 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     import sbt.Keys.*
     Seq(
       airframeHttpClients := Seq.empty,
-      airframeHttpClasspass := {
+      airframeHttpClasspass := Def.uncached {
+        given FileConverter = fileConverter.value
         // Compile all dependent projects
         val compileResults = (Compile / compile).all(dependentProjects).value
         val baseDir        = (ThisBuild / baseDirectory).value
         val classpaths =
           ((Compile / dependencyClasspath).value.files :+ (Compile / classDirectory).value)
+            .map {
+              case f: File           => f
+              case p: java.nio.file.Path => p.toFile
+            }
             .map { p =>
               p.relativeTo(baseDir).getOrElse(p).getPath
             }
@@ -113,7 +119,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         }
       },
       airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.airframeVersion,
-      airframeHttpBinaryDir := {
+      airframeHttpBinaryDir := Def.uncached {
         // This task is for downloading airframe-http library to parse Airframe HTTP/RPC interfaces using a forked JVM.
         // Without forking JVM, sbt's class loader cannot load @RPC and @Endpoint annotations.
         val airframeVersion        = airframeHttpVersion.value
@@ -182,20 +188,22 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         airframeHttpPackageDir
       },
       airframeHttpGeneratorOption := "",
-      airframeHttpReload := Def
-        .sequential(
-          Def.task {
-            // Need to run the clean task first to avoid ClassNotFound error when using Scala 2.13 with sbt (running in Scala 2.12)
-            val cleanTask       = clean.value
-            val targetDir: File = airframeHttpWorkDir.value
-            val cacheFile       = targetDir / cacheFileName
-            IO.delete(cacheFile)
-          },
-          airframeHttpGenerateClient
-        )
-        .value,
-      airframeHttpOutDir := (Compile / sourceManaged).value,
-      airframeHttpGenerateClient := {
+      airframeHttpReload := Def.uncached {
+        Def
+          .sequential(
+            Def.task {
+              // Need to run the clean task first to avoid ClassNotFound error when using Scala 2.13 with sbt (running in Scala 2.12)
+              val cleanTask       = clean.value
+              val targetDir: File = airframeHttpWorkDir.value
+              val cacheFile       = targetDir / cacheFileName
+              IO.delete(cacheFile)
+            },
+            airframeHttpGenerateClient
+          )
+          .value
+      },
+      airframeHttpOutDir := Def.uncached((Compile / sourceManaged).value),
+      airframeHttpGenerateClient := Def.uncached {
         val targetDir = airframeHttpWorkDir.value
         val baseDir   = targetDir.relativeTo(file(".")).getOrElse(targetDir)
         val binDir    = airframeHttpBinaryDir.value
@@ -230,48 +238,52 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       ),
       airframeHttpOpenAPITargetDir := target.value,
       airframeHttpOpenAPIPackages  := Seq.empty,
-      airframeHttpOpenAPIGenerate := Def
-        .task {
-          val config             = airframeHttpOpenAPIConfig.value
-          val workDir            = airframeHttpWorkDir.value
-          val baseDir            = workDir.relativeTo(file(".")).getOrElse(workDir)
-          val formatType: String = config.format
-          val outFile: File      = airframeHttpOpenAPITargetDir.value / s"${config.filePrefix}.${formatType}"
-          val binDir: File       = airframeHttpBinaryDir.value
-          val cp                 = airframeHttpClasspass.value
-          val packages           = airframeHttpOpenAPIPackages.value
-          val opts               = airframeHttpOpts.value
+      airframeHttpOpenAPIGenerate := Def.uncached {
+        Def
+          .task {
+            val config             = airframeHttpOpenAPIConfig.value
+            val workDir            = airframeHttpWorkDir.value
+            val baseDir            = workDir.relativeTo(file(".")).getOrElse(workDir)
+            val formatType: String = config.format
+            val outFile: File      = airframeHttpOpenAPITargetDir.value / s"${config.filePrefix}.${formatType}"
+            val binDir: File       = airframeHttpBinaryDir.value
+            val cp                 = airframeHttpClasspass.value
+            val packages           = airframeHttpOpenAPIPackages.value
+            val opts               = airframeHttpOpts.value
 
-          val cmdOpts = OpenAPIGeneratorOption(
-            classpath = cp,
-            outFile = outFile,
-            formatType = formatType,
-            title = config.title,
-            version = config.version,
-            packageNames = packages
-          )
-          val optFile = baseDir / "openapi-opts.json"
-          if (packages.isEmpty) {
-            Seq.empty
-          } else {
-            val optJson = MessageCodec.of[OpenAPIGeneratorOption].toJson(cmdOpts)
-            trace(s"OpenAPI schema generator option:\n${optJson}")
-            IO.write(optFile, optJson)
+            val cmdOpts = OpenAPIGeneratorOption(
+              classpath = cp,
+              outFile = outFile,
+              formatType = formatType,
+              title = config.title,
+              version = config.version,
+              packageNames = packages
+            )
+            val optFile = baseDir / "openapi-opts.json"
+            if (packages.isEmpty) {
+              Seq.empty
+            } else {
+              val optJson = MessageCodec.of[OpenAPIGeneratorOption].toJson(cmdOpts)
+              trace(s"OpenAPI schema generator option:\n${optJson}")
+              IO.write(optFile, optJson)
 
-            val cmd = s"${binDir}/bin/${generatorName} openapiFromJson ${opts} ${optFile}"
-            debug(cmd)
-            Process(cmd).!!
-            Seq(outFile)
+              val cmd = s"${binDir}/bin/${generatorName} openapiFromJson ${opts} ${optFile}"
+              debug(cmd)
+              Process(cmd).!!
+              Seq(outFile)
+            }
           }
-        }
-        .dependsOn(Compile / compile)
-        .value,
+          .dependsOn(Compile / compile)
+          .value
+      },
       // Generate HTTP clients before compilation
       Compile / sourceGenerators += airframeHttpGenerateClient,
       // Generate OpenAPI doc when generating package
-      Compile / `package` := (Compile / `package`)
-        .dependsOn(airframeHttpOpenAPIGenerate)
-        .value
+      Compile / `package` := Def.uncached {
+        (Compile / `package`)
+          .dependsOn(airframeHttpOpenAPIGenerate)
+          .value
+      }
     )
   }
 
