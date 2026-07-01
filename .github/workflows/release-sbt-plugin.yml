@@ -32,8 +32,10 @@ jobs:
         run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
+      # sbt-airframe is a Scala 3 sbt 2.x plugin, so it depends on the _3 variants
+      # of airframe-control/codec/log/http-codegen at the release version.
       - name: Create Airframe artifacts locally
-        run: ./sbt ++2.12 "projectJVM/publishLocal; projectJS/publishLocal"
+        run: ./sbt "projectJVM/publishLocal"
       - name: Build sbt-airframe bundle
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
