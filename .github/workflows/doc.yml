@@ -20,7 +20,7 @@ jobs:
     name: Update docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Git
         run: |
           git config --global user.email "leo@xerial.org"
