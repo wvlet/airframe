@@ -39,8 +39,10 @@ jobs:
         run: echo ${AIRFRAME_VERSION}
       # sbt-airframe is a Scala 3 sbt 2.x plugin, so it depends on the _3 variants
       # of airframe-control/codec/log/http-codegen at the release version.
+      # Use projectDotty (the Scala 3 JVM aggregate) rather than projectJVM, which also
+      # includes the Scala-2-only finagle module that cannot compile on Scala 3.
       - name: Create Airframe artifacts locally
-        run: ./sbt "projectJVM/publishLocal"
+        run: ./sbt "projectDotty/publishLocal"
       - name: Build sbt-airframe bundle
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
