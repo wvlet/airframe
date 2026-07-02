@@ -153,7 +153,9 @@ object ChromeTracer {
     * @return
     */
   def newTracer(fileName: String): ChromeTracer = {
-    new ChromeTracer(new BufferedOutputStream(new FileOutputStream(fileName)))
+    val file = new File(fileName)
+    Option(file.getParentFile).foreach(_.mkdirs())
+    new ChromeTracer(new BufferedOutputStream(new FileOutputStream(file)))
   }
 
   /**
