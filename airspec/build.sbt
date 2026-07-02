@@ -364,7 +364,12 @@ lazy val airspec =
         .filter(x => x._2 != "JS_DEPENDENCIES"),
       Compile / packageSrc / mappings ++= (airspecDeps.js / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
+        // scalajs-test-interface is a plain Scala-versioned (non-Scala.js) artifact published only for
+        // 2.12/2.13. In a Scala.js project sbt 2.x would append the nonexistent _sjs1_ suffix, so pin the
+        // Scala binary suffix explicitly (Scala 3 uses the 2.13 build).
+        "org.scala-js" % s"scalajs-test-interface_${
+            if (scalaVersion.value.startsWith("3.")) "2.13" else scalaBinaryVersion.value
+          }" % scalaJSVersion,
         ("org.portable-scala" %% "portable-scala-reflect" % "1.1.3").cross(CrossVersion.for3Use2_13),
         // Needed to be explicitly included here for running Scala.js tests successfully
         "org.scala-js" %% "scala-js-macrotask-executor" % "1.1.1",

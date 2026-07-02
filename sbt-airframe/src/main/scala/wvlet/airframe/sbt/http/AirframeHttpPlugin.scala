@@ -102,7 +102,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val classpaths =
           ((Compile / dependencyClasspath).value.files :+ (Compile / classDirectory).value)
             .map {
-              case f: File           => f
+              case f: File               => f
               case p: java.nio.file.Path => p.toFile
             }
             .map { p =>
