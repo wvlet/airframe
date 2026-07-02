@@ -27,6 +27,8 @@ jobs:
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
+      # The root build's metabuild needs the (not-yet-released) sbt-airframe plugin to load.
+      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Build bundle
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}

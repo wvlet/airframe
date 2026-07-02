@@ -28,6 +28,11 @@ jobs:
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
+      # Break the release-time circular dependency: the root build's metabuild needs the
+      # sbt-airframe plugin to load, but sbt-airframe is what we're releasing. Publish it locally
+      # FIRST, before AIRFRAME_VERSION is set, so its own deps resolve from the last released
+      # airframe on Maven Central rather than the (not-yet-built) release version.
+      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Get Airframe version
         run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
       - name: Check Airframe version
