@@ -177,7 +177,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
       - uses: actions/setup-node@v6
@@ -208,7 +208,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
       - uses: actions/setup-node@v6
@@ -239,7 +239,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
       - uses: actions/setup-node@v6
@@ -270,7 +270,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
       - uses: actions/setup-node@v6
