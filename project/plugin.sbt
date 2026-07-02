@@ -45,7 +45,7 @@ libraryDependencies += "org.antlr" % "antlr4" % "4.13.2"
 // build sbt-airframe locally and point this at the snapshot:
 //   (cd sbt-airframe && ../sbt publishLocal)
 //   export SBT_AIRFRAME_VERSION=$(./scripts/dynver.sh)
-val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.1.8")
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.2.0")
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 
 scalacOptions ++= Seq("-deprecation", "-feature")

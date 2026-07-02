@@ -1,7 +1,7 @@
 name: Bootstrap sbt-airframe
 description: >
   Publish the in-repo sbt-airframe plugin to the local Ivy repo so the main build's
-  metabuild can resolve it. Temporary: remove once sbt-airframe 2026.1.8 is published
+  metabuild can resolve it. Temporary: remove once sbt-airframe 2026.2.0 is published
   to Maven Central (the main build then resolves it normally via SBT_AIRFRAME_VERSION).
 runs:
   using: composite
@@ -9,4 +9,4 @@ runs:
     - name: Publish sbt-airframe locally
       shell: bash
       # Pin the version to the SBT_AIRFRAME_VERSION default in project/plugin.sbt.
-      run: cd sbt-airframe && ../sbt 'set every version := "2026.1.8"' publishLocal
+      run: cd sbt-airframe && ../sbt 'set every version := "2026.2.0"' publishLocal
