@@ -40,11 +40,10 @@ addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "1.0.0")
 // as sbt-antlr4 has no sbt 2.x build
 libraryDependencies += "org.antlr" % "antlr4" % "4.13.2"
 
-// For integration testing.
-// Defaults to the next sbt-airframe release. Until that is published to Maven Central,
-// build sbt-airframe locally and point this at the snapshot:
-//   (cd sbt-airframe && ../sbt publishLocal)
-//   export SBT_AIRFRAME_VERSION=$(./scripts/dynver.sh)
+// For integration testing (the integrationTest project uses AirframeHttpPlugin).
+// Keep this pinned to a RELEASED sbt-airframe on Maven Central (like AIRSPEC_VERSION) — do NOT
+// bump it to the in-development version, or the metabuild can't load while that version is being
+// built (a release-time deadlock). Building sbt-airframe from this repo's source is not required.
 val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.2.2")
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 

@@ -42,7 +42,6 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: scalafmt in Scala 2.x
         run: ./sbt "++ 2.13; scalafmtCheckAll"
       - name: scalafmt in Scala 3
@@ -64,7 +63,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala 2.12 test
         run: ./sbt "++2.12; projectJVM/test"
       - name: Publish Test Report
@@ -86,7 +84,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala 2.13 test
         run: ./sbt "++2.13; projectJVM/test"
       - name: Publish Test Report
@@ -108,7 +105,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala 3.x test
         # Test only Scala 3 supported projects
         run: ./sbt "++ 3; projectDotty/test; dottyTest/run"
@@ -131,7 +127,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala 3.7.x test
         # Test only Scala 3 supported projects
         run: SCALA_VERSION=3.7.1 ./sbt "projectDotty/test; dottyTest/run"
@@ -154,7 +149,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '25'
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala 3 test
         # Test only Scala 3 supported projects
         run: ./sbt "++ 3; projectDotty/test; dottyTest/run"
@@ -186,7 +180,6 @@ jobs:
           cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Integration Test
         run: ./sbt "++ 3; projectIt/test"
       - name: Publish Test Report
@@ -217,7 +210,6 @@ jobs:
           cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 2.12; projectJS/test"
       - name: Publish Test Report
@@ -248,7 +240,6 @@ jobs:
           cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 2.13; projectJS/test"
       - name: Publish Test Report
@@ -279,7 +270,6 @@ jobs:
           cache: 'pnpm'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 3; projectJS/test"
       - name: Publish Test Report
@@ -303,7 +293,6 @@ jobs:
           java-version: '21'
       - name: Install native dependencies
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
-      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Scala Native test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 3; projectNative/test"
       - name: Publish Test Report
