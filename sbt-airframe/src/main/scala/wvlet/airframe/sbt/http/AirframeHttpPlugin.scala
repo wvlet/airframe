@@ -236,7 +236,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         title = name.value,
         version = version.value
       ),
-      airframeHttpOpenAPITargetDir := target.value,
+      // Use the base target directory (sbt 1.x target.value location). In sbt 2.x target.value
+      // resolves to a versioned target/out/... path, which would change the output location.
+      airframeHttpOpenAPITargetDir := baseDirectory.value / "target",
       airframeHttpOpenAPIPackages  := Seq.empty,
       airframeHttpOpenAPIGenerate := Def.uncached {
         Def
