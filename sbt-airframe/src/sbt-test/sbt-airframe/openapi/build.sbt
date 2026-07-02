@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
 )
 
 TaskKey[Unit]("check") := {
-  val yaml = IO.read(target.value / "openapi.yaml")
+  val yaml = IO.read(baseDirectory.value / "target" / "openapi.yaml")
   val expected = Seq(
     "title: 'Open API Test'",
     "version: '1.0.0'",

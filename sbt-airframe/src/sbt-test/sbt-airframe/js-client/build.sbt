@@ -10,7 +10,7 @@ lazy val spi =
     .crossType(CrossType.Pure)
     .in(file("spi"))
     .settings(
-      libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % sys.props("airframe.version")
+      libraryDependencies += "org.wvlet.airframe" %% "airframe-http" % sys.props("airframe.version")
     )
 
 lazy val client =
@@ -24,7 +24,7 @@ lazy val client =
     )
     .jsSettings(
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "2.8.1"
+        "org.scala-js" %% "scalajs-dom" % "2.8.1"
       )
     )
     .dependsOn(spi)

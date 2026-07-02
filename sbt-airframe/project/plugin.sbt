@@ -9,7 +9,6 @@ addDependencyTreePlugin
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 
-// For sbt-airframe
-libraryDependencies += "org.scala-sbt" %% "scripted-plugin" % sbtVersion.value
+// ScriptedPlugin is bundled with sbt 2.x itself, no separate scripted-plugin dependency needed
 
 scalacOptions ++= Seq("-deprecation", "-feature")

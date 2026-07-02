@@ -44,6 +44,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+      # The root build's metabuild needs the (not-yet-released) sbt-airframe plugin to load.
+      - uses: ./.github/actions/bootstrap-sbt-airframe
       - name: Get Airframe version
         run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
       - name: Check Airframe version

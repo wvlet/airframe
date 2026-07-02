@@ -3,7 +3,8 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "24.12.1")
 val AIRSPEC_VERSION  = sys.env.getOrElse("AIRSPEC_VERSION", "24.12.1")
-val SCALA_2_12       = "2.12.21"
+// sbt 2.x plugins run on Scala 3
+val PLUGIN_SCALA_VERSION = "3.8.3"
 
 ThisBuild / organization := "org.wvlet.airframe"
 
@@ -36,9 +37,7 @@ val buildSettings = Seq[Setting[?]](
   javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq(
     "-feature",
-    "-deprecation",
-    // For using import * syntax
-    "-Xsource:3"
+    "-deprecation"
   ),
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
@@ -63,10 +62,16 @@ lazy val sbtAirframe =
       buildInfoPackage := "wvlet.airframe.sbt",
       name             := "sbt-airframe",
       description      := "sbt plugin for helping programming with Airframe",
-      scalaVersion     := SCALA_2_12,
+      scalaVersion     := PLUGIN_SCALA_VERSION,
       libraryDependencies ++= Seq(
-        "io.get-coursier"    %% "coursier"              % "2.1.24",
-        "org.apache.commons"  % "commons-compress"      % "1.28.0",
+        // coursier has no Scala 3 build yet. Its scala-xml/scala-collection-compat (_2.13) transitive
+        // deps conflict with the _3 variants pulled in natively, so exclude and re-add them for Scala 3.
+        ("io.get-coursier" %% "coursier" % "2.1.24")
+          .cross(CrossVersion.for3Use2_13)
+          .excludeAll(ExclusionRule(organization = "org.scala-lang.modules")),
+        "org.scala-lang.modules" %% "scala-xml"               % "2.3.0",
+        "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0",
+        "org.apache.commons" % "commons-compress" % "1.28.0",
         "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-log"          % AIRFRAME_VERSION,

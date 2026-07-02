@@ -218,9 +218,13 @@ object RxRenderingTest extends AirSpec {
     }
 
     val (n, c) = render(e)
-    n.outerHTML shouldBe """<div style="color: white;" class="color-white"></div>"""
+    // Attribute serialization order in outerHTML is JS-environment dependent, so assert per attribute.
+    def htmlContains(fragments: String*): Unit = fragments.foreach { f =>
+      assert(n.outerHTML.contains(f), s"${n.outerHTML} should contain ${f}")
+    }
+    htmlContains("""style="color: white;"""", """class="color-white"""")
     color := "black"
-    n.outerHTML shouldBe """<div style="color: black;" class="color-black"></div>"""
+    htmlContains("""style="color: black;"""", """class="color-black"""")
     c.cancel
   }
 

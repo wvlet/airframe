@@ -42,7 +42,7 @@ ThisBuild / publishTo := {
 }
 
 // Share
-ThisBuild / scalafmtConfig := file("../.scalafmt.conf")
+ThisBuild / scalafmtConfig := Def.uncached(file("../.scalafmt.conf"))
 
 val noPublish = Seq(
   publish / skip  := true,
@@ -93,7 +93,7 @@ val buildSettings = Seq[Setting[?]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.14.0")
+      Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0")
   }
 )
 
@@ -111,7 +111,7 @@ import sbt.ThisBuild
 import scala.xml.{Comment, Elem, Node => XmlNode, NodeSeq => XmlNodeSeq}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
-def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
+def excludePomDependency(excludes: Seq[String]) = { (node: XmlNode) =>
   def isExcludeTarget(artifactId: String): Boolean =
     excludes.exists(artifactId.startsWith(_))
 
@@ -235,7 +235,7 @@ lazy val airspecLog =
     .jsSettings(
       airspecJSBuildSettings,
       libraryDependencies ++= Seq(
-        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
+        ("org.scala-js" %% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
     .nativeSettings(
@@ -310,7 +310,7 @@ lazy val airspecDeps =
       Compile / packageSrc / mappings ++= (airspecCore.js / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         // Necessary for async testing
-        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
+        "org.scala-js" %% "scala-js-macrotask-executor" % "1.1.1"
       )
     )
     .nativeSettings(
@@ -334,7 +334,7 @@ lazy val airspec =
       name        := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
+        "org.scalacheck" %% "scalacheck" % SCALACHECK_VERSION
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
       pomPostProcess := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
@@ -364,12 +364,17 @@ lazy val airspec =
         .filter(x => x._2 != "JS_DEPENDENCIES"),
       Compile / packageSrc / mappings ++= (airspecDeps.js / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
-        ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.3").cross(CrossVersion.for3Use2_13),
+        // scalajs-test-interface is a plain Scala-versioned (non-Scala.js) artifact published only for
+        // 2.12/2.13. In a Scala.js project sbt 2.x would append the nonexistent _sjs1_ suffix, so pin the
+        // Scala binary suffix explicitly (Scala 3 uses the 2.13 build).
+        "org.scala-js" % s"scalajs-test-interface_${
+            if (scalaVersion.value.startsWith("3.")) "2.13" else scalaBinaryVersion.value
+          }" % scalaJSVersion,
+        ("org.portable-scala" %% "portable-scala-reflect" % "1.1.3").cross(CrossVersion.for3Use2_13),
         // Needed to be explicitly included here for running Scala.js tests successfully
-        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
+        "org.scala-js" %% "scala-js-macrotask-executor" % "1.1.1",
         // Required by embedded airframe-log code that uses java.util.logging
-        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
+        ("org.scala-js" %% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
     .nativeSettings(
@@ -378,7 +383,7 @@ lazy val airspec =
       Compile / packageBin / mappings ++= (airspecDeps.native / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDeps.native / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        "org.scala-native" %%% "test-interface" % "0.5.10"
+        "org.scala-native" %% "test-interface" % "0.5.12"
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
