@@ -14,7 +14,8 @@ addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.14")
 // For background fork-run (sbt-revolver replacement) and HTTP/RPC client code generation
 addSbtPlugin("org.wvlet.uni" % "sbt-uni" % "2026.1.14")
 
-// For Scala.js + Playwright test (also replaces scalajs-env-jsdom-nodejs, which has no Scala 3 build)
+// For Scala.js DOM tests. Replaces scalajs-env-jsdom-nodejs, which has no Scala 3 build and is
+// no longer binary-compatible with current Scala.js jsenv APIs. Provides PlaywrightJSEnv.
 addSbtPlugin("org.wvlet.uni" % "sbt-uni-playwright" % "2026.1.14")
 
 // For Scala.js

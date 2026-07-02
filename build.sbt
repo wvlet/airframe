@@ -83,6 +83,10 @@ ThisBuild / usePipelining := false
 // versions from the published airspec/scalacheck artifacts.
 ThisBuild / evictionErrorLevel := sbt.util.Level.Warn
 
+// sbt 2.x defaults exportJars to true, which puts (test) resources inside jars. Some code loads
+// resources as plain files (e.g. YamlReader), so restore the sbt 1.x class-directory classpath.
+ThisBuild / exportJars := false
+
 // Use Scala 3 by default as scala-2 specific source code is relatively small now
 ThisBuild / scalaVersion := SCALA_3
 
