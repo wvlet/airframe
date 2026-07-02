@@ -165,7 +165,7 @@ object Gallery extends LogSupport {
       div(
         button(
           cls -> "btn btn-primary",
-          onclick { e: dom.Event =>
+          onclick { (e: dom.Event) =>
             v.update(_ + 1)
           },
           "Increment"
