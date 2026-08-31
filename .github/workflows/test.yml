@@ -59,7 +59,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -80,7 +80,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -101,7 +101,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -123,7 +123,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -145,7 +145,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '25'
@@ -167,7 +167,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -197,7 +197,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -227,7 +227,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -257,7 +257,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -287,7 +287,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
@@ -310,7 +310,7 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: '21'
