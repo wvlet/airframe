@@ -116,6 +116,22 @@ class RxRunner(
           case other =>
             effect(other)
         }
+      case MapWithCompletionOp(in, f) =>
+        run(in) {
+          case OnNext(v) =>
+            Try(f.asInstanceOf[Any => Option[A]](v)) match {
+              case Success(Some(x)) =>
+                effect(OnNext(x))
+              case Success(None) =>
+                // The function requested completion
+                effect(OnCompletion)
+                RxResult.Stop
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
       case fm @ FlatMapOp(in, f) =>
         // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
         var c1 = Cancelable.empty
@@ -138,6 +154,41 @@ class RxRunner(
                     toContinue
                 }
                 toContinue
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
+        Cancelable { () =>
+          c1.cancel; c2.cancel
+        }
+      case fmwc @ FlatMapWithCompletionOp(in, f) =>
+        // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
+        var c1 = Cancelable.empty
+        val c2 = run(fmwc.input) {
+          case OnNext(x) =>
+            var toContinue: RxResult = RxResult.Continue
+            Try(fmwc.f.asInstanceOf[Function[Any, Option[RxOps[_]]]](x)) match {
+              case Success(Some(rxb)) =>
+                // This code is necessary to properly cancel the effect if this operator is evaluated before
+                c1.cancel
+                c1 = run(rxb) {
+                  case n @ OnNext(x) =>
+                    toContinue = effect(n)
+                    toContinue
+                  case OnCompletion =>
+                    // skip the end of the nested flatMap body stream
+                    RxResult.Continue
+                  case ev @ OnError(e) =>
+                    toContinue = effect(ev)
+                    toContinue
+                }
+                toContinue
+              case Success(None) =>
+                // The function requested completion
+                effect(OnCompletion)
+                RxResult.Stop
               case Failure(e) =>
                 effect(OnError(e))
             }
