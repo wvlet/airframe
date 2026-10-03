@@ -735,7 +735,7 @@ lazy val jdbc =
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
         "org.duckdb"     % "duckdb_jdbc" % "1.4.4.0",
         "org.postgresql" % "postgresql"  % "42.7.10",
-        "com.zaxxer"     % "HikariCP"    % "7.0.2",
+        "com.zaxxer"     % "HikariCP"    % "7.1.0",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
