@@ -30,7 +30,7 @@ addSbtPlugin("org.scala-native" % "sbt-scala-native" % SCALA_NATIVE_VERSION)
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.8.2")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.2")
 
 // For JMH benchmark
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.8")
