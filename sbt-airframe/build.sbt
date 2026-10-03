@@ -66,16 +66,16 @@ lazy val sbtAirframe =
       libraryDependencies ++= Seq(
         // coursier has no Scala 3 build yet. Its scala-xml/scala-collection-compat (_2.13) transitive
         // deps conflict with the _3 variants pulled in natively, so exclude and re-add them for Scala 3.
-        ("io.get-coursier" %% "coursier" % "2.1.24")
+        ("io.get-coursier" %% "coursier" % "2.1.26")
           .cross(CrossVersion.for3Use2_13)
           .excludeAll(ExclusionRule(organization = "org.scala-lang.modules")),
         "org.scala-lang.modules" %% "scala-xml"               % "2.3.0",
         "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0",
-        "org.apache.commons" % "commons-compress" % "1.28.0",
-        "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-log"          % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-http-codegen" % AIRFRAME_VERSION % Test
+        "org.apache.commons"      % "commons-compress"        % "1.28.0",
+        "org.wvlet.airframe"     %% "airframe-control"        % AIRFRAME_VERSION,
+        "org.wvlet.airframe"     %% "airframe-codec"          % AIRFRAME_VERSION,
+        "org.wvlet.airframe"     %% "airframe-log"            % AIRFRAME_VERSION,
+        "org.wvlet.airframe"     %% "airframe-http-codegen"   % AIRFRAME_VERSION % Test
       ),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
