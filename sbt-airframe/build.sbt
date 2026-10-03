@@ -69,7 +69,7 @@ lazy val sbtAirframe =
         ("io.get-coursier" %% "coursier" % "2.1.26")
           .cross(CrossVersion.for3Use2_13)
           .excludeAll(ExclusionRule(organization = "org.scala-lang.modules")),
-        "org.scala-lang.modules" %% "scala-xml"               % "2.3.0",
+        "org.scala-lang.modules" %% "scala-xml"               % "2.5.0",
         "org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0",
         "org.apache.commons"      % "commons-compress"        % "1.28.0",
         "org.wvlet.airframe"     %% "airframe-control"        % AIRFRAME_VERSION,
