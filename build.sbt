@@ -1026,7 +1026,7 @@ lazy val parquet =
         // Note: This is fragile and might break with future parquet-hadoop updates that introduce
         // new Hadoop dependencies. If compilation fails after upgrading parquet-hadoop, check for
         // new NoClassDefFoundError exceptions and add the missing dependencies here with exclusions.
-        ("org.apache.hadoop" % "hadoop-common" % "3.4.3")
+        ("org.apache.hadoop" % "hadoop-common" % "3.5.0")
           .excludeAll(ExclusionRule(organization = "*")),
         ("com.fasterxml.woodstox" % "woodstox-core" % "7.3.0")
           .excludeAll(ExclusionRule(organization = "*")),
@@ -1036,7 +1036,7 @@ lazy val parquet =
           .excludeAll(ExclusionRule(organization = "*")),
         ("org.apache.commons" % "commons-collections4" % "4.6.0")
           .excludeAll(ExclusionRule(organization = "*")),
-        ("org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.4.3")
+        ("org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.5.0")
           .excludeAll(ExclusionRule(organization = "*")),
         ("org.apache.hadoop.thirdparty" % "hadoop-shaded-guava" % "1.5.0")
           .excludeAll(ExclusionRule(organization = "*")),
