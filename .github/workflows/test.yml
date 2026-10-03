@@ -11,6 +11,12 @@ permissions:
   # Required by mikepenz/action-junit-report to publish check annotations
   checks: write
 
+# Cancel superseded runs for the same PR (e.g. Scala Steward force-pushes). Every main
+# commit keeps its own run, and runs for different PRs never cancel each other.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   changes:
     name: Detect Changes
