@@ -54,6 +54,6 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 //libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.10.8"
 
 // Binary compatibility checker
-addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.6")
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.2.1")
 
 conflictWarning := ConflictWarning.disable
