@@ -1,0 +1,47 @@
+name: auto-merge
+on:
+  pull_request:
+    # Scala Steward adds labels after opening a PR, so re-evaluate on label changes
+    types: [opened, reopened, synchronize, labeled]
+
+jobs:
+  auto-merge-dependabot:
+    name: Auto-Merge Dependabot PRs
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Generate token
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v3.1.0
+      - name: Enable auto-merge PR for minor updates
+        if: ${{ steps.metadata.outputs.update-type != 'version-update:semver-major' }}
+        run: gh pr merge --squash --auto "${{ github.event.pull_request.html_url }}"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+  auto-merge-scala-steward:
+    name: Auto-Merge Scala Steward PRs
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'xerial-bot' || github.actor == 'scala-steward-wvlet[bot]' }}
+    steps:
+      - name: Generate token
+        uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - name: Enable auto-merge PR for minor updates
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'semver-spec-major') && !contains(github.event.pull_request.labels.*.name, 'early-semver-major') }}
+        run: gh pr merge --squash --auto "${{ github.event.pull_request.html_url }}"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - name: Disable auto-merge PR for major updates
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'semver-spec-major') || contains(github.event.pull_request.labels.*.name, 'early-semver-major') }}
+        run: gh pr merge --disable-auto "${{ github.event.pull_request.html_url }}" || true
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
