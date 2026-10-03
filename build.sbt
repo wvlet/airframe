@@ -1028,7 +1028,7 @@ lazy val parquet =
         // new NoClassDefFoundError exceptions and add the missing dependencies here with exclusions.
         ("org.apache.hadoop" % "hadoop-common" % "3.4.2")
           .excludeAll(ExclusionRule(organization = "*")),
-        ("com.fasterxml.woodstox" % "woodstox-core" % "7.1.1")
+        ("com.fasterxml.woodstox" % "woodstox-core" % "7.3.0")
           .excludeAll(ExclusionRule(organization = "*")),
         ("org.codehaus.woodstox" % "stax2-api" % "4.2.2")
           .excludeAll(ExclusionRule(organization = "*")),
