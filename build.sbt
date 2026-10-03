@@ -1034,7 +1034,7 @@ lazy val parquet =
           .excludeAll(ExclusionRule(organization = "*")),
         ("commons-collections" % "commons-collections" % "3.2.2")
           .excludeAll(ExclusionRule(organization = "*")),
-        ("org.apache.commons" % "commons-collections4" % "4.5.0")
+        ("org.apache.commons" % "commons-collections4" % "4.6.0")
           .excludeAll(ExclusionRule(organization = "*")),
         ("org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.4.2")
           .excludeAll(ExclusionRule(organization = "*")),
@@ -1067,25 +1067,26 @@ lazy val sql =
       ) ++ sqlRefLib(scalaVersion.value),
       // Generate ANTLR4 Lexer/Parser sources. sbt-antlr4 has no sbt 2.x build, so the
       // ANTLR4 tool (added to the meta-build classpath in project/plugin.sbt) is invoked directly.
-      Compile / sourceGenerators += Def.uncached(Def.task {
-        val grammarDir   = baseDirectory.value / "src" / "main" / "antlr4"
-        val outDir       = (Compile / sourceManaged).value / "antlr4"
-        val grammarFiles = (grammarDir ** "*.g4").get()
-        val gen = FileFunction.cached(streams.value.cacheDirectory / "antlr4") { (_: Set[File]) =>
-          IO.createDirectory(outDir)
-          val args = Array(
-            "-o",
-            outDir.getAbsolutePath,
-            "-package",
-            ANTLR4_PACKAGE_NAME,
-            "-visitor",
-            "-listener"
-          ) ++ grammarFiles.map(_.getAbsolutePath)
-          new org.antlr.v4.Tool(args).processGrammarsOnCommandLine()
-          (outDir ** "*.java").get().toSet
-        }
-        gen(grammarFiles.toSet).toSeq
-      }).taskValue
+      Compile / sourceGenerators += Def
+        .uncached(Def.task {
+          val grammarDir   = baseDirectory.value / "src" / "main" / "antlr4"
+          val outDir       = (Compile / sourceManaged).value / "antlr4"
+          val grammarFiles = (grammarDir ** "*.g4").get()
+          val gen = FileFunction.cached(streams.value.cacheDirectory / "antlr4") { (_: Set[File]) =>
+            IO.createDirectory(outDir)
+            val args = Array(
+              "-o",
+              outDir.getAbsolutePath,
+              "-package",
+              ANTLR4_PACKAGE_NAME,
+              "-visitor",
+              "-listener"
+            ) ++ grammarFiles.map(_.getAbsolutePath)
+            new org.antlr.v4.Tool(args).processGrammarsOnCommandLine()
+            (outDir ** "*.java").get().toSet
+          }
+          gen(grammarFiles.toSet).toSeq
+        }).taskValue
     )
     .dependsOn(msgpack.jvm, surface.jvm, config, launcher)
 
@@ -1211,6 +1212,6 @@ lazy val integrationTestJs =
       ideSkipProject := true,
       name           := "airframe-integration-test-js",
       description    := "browser integration test for Scala.js",
-      Test / jsEnv := Def.uncached(new PlaywrightJSEnv("chromium", headless = true))
+      Test / jsEnv   := Def.uncached(new PlaywrightJSEnv("chromium", headless = true))
     )
     .dependsOn(integrationTestApi.js)
