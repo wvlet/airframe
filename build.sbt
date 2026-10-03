@@ -12,7 +12,7 @@ ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "24.12.1")
 val SCALACHECK_VERSION              = "1.20.0"
-val MSGPACK_VERSION                 = "0.9.11"
+val MSGPACK_VERSION                 = "0.9.12"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.5.0"
 val SQLITE_JDBC_VERSION             = "3.51.1.1"
 val SLF4J_VERSION                   = "2.0.20"
