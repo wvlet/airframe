@@ -15,6 +15,13 @@ on:
 permissions:
   contents: read
 
+# Only the latest main commit needs a snapshot. Keep at most one queued run, which is
+# replaced by newer pushes, and let a running publish finish so Sonatype doesn't end up
+# with a partially published version.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   publish_snapshots:
     name: Publish snapshots
