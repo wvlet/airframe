@@ -166,7 +166,7 @@ object DemoApi extends LogSupport {
       }
     }
 
-    private val codec = codecFactory.of[Map[String, Any]]
+    private val codec                      = codecFactory.of[Map[String, Any]]
     private val getContextMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("getContext"), codecFactory)
     private val getRPCContextMethodDescriptor =
@@ -203,32 +203,32 @@ object DemoApi extends LogSupport {
     private lazy val _channel = GrpcClientInterceptor.wrap(getChannel, encoding)
 
     def getContext: String = {
-      val m = Map.empty[String, Any]
+      val m    = Map.empty[String, Any]
       val resp = ClientCalls
         .blockingUnaryCall(_channel, getContextMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[String]
     }
     def getRPCContext: Option[String] = {
-      val m = Map.empty[String, Any]
+      val m    = Map.empty[String, Any]
       val resp = ClientCalls
         .blockingUnaryCall(_channel, getRPCContextMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Option[String]]
     }
     def getRequest: Request = {
-      val m = Map.empty[String, Any]
+      val m    = Map.empty[String, Any]
       val resp = ClientCalls
         .blockingUnaryCall(_channel, getRequestMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Request]
     }
 
     def hello(name: String): String = {
-      val m = Map("name" -> name)
+      val m    = Map("name" -> name)
       val resp = ClientCalls
         .blockingUnaryCall(_channel, helloMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[String]
     }
     def hello2(name: String, id: Int): String = {
-      val m = Map("name" -> name, "id" -> id)
+      val m    = Map("name" -> name, "id" -> id)
       val resp = ClientCalls
         .blockingUnaryCall(_channel, hello2MethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[String]
@@ -247,7 +247,7 @@ object DemoApi extends LogSupport {
       responseObserver.toRx.toSeq
     }
     def helloClientStreaming(input: Rx[String]): String = {
-      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      val responseObserver                                   = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncClientStreamingCall(
           _channel.newCall(
@@ -262,7 +262,7 @@ object DemoApi extends LogSupport {
     }
 
     def helloBidiStreaming(input: Rx[String]): Rx[String] = {
-      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      val responseObserver                                   = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncBidiStreamingCall(
           _channel.newCall(
@@ -276,14 +276,14 @@ object DemoApi extends LogSupport {
       responseObserver.toRx
     }
     def helloOpt(opt: Option[String]): String = {
-      val m = opt.map(x => Map("opt" -> opt)).getOrElse(Map.empty)
+      val m    = opt.map(x => Map("opt" -> opt)).getOrElse(Map.empty)
       val resp = ClientCalls
         .blockingUnaryCall(_channel, helloOptMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[String]
     }
 
     def returnUnit(name: String): Unit = {
-      val m = Map("name" -> name)
+      val m    = Map("name" -> name)
       val resp = ClientCalls
         .blockingUnaryCall(_channel, returnUnitMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Unit]

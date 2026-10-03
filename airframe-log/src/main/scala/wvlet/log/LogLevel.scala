@@ -44,7 +44,7 @@ object LogLevel {
   def apply(jlLevel: Level): LogLevel = {
     jlLevelIndex.get(jlLevel) match {
       case Some(l) => l
-      case None =>
+      case None    =>
         jlLevel match {
           case Level.CONFIG => INFO
           case Level.FINEST => TRACE

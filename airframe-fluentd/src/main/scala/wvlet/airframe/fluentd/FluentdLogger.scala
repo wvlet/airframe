@@ -56,7 +56,7 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
     }
   }
 
-  private val mapCodec = MessageCodec.of[Map[String, Any]]
+  private val mapCodec                                        = MessageCodec.of[Map[String, Any]]
   private def toMsgPack(event: Map[String, Any]): Array[Byte] = {
     mapCodec.toMsgPack(event)
   }

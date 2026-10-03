@@ -17,7 +17,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 class Injectee(val surface: Surface, val injectee: Any) {
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Injectee]
+  def canEqual(other: Any): Boolean        = other.isInstanceOf[Injectee]
   override def equals(other: Any): Boolean =
     other match {
       case that: Injectee =>
@@ -47,7 +47,7 @@ object EventHookHolder {
 
 case class EventHookHolder[A](injectee: Injectee, hook: A => Any) extends LifeCycleHook with LogSupport {
   override def toString: String = s"hook for [$surface]"
-  def execute: Unit = {
+  def execute: Unit             = {
     hook(injectee.injectee.asInstanceOf[A])
   }
 }

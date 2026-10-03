@@ -144,7 +144,7 @@ trait Rx[+A] extends RxOps[A] {
 
   import Rx.*
 
-  override def toRx: Rx[A] = this
+  override def toRx: Rx[A]                                             = this
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(
     this.asInstanceOf[Rx[Option[X]]]
   )
@@ -883,7 +883,7 @@ object Rx extends LogSupport {
   case class MapOp[A, B](input: Rx[A], f: A => B)            extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => RxOps[B]) extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean)   extends UnaryRx[A, A]
-  case class ZipOp[A, B](a: RxOps[A], b: RxOps[B]) extends Rx[(A, B)] {
+  case class ZipOp[A, B](a: RxOps[A], b: RxOps[B])           extends Rx[(A, B)] {
     override def parents: Seq[RxOps[_]] = Seq(a, b)
   }
   case class Zip3Op[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]) extends Rx[(A, B, C)] {
@@ -1055,7 +1055,7 @@ object Rx extends LogSupport {
       ticker: Ticker = Ticker.systemTicker
   ) extends UnaryRx[A, A]
       with RxCache[A] {
-    override def getCurrent: Option[A] = lastValue
+    override def getCurrent: Option[A]                                    = lastValue
     override def expireAfterWrite(time: Long, unit: TimeUnit): RxCache[A] = {
       this.copy(expirationAfterWriteNanos = Some(unit.toNanos(time)))
     }

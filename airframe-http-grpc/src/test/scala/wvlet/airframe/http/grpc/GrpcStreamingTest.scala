@@ -24,7 +24,7 @@ import wvlet.airspec.AirSpec
 object GrpcStreamingTest extends AirSpec {
 
   private lazy val router: Router = Router.add[DemoApiImpl]
-  protected override def design = {
+  protected override def design   = {
     gRPC.server.withRouter(router).designWithChannel
   }
 

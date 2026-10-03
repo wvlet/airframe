@@ -31,8 +31,8 @@ object RPCStatus {
   import RPCStatusType.*
 
   // These variables need to be lazy to avoid NPE during the initialization
-  private lazy val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
-  private lazy val codeNameTable: Map[String, RPCStatus] = all.map { x => x.name -> x }.toMap
+  private lazy val codeTable: Map[Int, RPCStatus]           = all.map { x => x.code -> x }.toMap
+  private lazy val codeNameTable: Map[String, RPCStatus]    = all.map { x => x.name -> x }.toMap
   private lazy val grpcStatusCodeTable: Map[Int, RPCStatus] = grpcStatusCodeMapping.map { case (g, r) =>
     g.code -> r
   }.toMap
@@ -159,7 +159,7 @@ object RPCStatus {
   def fromHttpStatus(httpStatus: HttpStatus): RPCStatus = {
     httpStatusMapping.get(httpStatus) match {
       case Some(status) => status
-      case _ =>
+      case _            =>
         if (httpStatus.isSuccessful) {
           RPCStatus.SUCCESS_S0
         } else if (httpStatus.isClientError) {

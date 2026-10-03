@@ -35,7 +35,7 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
     }
   }
 
-  def toLong: Long = value
+  def toLong: Long                     = value
   def valueOf(unit: CountUnit): Double = {
     value * 1.0 / unit.factor
   }
@@ -95,7 +95,7 @@ object Count {
   def apply(value: Long): Count                = Count(value, ONE)
   def unapply(countStr: String): Option[Count] = Try(apply(countStr)).toOption
 
-  private val countPattern = """^\s*(?<num>(?:-?)?[\d,]+(?:\.\d+)?)\s*(?<unit>[a-zA-Z])\s*$""".r
+  private val countPattern           = """^\s*(?<num>(?:-?)?[\d,]+(?:\.\d+)?)\s*(?<unit>[a-zA-Z])\s*$""".r
   def apply(countStr: String): Count = {
     countPattern.findFirstMatchIn(countStr) match {
       case None =>

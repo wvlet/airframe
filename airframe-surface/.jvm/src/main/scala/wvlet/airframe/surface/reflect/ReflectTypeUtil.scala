@@ -36,7 +36,7 @@ object ReflectTypeUtil extends LogSupport {
     try {
       import scala.language.existentials
 
-      val clName = cl.getName
+      val clName       = cl.getName
       val companionCls = if (clName.endsWith("$")) {
         cl
       } else {
@@ -82,8 +82,8 @@ object ReflectTypeUtil extends LogSupport {
   def canBuildFromString(s: Surface): Boolean =
     isPrimitive(s) || hasStringUnapplyConstructor(s)
 
-  def isPrimitive(s: Surface): Boolean = s.isPrimitive
-  def isArray(s: Surface): Boolean     = s.isInstanceOf[ArraySurface]
+  def isPrimitive(s: Surface): Boolean     = s.isPrimitive
+  def isArray(s: Surface): Boolean         = s.isInstanceOf[ArraySurface]
   def isArrayCls[T](cl: Class[T]): Boolean = {
     cl.isArray || cl.getSimpleName == "Array"
   }
@@ -121,7 +121,7 @@ object ReflectTypeUtil extends LogSupport {
       .getOrElse(false)
   }
 
-  def isOption(s: Surface): Boolean = s.isOption
+  def isOption(s: Surface): Boolean         = s.isOption
   def isOptionCls[T](cl: Class[T]): Boolean = {
     val name = cl.getSimpleName
     // Option None is an object ($)

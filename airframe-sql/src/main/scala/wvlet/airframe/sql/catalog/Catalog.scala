@@ -137,7 +137,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
     synchronized {
       databases.get(name) match {
         case Some(d) => d
-        case None =>
+        case None    =>
           throw SQLErrorCode.DatabaseNotFound.newException(s"database ${name} is not found", None)
       }
     }

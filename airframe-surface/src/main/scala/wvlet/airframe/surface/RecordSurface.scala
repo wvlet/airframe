@@ -38,7 +38,7 @@ case class RecordSurface(
   def withTypeArgs(newTypeArgs: Seq[Surface]): RecordSurface = this.copy(typeArgs = newTypeArgs)
   def withRawType(cls: Class[_]): RecordSurface              = this.copy(rawType = cls)
   def withParams(newParams: Seq[Parameter]): RecordSurface   = this.copy(params = newParams)
-  def addParam(newParam: Parameter): RecordSurface = {
+  def addParam(newParam: Parameter): RecordSurface           = {
     require(newParam.index == params.length, s"index must be ${params.length}: ${newParam.index}")
     this.copy(params = params :+ newParam)
   }
@@ -47,7 +47,7 @@ case class RecordSurface(
   def asSecret: RecordSurface                                     = this.copy(isSecret = true)
   def asPrimitive: RecordSurface                                  = this.copy(isPrimitive = true)
   def asOption: RecordSurface                                     = this.copy(isOption = true)
-  def asSeq: RecordSurface = {
+  def asSeq: RecordSurface                                        = {
     require(typeArgs.size == 1, s"typeArgs must have one parameter for Seq: ${typeArgs}")
     this.copy(isSeq = true, isArray = false, isMap = false)
   }

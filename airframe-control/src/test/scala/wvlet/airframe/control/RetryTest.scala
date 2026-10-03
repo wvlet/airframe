@@ -45,7 +45,7 @@ class RetryTest extends AirSpec {
 
   test("support bounded backoff retry") {
     val maxWait = 50000
-    var r =
+    var r       =
       Retry
         .withBoundedBackoff(initialIntervalMillis = 1000, maxTotalWaitMillis = maxWait)
         .noRetryLogging

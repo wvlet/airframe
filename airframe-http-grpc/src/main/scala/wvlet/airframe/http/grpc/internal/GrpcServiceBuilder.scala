@@ -105,7 +105,7 @@ object GrpcServiceBuilder {
   ): GrpcService = {
     val threadManager: ExecutorService = config.executorProvider(config)
     val requestLogger                  = config.requestLoggerProvider(config)
-    val services =
+    val services                       =
       for ((serviceName, routes) <- config.router.routes.groupBy(_.serviceName))
         yield {
           val routeAndMethods = for (route <- routes) yield {
@@ -117,7 +117,7 @@ object GrpcServiceBuilder {
           for ((r, m) <- routeAndMethods) {
             val controller      = session.getInstanceOf(r.controllerSurface)
             val rpcInterfaceCls = Router.findRPCInterfaceCls(r.controllerSurface)
-            val rpcMethod = RPCMethod(
+            val rpcMethod       = RPCMethod(
               path = r.path,
               rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
               methodName = r.methodSurface.name,

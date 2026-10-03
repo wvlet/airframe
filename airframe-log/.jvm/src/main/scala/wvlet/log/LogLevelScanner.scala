@@ -108,7 +108,7 @@ object LogLevelScanner {
       } else {
         Resource.find(candidates.head) match {
           case x @ Some(_) => x
-          case None =>
+          case None        =>
             findLogLevelFile(candidates.tail)
         }
       }
@@ -169,7 +169,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   private val configChanged                                  = newCondition
   private[log] val scanCount                                 = new AtomicLong(0)
 
-  def getConfig: LogLevelScannerConfig = config.get()
+  def getConfig: LogLevelScannerConfig               = config.get()
   def setConfig(config: LogLevelScannerConfig): Unit = {
     guard {
       val prev = this.config.get()

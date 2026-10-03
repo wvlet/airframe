@@ -9,7 +9,7 @@ import java.util.Locale
 object LogTimestampFormatter:
   import java.time.temporal.ChronoField.*
 
-  val systemZone = ZoneId.systemDefault().normalized()
+  val systemZone             = ZoneId.systemDefault().normalized()
   val noSpaceTimestampFormat = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)

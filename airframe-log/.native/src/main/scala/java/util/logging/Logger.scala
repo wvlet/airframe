@@ -91,7 +91,7 @@ object Logger {
   def getLogger(name: String): Logger = {
     loggerTable.get(name) match {
       case Some(logger) => logger
-      case None =>
+      case None         =>
         val logger = newLogger(name)
         synchronized {
           loggerTable.put(name, logger)
@@ -103,7 +103,7 @@ object Logger {
   private def newLogger(name: String): Logger = {
     name match {
       case null | "" => rootLogger
-      case other =>
+      case other     =>
         val parentName   = name.substring(0, name.lastIndexOf('.').max(0))
         val parentLogger = getLogger(parentName)
         Logger(Some(parentLogger), name)

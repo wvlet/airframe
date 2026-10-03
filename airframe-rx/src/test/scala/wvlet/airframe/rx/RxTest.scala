@@ -45,7 +45,7 @@ object RxTest extends AirSpec {
     val rx: Rx[String] = v.map(x => s"count: ${x}").withName("sample rx")
     val updateCount    = new AtomicInteger(0)
     val value          = new AtomicReference[String]()
-    val subscription = rx.subscribe { (x: String) =>
+    val subscription   = rx.subscribe { (x: String) =>
       updateCount.incrementAndGet()
       value.set(x)
     }
@@ -811,7 +811,7 @@ object RxTest extends AirSpec {
   }
 
   test("handle exception in Future[X]") {
-    val p = Promise[Int]()
+    val p  = Promise[Int]()
     val rx = Rx
       .future(p.future)
       .map(_ * 2)
@@ -829,7 +829,7 @@ object RxTest extends AirSpec {
   }
 
   test("Future response") {
-    val p = Promise[Int]()
+    val p  = Promise[Int]()
     val rx = Rx.future(p.future).map { x =>
       x * 2
     }
@@ -1120,7 +1120,7 @@ object RxTest extends AirSpec {
     test("map") {
       val ex = new IllegalArgumentException(s"3")
 
-      val v = Rx.variable(1)
+      val v  = Rx.variable(1)
       val rx = v.map { x =>
         if (x == 3) {
           throw ex
@@ -1152,7 +1152,7 @@ object RxTest extends AirSpec {
     test("flatMap") {
       val ex = new IllegalArgumentException(s"3")
 
-      val v = Rx.variable(1)
+      val v  = Rx.variable(1)
       val rx = v.flatMap { x =>
         if (x == 3) {
           throw ex

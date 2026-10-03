@@ -32,7 +32,7 @@ object GrpcClientCalls extends LogSupport {
 
   def blockingResponseObserver[A]: BlockingStreamObserver[A] =
     new BlockingStreamObserver[A] {
-      val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+      val toRx: RxBlockingQueue[A]      = new RxBlockingQueue[A]
       override def onNext(v: Any): Unit = {
         toRx.add(OnNext(v))
       }
@@ -59,7 +59,7 @@ object GrpcClientCalls extends LogSupport {
             requestObserver.onError(e)
         }
       }
-      case OnError(e) => requestObserver.onError(e)
+      case OnError(e)   => requestObserver.onError(e)
       case OnCompletion => {
         requestObserver.onCompleted()
       }

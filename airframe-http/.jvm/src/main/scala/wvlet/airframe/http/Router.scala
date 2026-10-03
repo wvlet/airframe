@@ -87,7 +87,7 @@ case class Router(
   /**
     * A request filter that will be applied before routing the request to the target method
     */
-  private lazy val routeMatcher = RouteMatcher.build(routes)
+  private lazy val routeMatcher                                            = RouteMatcher.build(routes)
   def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] =
     routeMatcher.findRoute(request)
 
@@ -347,7 +347,7 @@ object Router extends router.RouterObjectBase with LogSupport {
       case e: EndpointNode =>
         val endpointOpt = e.controllerSurface.findAnnotationOf[Endpoint]
         val rpcOpt      = e.controllerSurface.findAnnotationOf[RPC]
-        val routes = (endpointOpt, rpcOpt) match {
+        val routes      = (endpointOpt, rpcOpt) match {
           case (Some(_), Some(_)) =>
             throw new IllegalArgumentException(
               s"Both @Endpoint and @RPC are defined in ${e.controllerSurface.fullName}"

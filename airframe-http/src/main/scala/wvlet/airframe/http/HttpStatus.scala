@@ -20,7 +20,7 @@ import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import scala.util.{Failure, Success, Try}
 
 class HttpStatus(val code: Int) extends PackSupport {
-  override def toString = s"[${code}: ${reason}]"
+  override def toString              = s"[${code}: ${reason}]"
   override def pack(p: Packer): Unit = {
     p.packInt(code)
   }

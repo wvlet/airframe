@@ -154,7 +154,7 @@ object SimpleOpenAPITest extends AirSpec {
   test("param with a default value should be optional") {
     val r       = Router.of[OptionalParamTestApi]
     val openapi = openApiGenerator(r)
-    val path =
+    val path    =
       openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi/hello").get("post")
     val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
     schema.required shouldBe empty
@@ -171,7 +171,7 @@ object SimpleOpenAPITest extends AirSpec {
   test("param with a default value in a request object should be optional") {
     val r       = Router.of[OptionalParamTestApi2]
     val openapi = openApiGenerator(r)
-    val path =
+    val path    =
       openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi2/hello").get("post")
 
     // TODO MyParam needs to be referenced inside the component

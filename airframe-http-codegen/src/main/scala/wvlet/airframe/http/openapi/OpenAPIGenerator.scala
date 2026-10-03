@@ -86,8 +86,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     */
   private def isPrimitiveTypeFamily(s: Surface): Boolean = {
     s match {
-      case s if s.isPrimitive => true
-      case o: OptionSurface   => o.elementSurface.isPrimitive
+      case s if s.isPrimitive               => true
+      case o: OptionSurface                 => o.elementSurface.isPrimitive
       case f: Surface if Router.isFuture(f) =>
         isPrimitiveTypeFamily(Router.unwrapFuture(f))
       case r: Surface if Router.isHttpResponse(r) =>
@@ -254,7 +254,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       // Need to instantiate the controller to resolve default method parameter values
       // Generate schema for the user HTTP request body
       val controllerSurface = route.controllerSurface
-      val methodOwner = Try {
+      val methodOwner       = Try {
         controllerSurface.objectFactory
           .map(_.newInstance(Seq.empty))
           .get
@@ -437,7 +437,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
     synchronized {
       schemaCache.get(surface) match {
         case Some(x) => x
-        case None =>
+        case None    =>
           val v = factory
           schemaCache += surface -> v
           v

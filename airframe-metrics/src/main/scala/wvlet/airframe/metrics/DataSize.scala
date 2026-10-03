@@ -125,7 +125,7 @@ object DataSize {
         val num  = m.group("num").toDouble
         val unit = m.group("unit")
         unitTable.get(unit) match {
-          case None => throw new IllegalArgumentException(s"Invalid data unit ${unit} in ${dataSizeStr}")
+          case None    => throw new IllegalArgumentException(s"Invalid data unit ${unit} in ${dataSizeStr}")
           case Some(u) =>
             DataSize(num, u)
         }

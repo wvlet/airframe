@@ -101,7 +101,7 @@ class JavaSyncClientTest extends AirSpec {
 
     test("call with HttpClientException") {
       val data = """{"id":1,"name":"leo"}"""
-      val e = intercept[HttpClientException] {
+      val e    = intercept[HttpClientException] {
         client.call[Json, Map[String, Any]](Http.POST("/status/404"), data)
       }
       e.status shouldBe HttpStatus.NotFound_404

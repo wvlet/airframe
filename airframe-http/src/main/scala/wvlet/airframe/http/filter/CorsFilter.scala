@@ -69,7 +69,7 @@ object Cors extends LogSupport {
     private def getMethod(request: Request): Option[String] =
       request.header.get("Access-Control-Request-Method")
 
-    private def commaSpace = ", *".r
+    private def commaSpace                                = ", *".r
     private def getHeaders(request: Request): Seq[String] =
       request.header.get("Access-Control-Request-Headers") match {
         case Some(value) => commaSpace.split(value).toSeq

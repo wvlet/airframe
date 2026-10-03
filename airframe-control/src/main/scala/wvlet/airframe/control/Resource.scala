@@ -86,7 +86,7 @@ object Resource {
   ): Resource[R] = {
     new Resource[R] {
       onInit(resource)
-      override def get: R = resource
+      override def get: R        = resource
       override def close(): Unit = {
         onClose(resource)
       }

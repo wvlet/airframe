@@ -32,7 +32,7 @@ object OpenAPIDefaultValueTest extends AirSpec {
   }
 
   test("generate default values") {
-    val router = RxRouter.of[TestApi]
+    val router  = RxRouter.of[TestApi]
     val openapi = OpenAPIGenerator.buildFromRouter(
       Router.fromRxRouter(router),
       OpenAPIGeneratorConfig(basePackages = Seq("wvlet.airframe.http.openapi.OpenAPIDefaultValueTest"))

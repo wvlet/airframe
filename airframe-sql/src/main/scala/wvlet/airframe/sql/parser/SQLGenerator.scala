@@ -75,7 +75,7 @@ object SQLGenerator extends LogSupport {
 
   private def printSetOperation(s: SetOperation, context: List[Relation]): String = {
     val isDistinct = containsDistinctPlan(context)
-    val op = s match {
+    val op         = s match {
       case Union(relations, _) =>
         if (isDistinct) "UNION" else "UNION ALL"
       case Except(left, right, _) =>
@@ -107,7 +107,7 @@ object SQLGenerator extends LogSupport {
     // e.g., Selection(in:Filter(Filter( ...)), ...)
 
     val childFilters: List[Filter] = collectChildFilters(s.child)
-    val nonFilterChild = if (childFilters.nonEmpty) {
+    val nonFilterChild             = if (childFilters.nonEmpty) {
       childFilters.last.child
     } else {
       s.child
@@ -293,7 +293,7 @@ object SQLGenerator extends LogSupport {
         val elems = tableElements.map(printExpression).mkString(", ")
         s"CREATE TABLE ${e}${name} (${elems})"
       case CreateTableAs(name, ifNotExists, columnAliases, query, _) =>
-        val e = if (ifNotExists) "IF NOT EXISTS " else ""
+        val e       = if (ifNotExists) "IF NOT EXISTS " else ""
         val aliases =
           columnAliases
             .map { x => s"(${x.map(printExpression).mkString(", ")})" }.getOrElse("")
@@ -396,7 +396,7 @@ object SQLGenerator extends LogSupport {
       case FunctionCall(name, args, distinct, filter, window, _) =>
         val argList = args.map(printExpression(_)).mkString(", ")
         val d       = if (distinct) "DISTINCT " else ""
-        val wd = window
+        val wd      = window
           .map { w =>
             val s = Seq.newBuilder[String]
             if (w.partitionBy.nonEmpty) {
@@ -475,7 +475,7 @@ object SQLGenerator extends LogSupport {
 
   def printConditionalExpression(c: ConditionalExpression): String = {
     c match {
-      case NoOp(_) => ""
+      case NoOp(_)     => ""
       case Eq(a, b, _) =>
         s"${printExpression(a)} = ${printExpression(b)}"
       case NotEq(a, b, operatorName, _) =>

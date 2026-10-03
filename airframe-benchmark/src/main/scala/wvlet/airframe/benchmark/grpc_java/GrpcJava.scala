@@ -38,7 +38,7 @@ class GrpcJava extends LogSupport {
   private var asyncClient: protojava.GreeterGrpc.GreeterStub             = null
   private val executor                                                   = Executors.newCachedThreadPool()
   private var futureAsyncClient: protojava.GreeterGrpc.GreeterFutureStub = null
-  private val server =
+  private val server                                                     =
     NettyServerBuilder.forPort(port).addService(new ProtoJavaGreeter).build()
   private val channel = ManagedChannelBuilder.forTarget(s"localhost:${port}").usePlaintext().build()
 
@@ -97,7 +97,7 @@ class GrpcJava extends LogSupport {
             blackhole.consume(v.getMessage)
           }
           override def onError(t: Throwable): Unit = {}
-          override def onCompleted(): Unit = {
+          override def onCompleted(): Unit         = {
             counter.incrementAndGet()
           }
         }

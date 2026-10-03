@@ -118,7 +118,7 @@ class HttpClientGeneratorTest extends AirSpec {
         "file:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/wvlet/airframe/airframe-json_2.12/20.2.1/airframe-json_2.12-20.2.1.jar"
       )
     )
-    val cl = new URLClassLoader(urls)
+    val cl      = new URLClassLoader(urls)
     val classes =
       ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
     debug(classes)

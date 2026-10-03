@@ -36,7 +36,7 @@ object NullHandler extends jl.Handler:
 class BufferedLogHandler(formatter: LogFormatter) extends jl.Handler:
   private val buf = Seq.newBuilder[String]
 
-  override def flush(): Unit = {}
+  override def flush(): Unit                       = {}
   override def publish(record: jl.LogRecord): Unit =
     synchronized {
       val log = formatter.format(record)

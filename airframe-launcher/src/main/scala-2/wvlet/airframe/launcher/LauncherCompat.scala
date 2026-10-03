@@ -34,7 +34,7 @@ trait LauncherCompat {
     Launcher(LauncherConfig(), cl)
   }
 
-  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute[A: ru.WeakTypeTag](argLine: String): A     = execute(CommandLineTokenizer.tokenize(argLine))
   def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
     val l      = of[A]
     val result = l.execute(args)

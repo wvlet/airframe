@@ -20,7 +20,7 @@ import scala.util.Try
 
 abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
   override def toString: String = typeDescription
-  def typeDescription: String = {
+  def typeDescription: String   = {
     if (typeParams.isEmpty)
       typeName
     else {
@@ -49,9 +49,9 @@ object DataType extends LogSupport {
   /**
     * Constant type used for arguments of varchar(n), char(n), decimal(p, q), etc.
     */
-  case class IntConstant(value: Int) extends TypeParameter(s"${value}")
+  case class IntConstant(value: Int)    extends TypeParameter(s"${value}")
   case class TypeVariable(name: String) extends TypeParameter(s"$$${name}") {
-    override def isBound: Boolean = false
+    override def isBound: Boolean                                  = false
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
       typeArgMap.get(name) match {
         case Some(t) => t
@@ -62,7 +62,7 @@ object DataType extends LogSupport {
 
   case class GenericType(override val typeName: String, override val typeParams: Seq[DataType] = Seq.empty)
       extends DataType(typeName, typeParams) {
-    override def isBound: Boolean = typeParams.forall(_.isBound)
+    override def isBound: Boolean                                  = typeParams.forall(_.isBound)
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
       GenericType(typeName, typeParams.map(_.bind(typeArgMap)))
     }
@@ -175,11 +175,11 @@ object DataType extends LogSupport {
       extends DataType("decimal", Seq(precision, scale))
 
   object DecimalType {
-    def of(precision: Int, scale: Int): DecimalType = DecimalType(IntConstant(precision), IntConstant(scale))
+    def of(precision: Int, scale: Int): DecimalType           = DecimalType(IntConstant(precision), IntConstant(scale))
     def of(precision: DataType, scale: DataType): DecimalType = {
       (precision, scale) match {
         case (p: TypeParameter, s: TypeParameter) => DecimalType(p, s)
-        case _ =>
+        case _                                    =>
           throw SQLErrorCode.InvalidType.newException(s"Invalid DecimalType parameters (${precision}, ${scale})", None)
       }
     }

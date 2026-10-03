@@ -50,7 +50,7 @@ case class ParquetParameterWriter(index: Int, name: String, parquetCodec: Parque
       case a: Array[_] if a.isEmpty  =>
       case m: Map[_, _] if m.isEmpty =>
       case None                      =>
-      case _ =>
+      case _                         =>
         try {
           recordConsumer.startField(name, index)
           parquetCodec.write(recordConsumer, v)
@@ -141,7 +141,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
         case _ =>
           paramWriters.zip(params).foreach { case (paramWriter, p) =>
             p.get(v) match {
-              case null =>
+              case null       =>
               case paramValue =>
                 trace(s"Write ${p.name}: ${paramValue}")
                 paramWriter.write(recordConsumer, paramValue)
@@ -272,7 +272,7 @@ object ParquetObjectWriter extends LogSupport {
           param.surface
       }
       val elementCodec = MessageCodec.ofSurface(elementSurface)
-      val pc = ParquetParameterWriter(
+      val pc           = ParquetParameterWriter(
         param.index,
         param.name,
         ParquetWriteCodec.parquetCodecOf(tpe, elementSurface, elementCodec)

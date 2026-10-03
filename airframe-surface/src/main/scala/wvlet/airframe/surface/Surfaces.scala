@@ -123,9 +123,9 @@ case class StaticMethodParameter(
     accessor: Option[Any => Any] = None,
     methodArgAccessor: Option[Any => Any] = None
 ) extends MethodParameter {
-  override def toString: String             = s"${name}:${surface.name}"
-  def get(x: Any): Any                      = accessor.map(a => a(x)).getOrElse(null)
-  override def getDefaultValue: Option[Any] = defaultValue
+  override def toString: String                                        = s"${name}:${surface.name}"
+  def get(x: Any): Any                                                 = accessor.map(a => a(x)).getOrElse(null)
+  override def getDefaultValue: Option[Any]                            = defaultValue
   override def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = {
     methodArgAccessor.map { acc =>
       acc(methodOwner)
@@ -352,7 +352,7 @@ class GenericSurface(
 
   override def name: String = {
     val clsName = TypeName.sanitizeTypeName(getClassName)
-    val s = if (typeArgs.isEmpty) {
+    val s       = if (typeArgs.isEmpty) {
       clsName
     } else {
       s"${clsName}[${typeArgs.map(_.name).mkString(",")}]"
@@ -362,7 +362,7 @@ class GenericSurface(
 
   override def fullName: String = {
     val clsName = TypeName.sanitizeTypeName(rawType.getName)
-    val s = if (typeArgs.isEmpty) {
+    val s       = if (typeArgs.isEmpty) {
       clsName
     } else {
       s"${clsName}[${typeArgs.map(_.fullName).mkString(",")}]"

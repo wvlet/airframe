@@ -407,7 +407,7 @@ object ReflectSurfaceFactory extends LogSupport {
       case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
         wvlet.airframe.surface.ExistentialType
       case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
-        val name = tpe.name.decodedName.toString
+        val name         = tpe.name.decodedName.toString
         val ref: Surface = if (t.typeSymbol.isAbstract && t.typeArgs.isEmpty) {
           // When t is just a type letter (e.g., A, T, etc.)
           AnyRefSurface
@@ -428,7 +428,7 @@ object ReflectSurfaceFactory extends LogSupport {
             symbol.asType.isAliasType &&
             !belongsToScalaDefault(alias) =>
         val dealiased = alias.dealias
-        val inner = if (alias != dealiased) {
+        val inner     = if (alias != dealiased) {
           surfaceOf(dealiased)
         } else {
           // When higher kind types are aliased (e.g., type M[A] = Future[A]),
@@ -546,13 +546,13 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     def methodParametersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
-      val args = methodArgsOf(targetType, method).flatten
+      val args     = methodArgsOf(targetType, method).flatten
       val argTypes = args.map { (x: MethodArg) =>
         resolveClass(x.tpe)
       }.toSeq
       val ref = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
 
-      var index = 0
+      var index         = 0
       val surfaceParams = args.map { arg =>
         val t = arg.name
         // accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }

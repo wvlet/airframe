@@ -106,7 +106,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     * @return
     */
   def transformExpression(rule: PartialFunction[Expression, Expression]): Expression = {
-    var changed = false
+    var changed                              = false
     def recursiveTransform(arg: Any): AnyRef =
       arg match {
         case e: Expression =>
@@ -148,7 +148,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     * @return
     */
   def transformUpExpression(rule: PartialFunction[Expression, Expression]): Expression = {
-    var changed = false
+    var changed                = false
     def iter(arg: Any): AnyRef =
       arg match {
         case e: Expression =>
@@ -220,7 +220,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     val l = List.newBuilder[Expression]
     traverseExpressions(new PartialFunction[Expression, Unit] {
       override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
-      override def apply(v1: Expression): Unit = {
+      override def apply(v1: Expression): Unit         = {
         if (cond.apply(v1)) {
           l += v1
         }
@@ -303,10 +303,10 @@ trait Attribute extends LeafExpression with LogSupport {
       case _                   => None
     }
   }
-  def withAlias(newAlias: String): Attribute = withAlias(Some(newAlias))
+  def withAlias(newAlias: String): Attribute         = withAlias(Some(newAlias))
   def withAlias(newAlias: Option[String]): Attribute = {
     newAlias match {
-      case None => this
+      case None        => this
       case Some(alias) =>
         this match {
           case a: Alias =>
@@ -476,7 +476,7 @@ object Expression {
   case class QName(parts: List[String], nodeLocation: Option[NodeLocation]) extends LeafExpression {
     def fullName: String          = parts.mkString(".")
     override def toString: String = fullName
-    override def sqlExpr: String = parts
+    override def sqlExpr: String  = parts
       .map { part =>
         if (part.matches("[0-9]+")) {
           // Quotations are needed for digits to generate valid SQL
@@ -507,9 +507,9 @@ object Expression {
       tableAlias: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def toString: String = s"UnresolvedAttribute(${fullName})"
-    override def sqlExpr: String  = name
-    override lazy val resolved    = false
+    override def toString: String                                                 = s"UnresolvedAttribute(${fullName})"
+    override def sqlExpr: String                                                  = name
+    override lazy val resolved                                                    = false
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
       this.copy(qualifier = newQualifier)
     }
@@ -551,7 +551,7 @@ object Expression {
     override def toString = s"""Id("${value}")"""
   }
 
-  sealed trait JoinCriteria extends Expression
+  sealed trait JoinCriteria                                  extends Expression
   case class NaturalJoin(nodeLocation: Option[NodeLocation]) extends JoinCriteria with LeafExpression {
     override def toString: String = "NaturalJoin"
   }
@@ -699,7 +699,7 @@ object Expression {
     override def children: Seq[Expression] = Seq(expr)
     override def toString                  = s"${fullName}:${dataTypeName} := ${expr}"
 
-    override def sqlExpr: String = expr.sqlExpr
+    override def sqlExpr: String                                        = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
     }
@@ -733,7 +733,7 @@ object Expression {
 
     override def inputColumns: Seq[Attribute] = {
       inputs.map {
-        case a: Attribute => a
+        case a: Attribute  => a
         case e: Expression =>
           SingleColumn(e, qualifier, None, e.nodeLocation)
       }
@@ -1088,7 +1088,7 @@ object Expression {
       }
     }
     override def operatorName: String = exprType.symbol
-    override def toString: String = {
+    override def toString: String     = {
       s"${exprType}(left:$left, right:$right)"
     }
   }
@@ -1224,11 +1224,11 @@ object Expression {
   sealed trait IntervalField extends LeafExpression {
     override def toString(): String = getClass.getSimpleName
   }
-  case class Year(nodeLocation: Option[NodeLocation])    extends IntervalField
-  case class Quarter(nodeLocation: Option[NodeLocation]) extends IntervalField
-  case class Month(nodeLocation: Option[NodeLocation])   extends IntervalField
-  case class Week(nodeLocation: Option[NodeLocation])    extends IntervalField
-  case class Day(nodeLocation: Option[NodeLocation])     extends IntervalField
+  case class Year(nodeLocation: Option[NodeLocation])      extends IntervalField
+  case class Quarter(nodeLocation: Option[NodeLocation])   extends IntervalField
+  case class Month(nodeLocation: Option[NodeLocation])     extends IntervalField
+  case class Week(nodeLocation: Option[NodeLocation])      extends IntervalField
+  case class Day(nodeLocation: Option[NodeLocation])       extends IntervalField
   case class DayOfWeek(nodeLocation: Option[NodeLocation]) extends IntervalField {
     override def toString(): String = "day_of_week"
   }
@@ -1292,7 +1292,7 @@ object Expression {
       extends CurrentTimeBase("localtimestamp", precision)
 
   // 1-origin parameter
-  case class Parameter(index: Int, nodeLocation: Option[NodeLocation]) extends LeafExpression
+  case class Parameter(index: Int, nodeLocation: Option[NodeLocation])               extends LeafExpression
   case class SubQueryExpression(query: Relation, nodeLocation: Option[NodeLocation]) extends Expression {
     override def children: Seq[Expression] = query.childExpressions
   }

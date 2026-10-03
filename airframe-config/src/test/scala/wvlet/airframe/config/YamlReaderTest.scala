@@ -27,7 +27,7 @@ class YamlReaderTest extends AirSpec {
   private def findFile(name: String): String = {
     Resource.find(name) match {
       case Some(x) => x.getPath
-      case None =>
+      case None    =>
         throw new FileNotFoundException(s"${name} is not found")
     }
   }

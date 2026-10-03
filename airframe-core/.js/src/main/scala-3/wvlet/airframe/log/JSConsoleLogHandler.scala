@@ -14,7 +14,7 @@ class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandl
         val ts          = LogTimestampFormatter.formatTimestamp(r.getMillis)
         val level       = f"${r.level.name}%5s"
         val logLevelCSS = logColorPalette.cssOf(r.level)
-        val loc =
+        val loc         =
           r.source.map(source => s"- (${source.fileLoc})").getOrElse("")
 
         import scala.scalajs.js.DynamicImplicits.truthValue

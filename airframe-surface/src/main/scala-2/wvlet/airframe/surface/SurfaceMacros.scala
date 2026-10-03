@@ -162,7 +162,7 @@ private[surface] object SurfaceMacros {
               val name       = m.name.decodedName.toString
               val ret        = surfaceOf(m.returnType)
               val methodArgs = methodArgsOf(targetType, m).flatten
-              val args =
+              val args       =
                 methodParametersOf(m.owner.typeSignature, m, methodArgs)
               // Generate code for supporting ClassMethodSurface.call(instance, args)
               val methodCaller = createMethodCaller(targetType, m, methodArgs)
@@ -176,7 +176,7 @@ private[surface] object SurfaceMacros {
         }
 
         val fullName = fullTypeNameOf(targetType.dealias)
-        val expr =
+        val expr     =
           q"wvlet.airframe.surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
         methodMemo += targetType -> expr
         expr
@@ -228,7 +228,7 @@ private[surface] object SurfaceMacros {
             symbol.asType.isAliasType &&
             !belongsToScalaDefault(alias) =>
         val dealiased = alias.dealias
-        val inner = if (alias != dealiased) {
+        val inner     = if (alias != dealiased) {
           surfaceOf(dealiased)
         } else {
           // When higher kind types are aliased (e.g., type M[A] = Future[A]),
@@ -259,14 +259,14 @@ private[surface] object SurfaceMacros {
     }
 
     private val primitiveFactory: SurfaceFactory = {
-      case t if t == typeOf[Short] => q"wvlet.airframe.surface.Primitive.Short"
+      case t if t == typeOf[Short]   => q"wvlet.airframe.surface.Primitive.Short"
       case t if t == typeOf[Boolean] =>
         q"wvlet.airframe.surface.Primitive.Boolean"
-      case t if t == typeOf[Byte]  => q"wvlet.airframe.surface.Primitive.Byte"
-      case t if t == typeOf[Char]  => q"wvlet.airframe.surface.Primitive.Char"
-      case t if t == typeOf[Int]   => q"wvlet.airframe.surface.Primitive.Int"
-      case t if t == typeOf[Float] => q"wvlet.airframe.surface.Primitive.Float"
-      case t if t == typeOf[Long]  => q"wvlet.airframe.surface.Primitive.Long"
+      case t if t == typeOf[Byte]   => q"wvlet.airframe.surface.Primitive.Byte"
+      case t if t == typeOf[Char]   => q"wvlet.airframe.surface.Primitive.Char"
+      case t if t == typeOf[Int]    => q"wvlet.airframe.surface.Primitive.Int"
+      case t if t == typeOf[Float]  => q"wvlet.airframe.surface.Primitive.Float"
+      case t if t == typeOf[Long]   => q"wvlet.airframe.surface.Primitive.Long"
       case t if t == typeOf[Double] =>
         q"wvlet.airframe.surface.Primitive.Double"
       case t if t == typeOf[String] =>
@@ -351,7 +351,7 @@ private[surface] object SurfaceMacros {
         isRequired: Boolean,
         isSecret: Boolean
     ) {
-      def name: Literal = Literal(Constant(paramName.name.decodedName.toString))
+      def name: Literal         = Literal(Constant(paramName.name.decodedName.toString))
       private def paramNameTerm = {
         TermName(paramName.name.encodedName.toString)
       }
@@ -423,7 +423,7 @@ private[surface] object SurfaceMacros {
 
       val companion = targetType.companion match {
         case NoType => None
-        case comp =>
+        case comp   =>
           Some(comp)
       }
 
@@ -494,9 +494,9 @@ private[surface] object SurfaceMacros {
       val ref =
         q"wvlet.airframe.surface.MethodRef(${toClassOf(targetType)}, ${method.name.decodedName.toString}, Seq(..$argTypes), ${method.isConstructor})"
 
-      var index = 0
+      var index         = 0
       val surfaceParams = args.map { arg =>
-        val t = arg.name
+        val t            = arg.name
         val defaultValue = arg.defaultValue match {
           case Some(x) => q"Some(${x})"
           case other   => q"None"
@@ -539,8 +539,8 @@ private[surface] object SurfaceMacros {
         None
       } else {
         findPrimaryConstructorOf(targetType).map { primaryConstructor =>
-          val argsList   = methodArgsOf(targetType, primaryConstructor)
-          var index: Int = 0
+          val argsList                         = methodArgsOf(targetType, primaryConstructor)
+          var index: Int                       = 0
           val argExtractor: List[List[c.Tree]] =
             for (arg <- argsList) yield {
               for (a <- arg) yield {
@@ -553,7 +553,7 @@ private[surface] object SurfaceMacros {
             }
 
           // Create a constructor call
-          val id = Ident(targetType.typeSymbol)
+          val id                  = Ident(targetType.typeSymbol)
           val constructor: c.Tree =
             argExtractor.foldLeft[c.Tree](Select(New(id), termNames.CONSTRUCTOR))((x, arg) => Apply(x, arg))
 
@@ -576,7 +576,7 @@ private[surface] object SurfaceMacros {
         override def apply(t: c.Type): c.Tree = {
           val primaryConstructor = findPrimaryConstructorOf(t).get
           val typeArgs           = typeArgsOf(t).map(surfaceOf(_))
-          val factory = createObjectFactoryOf(t) match {
+          val factory            = createObjectFactoryOf(t) match {
             case Some(x) => q"Some($x)"
             case None    => q"None"
           }

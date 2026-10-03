@@ -33,9 +33,9 @@ class ElementCastTest extends AirSpec {
   test("cast with helper method") {
     import RxDOM.*
     var handled = false
-    val rx = new RxElement {
+    val rx      = new RxElement {
       override def render = div(
-        id -> "test",
+        id      -> "test",
         onclick -> { (e: MouseEvent) =>
           handleEvent(e.target) { case el: HTMLElement =>
             handled = true

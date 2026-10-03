@@ -29,7 +29,7 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
 private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
-  private[airspec] var _currentContext: List[AirSpecContext] = List.empty
+  private[airspec] var _currentContext: List[AirSpecContext]  = List.empty
   private[airspec] def pushContext(ctx: AirSpecContext): Unit = {
     synchronized {
       _currentContext = ctx :: _currentContext
@@ -43,7 +43,7 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
     }
   }
 
-  private var _localTestDefs: List[AirSpecDef] = List.empty
+  private var _localTestDefs: List[AirSpecDef]                    = List.empty
   private[airspec] def addLocalTestDef(specDef: AirSpecDef): Unit = {
     synchronized {
       _currentContext match {
@@ -160,7 +160,7 @@ private[airspec] object AirSpecSpi {
 
   private[airspec] def leafClassName(fullClassName: String): String = {
     // the full class name
-    val pos = fullClassName.lastIndexOf('.')
+    val pos      = fullClassName.lastIndexOf('.')
     val leafName = {
       if (pos == -1)
         fullClassName

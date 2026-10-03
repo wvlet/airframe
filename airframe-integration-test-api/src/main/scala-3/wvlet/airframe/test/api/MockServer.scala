@@ -26,7 +26,7 @@ class MockServer:
   @Endpoint(method = HttpMethod.GET, path = "/get")
   def get(request: HttpMessage.Request): HttpMessage.Response =
     val queryParams = parseQueryParams(request.uri)
-    val response = Map(
+    val response    = Map(
       "args"    -> queryParams,
       "headers" -> request.header.entries.map(e => e.key -> e.value).toMap,
       "origin"  -> "127.0.0.1",

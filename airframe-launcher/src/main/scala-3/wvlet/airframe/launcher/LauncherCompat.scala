@@ -29,7 +29,7 @@ trait LauncherCompat:
     val cl = newCommandLauncher(Surface.of[A], Surface.methodsOf[A], name = "", description = "")
     Launcher(LauncherConfig(), cl)
 
-  inline def execute[A](argLine: String): A = execute[A](CommandLineTokenizer.tokenize(argLine))
+  inline def execute[A](argLine: String): A     = execute[A](CommandLineTokenizer.tokenize(argLine))
   inline def execute[A](args: Array[String]): A =
     val l      = of[A]
     val result = l.execute(args)

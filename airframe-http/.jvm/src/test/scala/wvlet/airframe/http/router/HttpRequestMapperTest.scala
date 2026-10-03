@@ -64,7 +64,7 @@ object HttpRequestMapperTest extends AirSpec {
     def endpoint4(p1: Option[Seq[String]]): Unit = {}
   }
 
-  private val api = new MyApi {}
+  private val api    = new MyApi {}
   private val router = Router
     .add[MyApi]
     .add[MyApi2]

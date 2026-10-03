@@ -25,8 +25,8 @@ object ThreadUtil {
     *   the name of the new thread group. New threds will be named (name)-1, (name)-2, etc.
     */
   def newDaemonThreadFactory(name: String): ThreadFactory = new ThreadFactory {
-    private val group: ThreadGroup = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
-    private val threadNumber       = new AtomicInteger(1)
+    private val group: ThreadGroup              = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
+    private val threadNumber                    = new AtomicInteger(1)
     override def newThread(r: Runnable): Thread = {
       val threadName = s"${name}-${threadNumber.getAndIncrement()}"
       val thread     = new Thread(group, r, threadName)

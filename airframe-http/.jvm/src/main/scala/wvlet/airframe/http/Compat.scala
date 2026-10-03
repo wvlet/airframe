@@ -42,8 +42,8 @@ object Compat extends CompatApi {
     * A thread factory for creating a daemon thread so as not to block JVM shutdown
     */
   private class DefaultThreadFactory extends ThreadFactory {
-    private val factoryId = threadFactoryId.getAndIncrement()
-    private val threadId  = new AtomicInteger()
+    private val factoryId                       = threadFactoryId.getAndIncrement()
+    private val threadId                        = new AtomicInteger()
     override def newThread(r: Runnable): Thread = {
       val threadName = s"airframe-http-${factoryId}:${threadId.getAndIncrement()}"
       val thread     = new Thread(null, r, threadName)
@@ -99,14 +99,14 @@ object Compat extends CompatApi {
     case e: ConnectException       => retryableFailure(e)
     case e: ClosedChannelException => retryableFailure(e)
     case e: SocketTimeoutException => retryableFailure(e)
-    case e: SocketException =>
+    case e: SocketException        =>
       e match {
         case se: BindException                        => retryableFailure(e)
         case se: ConnectException                     => retryableFailure(e)
         case se: NoRouteToHostException               => retryableFailure(e)
         case se: PortUnreachableException             => retryableFailure(e)
         case se if se.getMessage() == "Socket closed" => retryableFailure(e)
-        case other =>
+        case other                                    =>
           nonRetryableFailure(e)
       }
     // HTTP/2 may disconnects the connection with "GOAWAY received" error https://github.com/wvlet/airframe/issues/3421

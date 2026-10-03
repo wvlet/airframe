@@ -28,7 +28,7 @@ class ParallelTest extends AirSpec {
     val source    = Seq(1, 2, 3)
     val counter   = new AtomicInteger(0)
     val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
-    val result = Parallel.run(source, parallelism = 3) { i =>
+    val result    = Parallel.run(source, parallelism = 3) { i =>
       // Record the current time
       startTime(i - 1) = System.currentTimeMillis()
       counter.incrementAndGet()
@@ -51,7 +51,7 @@ class ParallelTest extends AirSpec {
 
     val source    = Seq(1, 2, 3)
     val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
-    val result = Parallel.iterate(source.iterator, parallelism = 3) { i =>
+    val result    = Parallel.iterate(source.iterator, parallelism = 3) { i =>
       startTime(i - 1) = System.currentTimeMillis()
       i * 2
     }

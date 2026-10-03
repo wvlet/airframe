@@ -101,7 +101,7 @@ object DemoApiV2 {
     }
 
     private lazy val _channel = GrpcClientInterceptor.wrap(getChannel, rpcEncoding)
-    private val client =
+    private val client        =
       new GrpcClient(_channel, GrpcClientConfig(rpcEncoding = rpcEncoding, callOptions = callOptions))
     private val helloMethod =
       GrpcServiceBuilder.buildGrpcMethod[Map[String, Any], String](

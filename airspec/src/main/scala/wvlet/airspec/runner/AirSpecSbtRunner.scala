@@ -48,7 +48,7 @@ private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, _remoteArgs: Arra
   }
 
   // The following methods are defined for Scala.js support:
-  def receiveMessage(msg: String): Option[String] = None
+  def receiveMessage(msg: String): Option[String]                                                  = None
   def deserializeTask(task: String, deserializer: String => sbt.testing.TaskDef): sbt.testing.Task = {
     new AirSpecTask(config, taskLogger, deserializer(task), classLoader)
   }

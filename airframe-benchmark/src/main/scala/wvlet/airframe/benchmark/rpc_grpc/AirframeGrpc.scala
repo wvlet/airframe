@@ -74,7 +74,7 @@ class AirframeGrpc extends LogSupport {
               blackhole.consume(v)
             }
             override def onError(t: Throwable): Unit = {}
-            override def onCompleted(): Unit = {
+            override def onCompleted(): Unit         = {
               counter.incrementAndGet()
             }
           }

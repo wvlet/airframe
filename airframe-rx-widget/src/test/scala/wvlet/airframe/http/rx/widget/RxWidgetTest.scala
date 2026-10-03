@@ -30,7 +30,7 @@ class RxWidgetTest extends AirSpec {
 
   private def render(elem: RxElement): String = {
     val (dom, c) = DOMRenderer.createNode(elem)
-    val html = dom match {
+    val html     = dom match {
       case x: org.scalajs.dom.Element =>
         x.outerHTML
       case _ =>
@@ -91,8 +91,8 @@ class RxWidgetTest extends AirSpec {
   }
 
   test("Update the local dom element upon Rx variable change") {
-    val node = dom.document.createElement("div")
-    val v    = Rx.variable("Home")
+    val node    = dom.document.createElement("div")
+    val v       = Rx.variable("Home")
     val content = div(
       v.map { selected =>
         ul(

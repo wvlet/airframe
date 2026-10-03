@@ -74,7 +74,7 @@ object PrimitiveCodec {
   }
 
   object UnitCodec extends PrimitiveCodec[Unit] {
-    override def surface: Surface = Primitive.Unit
+    override def surface: Surface               = Primitive.Unit
     override def pack(p: Packer, v: Unit): Unit = {
       // do not pack anything
     }
@@ -178,7 +178,7 @@ object PrimitiveCodec {
   }
 
   object ShortCodec extends PrimitiveCodec[Short] {
-    override def surface: Surface = Primitive.Short
+    override def surface: Surface                = Primitive.Short
     override def pack(p: Packer, v: Short): Unit = {
       p.packShort(v)
     }
@@ -220,7 +220,7 @@ object PrimitiveCodec {
   }
 
   object IntCodec extends PrimitiveCodec[Int] {
-    override def surface: Surface = Primitive.Int
+    override def surface: Surface              = Primitive.Int
     override def pack(p: Packer, v: Int): Unit = {
       p.packInt(v)
     }
@@ -448,7 +448,7 @@ object PrimitiveCodec {
   }
 
   object BooleanCodec extends PrimitiveCodec[Boolean] {
-    override def surface: Surface = Primitive.Boolean
+    override def surface: Surface                  = Primitive.Boolean
     override def pack(p: Packer, v: Boolean): Unit = {
       p.packBoolean(v)
     }
@@ -489,7 +489,7 @@ object PrimitiveCodec {
   }
 
   object FloatCodec extends PrimitiveCodec[Float] {
-    override def surface: Surface = Primitive.Float
+    override def surface: Surface                = Primitive.Float
     override def pack(p: Packer, v: Float): Unit = {
       p.packFloat(v)
     }
@@ -803,8 +803,8 @@ object PrimitiveCodec {
           val b   = u.readPayload(len)
           v.setObject(b)
         case ValueType.STRING =>
-          val strByteLen = u.unpackRawStringHeader
-          val strBinary  = u.readPayload(strByteLen)
+          val strByteLen       = u.unpackRawStringHeader
+          val strBinary        = u.readPayload(strByteLen)
           val arr: Array[Byte] =
             try {
               // Try decoding as base64
@@ -957,7 +957,7 @@ object PrimitiveCodec {
         case v: Array[Byte]    => ByteArrayCodec.pack(p, v)
         case v: Array[Short]   => ShortArrayCodec.pack(p, v)
         case v: Array[Char]    => CharArrayCodec.pack(p, v)
-        case v: Array[_] =>
+        case v: Array[_]       =>
           p.packArrayHeader(v.length)
           for (x <- v) {
             pack(p, x)

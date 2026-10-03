@@ -71,7 +71,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     }
 
     lastVersion match {
-      case None => setVersion
+      case None                                      => setVersion
       case Some(last) if last != recordFormatVersion =>
         warn(s"Record format version has been changed from ${last} to ${recordFormatVersion}")
         connectionPool.executeUpdate("drop table if exists recorder_info") // Support schema migration

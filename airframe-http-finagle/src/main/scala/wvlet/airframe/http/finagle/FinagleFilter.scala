@@ -56,7 +56,7 @@ class FinagleRouter(session: Session, private[finagle] val config: FinagleServer
   */
 class FinagleFilterAdapter(filter: Http.Filter) extends FinagleFilter {
   override def apply(request: Request, context: Context): Future[Response] = {
-    implicit val ec = HttpBackend.DefaultBackend.executionContext
+    implicit val ec                           = HttpBackend.DefaultBackend.executionContext
     val sf: scala.concurrent.Future[Response] =
       filter
         .apply(request.toHttpRequest, new FinagleContextAdapter(context))

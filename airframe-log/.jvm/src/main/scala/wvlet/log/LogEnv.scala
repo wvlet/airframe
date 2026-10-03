@@ -11,7 +11,7 @@ import scala.util.control.NonFatal
   */
 private[log] object LogEnv extends LogEnvBase {
 
-  private val initialized = new AtomicBoolean(false)
+  private val initialized             = new AtomicBoolean(false)
   override def initLogManager(): Unit = {
     // Set a custom LogManager to show log messages even in shutdown hooks
     val managerKey = "java.util.logging.manager"

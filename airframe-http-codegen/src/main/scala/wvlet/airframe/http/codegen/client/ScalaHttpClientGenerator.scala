@@ -47,8 +47,8 @@ object AsyncClientGenerator extends HttpClientGenerator with LogSupport {
 
   import HttpClientGenerator.*
 
-  override def name: String             = "async"
-  override def defaultClassName: String = "ServiceClient"
+  override def name: String                           = "async"
+  override def defaultClassName: String               = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.destPackageName)}
@@ -107,8 +107,8 @@ object SyncClientGenerator extends HttpClientGenerator {
 
   import HttpClientGenerator.*
 
-  override def name: String             = "sync"
-  override def defaultClassName: String = "ServiceSyncClient"
+  override def name: String                           = "sync"
+  override def defaultClassName: String               = "ServiceSyncClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.destPackageName)}

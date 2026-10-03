@@ -8,7 +8,7 @@ object TestMain {
       case Array("surface") => Surface3Test.run
       case Array("di")      => DITest.run
       case Array("codec")   => CodecTest.run
-      case _ =>
+      case _                =>
         LogTest.run
         Surface3Test.run
         DITest.run

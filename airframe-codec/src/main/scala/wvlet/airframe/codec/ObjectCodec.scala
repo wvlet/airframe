@@ -174,7 +174,7 @@ class ParamListCodec(
               u.skipValue
           }
         }
-        val map = m.result()
+        val map  = m.result()
         val args = for (i <- 0 until numParams) yield {
           val p         = params(i)
           val paramName = CName.toCanonicalName(p.name)

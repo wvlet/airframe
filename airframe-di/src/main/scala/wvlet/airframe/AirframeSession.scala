@@ -97,7 +97,7 @@ private[airframe] class AirframeSession(
   private def getOrBuildSingleton(t: Surface, factory: => Any): Any = {
     singletonHolder.get(t) match {
       case Some(value) => value
-      case None =>
+      case None        =>
         val singleton = factory
         singletonHolder += t -> singleton
         singleton

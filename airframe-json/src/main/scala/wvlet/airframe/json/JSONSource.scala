@@ -22,7 +22,7 @@ object JSONSource {
   def fromString(s: String): JSONSource                 = fromBytes(s.getBytes(StandardCharsets.UTF_8))
   def fromBytes(b: Array[Byte]): JSONSource             = fromBytes(b, 0, b.length)
   def fromBytes(b: Array[Byte], offset: Int, size: Int) = new JSONSource(b, offset, size)
-  def fromByteBuffer(b: ByteBuffer) = {
+  def fromByteBuffer(b: ByteBuffer)                     = {
     val a       = new Array[Byte](b.remaining())
     val current = b.position()
     b.get(a, 0, a.length)
@@ -35,8 +35,8 @@ final class JSONSource(private[this] val b: Array[Byte], private[this] val offse
   assert(offset >= 0, s"The offset must be >= 0: ${offset}")
   assert(size >= 0, s"The size must be >= 0: ${size}")
   assert(offset + size <= b.length, s"The offset + size must be <= ${b.length}: ${offset}+${size}")
-  def length: Int             = size
-  def apply(index: Int): Byte = b(index + offset)
+  def length: Int                             = size
+  def apply(index: Int): Byte                 = b(index + offset)
   def substring(start: Int, end: Int): String = {
     new String(b, offset + start, end - start, StandardCharsets.UTF_8)
   }

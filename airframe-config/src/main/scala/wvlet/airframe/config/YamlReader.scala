@@ -80,7 +80,7 @@ object YamlReader extends YamlReaderCompat with LogSupport {
   def bindMap[A](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
     val yamlMsgpack = toMsgPack(prop)
     val codec       = MessageCodec.ofSurface(surface)
-    val result =
+    val result      =
       codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
     trace(result)
     result.asInstanceOf[A]

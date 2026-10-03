@@ -107,7 +107,7 @@ object RxVar {}
 trait RxVarOps[A] {
   def get: A
   def foreach[U](f: A => U): Cancelable
-  def :=(newValue: A): Unit = set(newValue)
+  def :=(newValue: A): Unit  = set(newValue)
   def set(newValue: A): Unit =
     update { (x: A) =>
       newValue

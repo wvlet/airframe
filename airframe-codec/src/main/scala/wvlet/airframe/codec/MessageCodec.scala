@@ -89,7 +89,7 @@ trait MessageCodec[A] extends LogSupport {
   def toJSONObject(v: A): JSONObject = {
     JSONValueCodec.unpackMsgPack(toMsgpackMap(v)) match {
       case Some(j @ JSONObject(o)) => j
-      case _ =>
+      case _                       =>
         throw new IllegalArgumentException(s"Failed to read as JSONObject: ${v}")
     }
   }
@@ -99,7 +99,7 @@ trait MessageCodec[A] extends LogSupport {
 
   def fromMsgPack(msgpack: Array[Byte]): A = unpack(msgpack)
 
-  def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
+  def unpackMsgPack(msgpack: Array[Byte]): Option[A]                        = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
     val unpacker = am.MessagePack.newUnpacker(msgpack, offset, len)
     val v        = new MessageContext

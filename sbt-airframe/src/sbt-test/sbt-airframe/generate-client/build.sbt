@@ -23,7 +23,7 @@ lazy val server =
     .enablePlugins(AirframeHttpPlugin)
     .settings(
       airframeHttpGeneratorOption := "-l debug",
-      airframeHttpClients := Seq(
+      airframeHttpClients         := Seq(
         "myapp.spi:rpc"
       ),
       libraryDependencies ++= Seq(

@@ -30,7 +30,7 @@ class ConfigOverrideTest extends AirSpec {
   private def newConfig: Config = Config(env = "default").register[MyAppConfig](MyAppConfig())
 
   test("override config via canonical param name") {
-    val prop = Map("myapp.coordinator_address" -> "mylocalhost:8081")
+    val prop      = Map("myapp.coordinator_address" -> "mylocalhost:8081")
     val appConfig =
       newConfig
         .overrideWith(prop)

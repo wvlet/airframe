@@ -36,7 +36,7 @@ case class TableScan(
     nodeLocation: Option[NodeLocation]
 ) extends Relation
     with LeafPlan {
-  override def inputAttributes: Seq[Attribute] = Seq.empty
+  override def inputAttributes: Seq[Attribute]  = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.map { col =>
       ResolvedAttribute(

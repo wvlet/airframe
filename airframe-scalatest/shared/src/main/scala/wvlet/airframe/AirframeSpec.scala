@@ -37,7 +37,7 @@ trait AirframeSpec
     sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
   }
 
-  implicit def toTag(s: String) = Tag(s)
+  implicit def toTag(s: String)                                  = Tag(s)
   override def run(testName: Option[String], args: Args): Status = {
     // Add source code location to the debug logs
     Logger.setDefaultFormatter(SourceCodeLogFormatter)

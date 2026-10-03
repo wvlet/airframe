@@ -44,7 +44,7 @@ class NettyResponseHandler(
         resp.events = r.asInstanceOf[Rx[ServerSentEvent]]
         resp
       case _ =>
-        val rs = codecFactory.of(responseSurface)
+        val rs                   = codecFactory.of(responseSurface)
         val msgpack: Array[Byte] = rs match {
           case m: MessageCodec[_] =>
             m.asInstanceOf[MessageCodec[A]].toMsgPack(a)

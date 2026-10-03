@@ -57,7 +57,7 @@ val noPublish = Seq(
 val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
-  scmInfo := Some(
+  scmInfo  := Some(
     ScmInfo(
       browseUrl = url("https://github.com/wvlet/airframe"),
       connection = "scm:git@github.com:wvlet/airframe.git"
@@ -131,7 +131,8 @@ def excludePomDependency(excludes: Seq[String]) = { (node: XmlNode) =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -157,8 +158,8 @@ val airspecDependsOn =
 // Read sources from the sibling projects
 val airspecBuildSettings = Seq[Setting[?]](
   Compile / unmanagedSourceDirectories ++= {
-    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv      = scalaBinaryVersion.value
+    val baseDir    = (ThisBuild / baseDirectory).value.getAbsoluteFile
+    val sv         = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; infix <- Seq("")) yield {
         crossBuildSources(sv, s"${baseDir}/../${m}${infix}")
@@ -170,8 +171,8 @@ val airspecBuildSettings = Seq[Setting[?]](
 val airspecJVMBuildSettings = Seq[Setting[?]](
   Test / fork := true,
   Compile / unmanagedSourceDirectories ++= {
-    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv      = scalaBinaryVersion.value
+    val baseDir    = (ThisBuild / baseDirectory).value.getAbsoluteFile
+    val sv         = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; folder <- Seq(".jvm")) yield {
         crossBuildSources(sv, s"${baseDir}/../${m}/${folder}")
@@ -182,8 +183,8 @@ val airspecJVMBuildSettings = Seq[Setting[?]](
 
 val airspecJSBuildSettings = Seq[Setting[?]](
   Compile / unmanagedSourceDirectories ++= {
-    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv      = scalaBinaryVersion.value
+    val baseDir    = (ThisBuild / baseDirectory).value.getAbsoluteFile
+    val sv         = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; folder <- Seq(".js")) yield {
         crossBuildSources(sv, s"${baseDir}/../${m}/${folder}")
@@ -195,8 +196,8 @@ val airspecJSBuildSettings = Seq[Setting[?]](
 val airspecNativeBuildSettings = Seq[Setting[?]](
   crossScalaVersions := Seq(SCALA_3),
   Compile / unmanagedSourceDirectories ++= {
-    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv      = scalaBinaryVersion.value
+    val baseDir    = (ThisBuild / baseDirectory).value.getAbsoluteFile
+    val sv         = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; folder <- Seq(".native")) yield {
         crossBuildSources(sv, s"${baseDir}/../${m}/${folder}")
@@ -367,9 +368,9 @@ lazy val airspec =
         // scalajs-test-interface is a plain Scala-versioned (non-Scala.js) artifact published only for
         // 2.12/2.13. In a Scala.js project sbt 2.x would append the nonexistent _sjs1_ suffix, so pin the
         // Scala binary suffix explicitly (Scala 3 uses the 2.13 build).
-        "org.scala-js"                  % s"scalajs-test-interface_${if (scalaVersion.value.startsWith("3.")) "2.13"
-        else scalaBinaryVersion.value}" % scalaJSVersion,
-        ("org.portable-scala"          %% "portable-scala-reflect" % "1.1.3").cross(CrossVersion.for3Use2_13),
+        "org.scala-js"                    % s"scalajs-test-interface_${if (scalaVersion.value.startsWith("3.")) "2.13"
+          else scalaBinaryVersion.value}" % scalaJSVersion,
+        ("org.portable-scala"            %% "portable-scala-reflect" % "1.1.3").cross(CrossVersion.for3Use2_13),
         // Needed to be explicitly included here for running Scala.js tests successfully
         "org.scala-js" %% "scala-js-macrotask-executor" % "1.1.1",
         // Required by embedded airframe-log code that uses java.util.logging

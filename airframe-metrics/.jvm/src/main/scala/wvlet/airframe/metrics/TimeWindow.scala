@@ -97,7 +97,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   def plus(n: Long, unit: ChronoUnit): TimeWindow  = TimeWindow(start.plus(n, unit), end.plus(n, unit))
   def minus(n: Long, unit: ChronoUnit): TimeWindow = plus(-n, unit)
 
-  def howMany(unit: ChronoUnit): Long = unit.between(start, end)
+  def howMany(unit: ChronoUnit): Long     = unit.between(start, end)
   def howMany(unit: TimeWindowUnit): Long = {
     unit match {
       case TimeWindowUnit.Year =>
@@ -158,7 +158,7 @@ object TimeWindow extends LogSupport {
 }
 
 class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime] = None) extends LogSupport {
-  def withOffset(t: ZonedDateTime): TimeWindowBuilder = new TimeWindowBuilder(zone, Some(t))
+  def withOffset(t: ZonedDateTime): TimeWindowBuilder    = new TimeWindowBuilder(zone, Some(t))
   def withOffset(dateTimeStr: String): TimeWindowBuilder = {
     TimeParser
       .parse(dateTimeStr, zone)

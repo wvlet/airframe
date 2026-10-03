@@ -281,7 +281,7 @@ class AirframeTest extends AirSpec {
   }
 
   test("create singleton eagerly") {
-    val start = System.nanoTime()
+    val start   = System.nanoTime()
     val session =
       newDesign
         .bind[EagerSingleton].toEagerSingleton
@@ -459,7 +459,7 @@ class AirframeTest extends AirSpec {
 
   test("create single with inject eagerly") {
     val start = System.nanoTime()
-    val d = newSilentDesign
+    val d     = newSilentDesign
       .bind[EagerSingletonWithInject].toEagerSingleton
     val s       = d.newSession.build[EagerSingletonWithInject]
     val current = System.nanoTime()

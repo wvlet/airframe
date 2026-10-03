@@ -22,7 +22,7 @@ import org.antlr.v4.runtime.misc.Interval
 
 class CaseInsensitiveStream(val stream: CharStream) extends CharStream {
   override def getText(interval: Interval): String = stream.getText(interval)
-  override def consume(): Unit = {
+  override def consume(): Unit                     = {
     stream.consume()
   }
   override def LA(i: Int): Int = {
@@ -36,11 +36,11 @@ class CaseInsensitiveStream(val stream: CharStream) extends CharStream {
         Character.toUpperCase(result)
     }
   }
-  override def mark: Int = stream.mark
+  override def mark: Int                  = stream.mark
   override def release(marker: Int): Unit = {
     stream.release(marker)
   }
-  override def index: Int = stream.index
+  override def index: Int             = stream.index
   override def seek(index: Int): Unit = {
     stream.seek(index)
   }

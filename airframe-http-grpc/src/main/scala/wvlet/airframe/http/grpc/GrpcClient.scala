@@ -90,7 +90,7 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
       request: Rx[Req]
   ): Resp = {
     val responseObserver = GrpcClient.blockingRxResponseObserver[Resp]
-    val requestObserver = ClientCalls.asyncClientStreamingCall(
+    val requestObserver  = ClientCalls.asyncClientStreamingCall(
       getChannel.newCall(method.descriptor, config.callOptions),
       new GrpcStreamObserverWrapper[Resp](responseObserver)
     )
@@ -108,7 +108,7 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
       request: Rx[Req]
   ): Rx[Resp] = {
     val responseObserver = GrpcClient.blockingRxResponseObserver[Resp]
-    val requestObserver = ClientCalls.asyncBidiStreamingCall(
+    val requestObserver  = ClientCalls.asyncBidiStreamingCall(
       getChannel.newCall(method.descriptor, config.callOptions),
       new GrpcStreamObserverWrapper[Resp](responseObserver)
     )
@@ -197,7 +197,7 @@ object GrpcClient extends LogSupport {
 
   private def blockingRxResponseObserver[A]: BlockingRxObserver[A] =
     new BlockingRxObserver[A] {
-      val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+      val toRx: RxBlockingQueue[A]    = new RxBlockingQueue[A]
       override def onNext(v: A): Unit = {
         toRx.add(OnNext(v))
       }
@@ -210,7 +210,7 @@ object GrpcClient extends LogSupport {
     }
 
   private class RxObserver[A] extends StreamObserver[A] {
-    val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+    val toRx: RxBlockingQueue[A]    = new RxBlockingQueue[A]
     override def onNext(v: A): Unit = {
       toRx.add(OnNext(v))
     }
@@ -229,7 +229,7 @@ object GrpcClient extends LogSupport {
     */
   private def translateException(e: Throwable): Throwable = {
     e match {
-      case e: RPCException => e
+      case e: RPCException            => e
       case ex: StatusRuntimeException =>
         try {
           val trailers = Status.trailersFromThrowable(ex)
@@ -292,7 +292,7 @@ object GrpcClient extends LogSupport {
             requestObserver.onError(e)
         }
       }
-      case OnError(e) => requestObserver.onError(e)
+      case OnError(e)   => requestObserver.onError(e)
       case OnCompletion => {
         requestObserver.onCompleted()
       }

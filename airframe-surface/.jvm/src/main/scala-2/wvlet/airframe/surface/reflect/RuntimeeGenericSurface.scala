@@ -68,7 +68,7 @@ class RuntimeGenericSurface(
         // Inner class
         outer.orElse {
           val contextClass = getFirstParamTypeOfPrimaryConstructor(rawType)
-          val msg = contextClass
+          val msg          = contextClass
             .map(x =>
               s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}"
             )

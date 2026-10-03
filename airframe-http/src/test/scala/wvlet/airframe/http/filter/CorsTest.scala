@@ -38,7 +38,7 @@ class CorsTest extends AirSpec {
   )
 
   private val corsFilter = Cors.newFilter(policy)
-  private val endpoint = new RxHttpEndpoint {
+  private val endpoint   = new RxHttpEndpoint {
     override def apply(request: HttpMessage.Request): Rx[HttpMessage.Response] = {
       Rx.single(Http.response())
     }

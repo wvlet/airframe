@@ -104,7 +104,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
       }
 
       def traverse(current: ClientServicePackages): String = {
-        val serviceBody = current.services.map(descriptorBody(_)).mkString("\n")
+        val serviceBody      = current.services.map(descriptorBody(_)).mkString("\n")
         val modelClassesBody =
           current.services.map(modelClasses(_)).mkString("\n")
         val body =

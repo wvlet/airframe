@@ -160,7 +160,7 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
   override protected def in: Rx[Option[A]] = variable
   override def parents: Seq[RxOps[_]]      = Seq(in)
 
-  override def get: Option[A] = variable.get
+  override def get: Option[A]                            = variable.get
   override def foreach[U](f: Option[A] => U): Cancelable = {
     variable.foreach(f)
   }

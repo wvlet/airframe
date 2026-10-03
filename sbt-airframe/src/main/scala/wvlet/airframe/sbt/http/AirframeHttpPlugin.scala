@@ -61,7 +61,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       taskKey[Seq[File]]("Generate the client code")
     val airframeHttpGeneratorOption =
       settingKey[String]("airframe-http client-generator options")
-    val airframeHttpClean = taskKey[Unit]("clean artifacts")
+    val airframeHttpClean     = taskKey[Unit]("clean artifacts")
     val airframeHttpClasspass =
       taskKey[Seq[String]]("class loader for dependent classes")
     val airframeHttpBinaryDir =
@@ -70,7 +70,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       taskKey[File]("Output directory for the generated clients. The default is Compile / sourceManaged")
     val airframeHttpVersion = settingKey[String]("airframe-http version to use")
     val airframeHttpReload  = taskKey[Seq[File]]("refresh generated clients")
-    val airframeHttpOpts =
+    val airframeHttpOpts    =
       settingKey[String]("additional option for airframe-http commands")
 
     // Keys for OpenAPI spec generator
@@ -93,13 +93,13 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   def httpProjectSettings = {
     import sbt.Keys.*
     Seq(
-      airframeHttpClients := Seq.empty,
+      airframeHttpClients   := Seq.empty,
       airframeHttpClasspass := Def.uncached {
         given FileConverter = fileConverter.value
         // Compile all dependent projects
         val compileResults = (Compile / compile).all(dependentProjects).value
         val baseDir        = (ThisBuild / baseDirectory).value
-        val classpaths =
+        val classpaths     =
           ((Compile / dependencyClasspath).value.files :+ (Compile / classDirectory).value)
             .map {
               case f: File               => f
@@ -118,7 +118,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           IO.delete(d)
         }
       },
-      airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.airframeVersion,
+      airframeHttpVersion   := wvlet.airframe.sbt.BuildInfo.airframeVersion,
       airframeHttpBinaryDir := Def.uncached {
         // This task is for downloading airframe-http library to parse Airframe HTTP/RPC interfaces using a forked JVM.
         // Without forking JVM, sbt's class loader cannot load @RPC and @Endpoint annotations.
@@ -135,7 +135,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           // Download airframe-http.tgz with coursier
           import coursier.*
           val moduleName = s"airframe-http-codegen_${scalaBinaryVersion.value}"
-          val d =
+          val d          =
             Dependency(
               Module(Organization("org.wvlet.airframe"), ModuleName(moduleName)),
               airframeHttpVersion.value
@@ -188,7 +188,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         airframeHttpPackageDir
       },
       airframeHttpGeneratorOption := "",
-      airframeHttpReload := Def.uncached {
+      airframeHttpReload          := Def.uncached {
         Def
           .sequential(
             Def.task {
@@ -202,12 +202,12 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           )
           .value
       },
-      airframeHttpOutDir := Def.uncached((Compile / sourceManaged).value),
+      airframeHttpOutDir         := Def.uncached((Compile / sourceManaged).value),
       airframeHttpGenerateClient := Def.uncached {
         val targetDir = airframeHttpWorkDir.value
         val baseDir   = targetDir.relativeTo(file(".")).getOrElse(targetDir)
         val binDir    = airframeHttpBinaryDir.value
-        val opts =
+        val opts      =
           s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
         val commandLineOpts = HttpCodeGeneratorOption(
           classpath = airframeHttpClasspass.value,
@@ -231,7 +231,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         }
         result
       },
-      airframeHttpOpts := "",
+      airframeHttpOpts          := "",
       airframeHttpOpenAPIConfig := OpenAPIConfig(
         title = name.value,
         version = version.value
@@ -240,7 +240,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       // resolves to a versioned target/out/... path, which would change the output location.
       airframeHttpOpenAPITargetDir := baseDirectory.value / "target",
       airframeHttpOpenAPIPackages  := Seq.empty,
-      airframeHttpOpenAPIGenerate := Def.uncached {
+      airframeHttpOpenAPIGenerate  := Def.uncached {
         Def
           .task {
             val config             = airframeHttpOpenAPIConfig.value

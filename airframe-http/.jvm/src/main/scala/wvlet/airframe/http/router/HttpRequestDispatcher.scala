@@ -122,7 +122,7 @@ object HttpRequestDispatcher extends LogSupport {
           acc: Option[HttpFilter[Req, Resp, F]]
       ): (Option[HttpFilter[Req, Resp, F]], Router) = {
         val localFilter = adaptFilter(r)
-        val newAcc = (acc, localFilter) match {
+        val newAcc      = (acc, localFilter) match {
           case (Some(a), Some(lf)) => Some(a.andThen(lf))
           case (None, Some(lf))    => Some(lf)
           case (a, None)           => a

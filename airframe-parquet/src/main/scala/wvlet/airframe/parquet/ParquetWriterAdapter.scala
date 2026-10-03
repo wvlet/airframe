@@ -40,7 +40,7 @@ object ParquetWriterAdapter extends LogSupport {
   }
 
   class Builder[A](surface: Surface, file: OutputFile) extends ParquetWriter.Builder[A, Builder[A]](file: OutputFile) {
-    override def self(): Builder[A] = this
+    override def self(): Builder[A]                                    = this
     override def getWriteSupport(conf: Configuration): WriteSupport[A] = {
       new ParquetWriteSupportAdapter[A](surface)
     }
@@ -76,7 +76,7 @@ object ParquetWriterAdapter extends LogSupport {
 }
 
 class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] with LogSupport {
-  private lazy val schema = Parquet.toParquetSchema(surface)
+  private lazy val schema                      = Parquet.toParquetSchema(surface)
   private val objectCodec: ParquetObjectWriter = {
     ParquetObjectWriter.buildFromSurface(surface, schema).asRoot
   }

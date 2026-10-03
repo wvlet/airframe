@@ -37,7 +37,7 @@ private[airspec] case class AirSpecEvent(
     testName.getOrElse(taskDef.fullyQualifiedName())
   }
   override def fingerprint(): Fingerprint = taskDef.fingerprint()
-  override def selector(): Selector = {
+  override def selector(): Selector       = {
     testName match {
       case Some(x) => new TestSelector(x)
       case _       => taskDef.selectors().headOption.getOrElse(new SuiteSelector)
@@ -126,7 +126,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
       }
     }
     val tail = e.status() match {
-      case Status.Success => ""
+      case Status.Success                 => ""
       case _ if e.throwable().isDefined() =>
         val ex = e.throwable().get()
         ex match {

@@ -100,7 +100,7 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     def traverse(s: Surface, v: Any, secret: Option[wvlet.airframe.surface.secret]): Any = {
       if (s.params.isEmpty) {
         val value = v match {
-          case null => ""
+          case null                 => ""
           case Some(x) if x != null =>
             x.toString // unwrap Option
           case _ =>
@@ -223,7 +223,7 @@ case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
   }
 
   def +(h: ConfigHolder): Config = Config(env, this.holder + (h.tpe -> h))
-  def +(other: Config): Config = {
+  def +(other: Config): Config   = {
     Config(env, this.holder ++ other.holder)
   }
   override private[airframe] def addAsDesignOption[Config1 >: Config](other: Config1): Config1 = {

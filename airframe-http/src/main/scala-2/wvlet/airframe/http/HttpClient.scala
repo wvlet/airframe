@@ -105,7 +105,7 @@ trait HttpSyncClient[Req, Resp] extends HttpSyncClientBase[Req, Resp] with AutoC
       }
 
     val r0 = Http.GET(resourcePath)
-    val r = (r0.query, queryParams) match {
+    val r  = (r0.query, queryParams) match {
       case (query, queryParams) if query.isEmpty && queryParams.nonEmpty =>
         r0.withUri(s"${r0.uri}?${queryParams.mkString("&")}")
       case (query, queryParams) if query.nonEmpty && queryParams.nonEmpty =>

@@ -39,7 +39,7 @@ object Greeter {
     override def build(channel: Channel, callOptions: CallOptions): GreeterStub = {
       new GreeterStub(channel, callOptions)
     }
-    private val codec = codecFactory.of[Map[String, Any]]
+    private val codec                 = codecFactory.of[Map[String, Any]]
     private val helloMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello"), codecFactory)
 
