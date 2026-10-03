@@ -46,7 +46,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with TLSSupport w
 
   override def toScalaFuture[A](a: Rx[A]): Future[A] = {
     val promise: Promise[A] = Promise()
-    val rx = a.transform {
+    val rx                  = a.transform {
       case Success(x)  => promise.success(x)
       case Failure(ex) => promise.failure(ex)
     }
@@ -60,7 +60,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with TLSSupport w
 
   override def rxFilterAdapter(filter: RxHttpFilter): NettyBackend.Filter = {
     new NettyBackend.Filter {
-      override protected def backend: HttpBackend[Request, Response, Rx] = self
+      override protected def backend: HttpBackend[Request, Response, Rx]                = self
       override def apply(request: Request, context: NettyBackend.Context): Rx[Response] = {
         filter(
           request,

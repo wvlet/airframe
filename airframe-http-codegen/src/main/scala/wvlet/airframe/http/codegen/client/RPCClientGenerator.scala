@@ -145,7 +145,7 @@ object RPCClientGenerator extends HttpClientGenerator {
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
           val returnElementType = m.rpcReturnElementType.fullTypeName
-          val returnType =
+          val returnType        =
             if (isAsync)
               s"Rx[${returnElementType}]"
             else

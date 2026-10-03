@@ -2148,11 +2148,11 @@ package editor {
       object EditorOptions extends js.Object {
         var acceptSuggestionOnCommitCharacter: IEditorOption[Int, Boolean] =
           js.native
-        var acceptSuggestionOnEnter: IEditorOption[Int, String]                = js.native
-        var accessibilitySupport: IEditorOption[Int, AccessibilitySupport]     = js.native
-        var accessibilityPageSize: IEditorOption[Int, Double]                  = js.native
-        var ariaLabel: IEditorOption[Int, String]                              = js.native
-        var autoClosingBrackets: IEditorOption[Int, EditorAutoClosingStrategy] = js.native
+        var acceptSuggestionOnEnter: IEditorOption[Int, String]                        = js.native
+        var accessibilitySupport: IEditorOption[Int, AccessibilitySupport]             = js.native
+        var accessibilityPageSize: IEditorOption[Int, Double]                          = js.native
+        var ariaLabel: IEditorOption[Int, String]                                      = js.native
+        var autoClosingBrackets: IEditorOption[Int, EditorAutoClosingStrategy]         = js.native
         var autoClosingOvertype: IEditorOption[Int, EditorAutoClosingOvertypeStrategy] =
           js.native
         var autoClosingQuotes: IEditorOption[Int, EditorAutoClosingStrategy]  = js.native
@@ -2171,7 +2171,7 @@ package editor {
         var cursorSurroundingLinesStyle: IEditorOption[Int, String]           = js.native
         var cursorWidth: IEditorOption[Int, Double]                           = js.native
         var disableLayerHinting: IEditorOption[Int, Boolean]                  = js.native
-        var disableMonospaceOptimizations: IEditorOption[Int, Boolean] =
+        var disableMonospaceOptimizations: IEditorOption[Int, Boolean]        =
           js.native
         var dragAndDrop: IEditorOption[Int, Boolean]                                = js.native
         var emptySelectionClipboard: IEditorOption[Int, Boolean]                    = js.native
@@ -4340,10 +4340,10 @@ package editor {
         type TextEdit                   = js.Any
         type IShortMonarchLanguageRule1 = js.Tuple2[RegExp, IMonarchLanguageAction]
         type IShortMonarchLanguageRule2 = js.Tuple3[RegExp, IMonarchLanguageAction, String]
-        type IMonarchLanguageRule =
+        type IMonarchLanguageRule       =
           IShortMonarchLanguageRule1 | IShortMonarchLanguageRule2 | IExpandedMonarchLanguageRule
         type IShortMonarchLanguageAction = String
-        type IMonarchLanguageAction = IShortMonarchLanguageAction | IExpandedMonarchLanguageAction |
+        type IMonarchLanguageAction      = IShortMonarchLanguageAction | IExpandedMonarchLanguageAction |
           js.Array[
             IShortMonarchLanguageAction
           ] | js.Array[IExpandedMonarchLanguageAction]

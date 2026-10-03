@@ -106,9 +106,9 @@ object OptionParser extends LogSupport {
     */
   case class CLOption(path: Path, annot: option, override val param: Parameter) extends CLOptionItemBase(param) {
     // validate prefixes
-    val prefixes: Seq[String] = splitPrefixes(annot.prefix())
+    val prefixes: Seq[String]           = splitPrefixes(annot.prefix())
     override def takesArgument: Boolean = {
-      val s = param.surface
+      val s           = param.surface
       val typeSurface = if (s.isOption) {
         s.typeArgs(0)
       } else {

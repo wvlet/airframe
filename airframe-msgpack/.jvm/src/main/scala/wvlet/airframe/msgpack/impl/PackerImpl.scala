@@ -152,7 +152,7 @@ object PackerImpl {
       case StringValue(v)             => v8.ValueFactory.newString(v)
       case BinaryValue(v)             => v8.ValueFactory.newBinary(v)
       case ExtensionValue(extType, v) => v8.ValueFactory.newExtension(extType, v)
-      case TimestampValue(v) =>
+      case TimestampValue(v)          =>
         v8.ValueFactory.newTimestamp(v.getEpochSecond, v.getNano)
       case ArrayValue(elems) =>
         import scala.jdk.CollectionConverters.*

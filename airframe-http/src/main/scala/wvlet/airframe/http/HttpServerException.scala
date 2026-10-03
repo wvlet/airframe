@@ -109,7 +109,7 @@ class HttpServerException(val status: HttpStatus, msg: String, cause: Throwable)
   // HTTP header setting utility methods
   def withAccept(acceptType: String): HttpServerException = withHeader(HttpHeader.Accept, acceptType)
   def withAcceptMsgPack: HttpServerException = withHeader(HttpHeader.Accept, HttpHeader.MediaType.ApplicationMsgPack)
-  def withAllow(allow: String): HttpServerException = withHeader(HttpHeader.Allow, allow)
+  def withAllow(allow: String): HttpServerException                 = withHeader(HttpHeader.Allow, allow)
   def withAuthorization(authorization: String): HttpServerException =
     withHeader(HttpHeader.Authorization, authorization)
   def withCacheControl(cacheControl: String): HttpServerException = withHeader(HttpHeader.CacheControl, cacheControl)
@@ -121,9 +121,9 @@ class HttpServerException(val status: HttpStatus, msg: String, cause: Throwable)
   def withDate(date: Instant)                              = withHeader(HttpHeader.Date, formatInstant(date))
   def withExpires(expires: String): HttpServerException    = withHeader(HttpHeader.Expires, expires)
   def withHost(host: String): HttpServerException          = withHeader(HttpHeader.Host, host)
-  def withLastModified(lastModified: String): HttpServerException = withHeader(HttpHeader.LastModified, lastModified)
-  def withReferer(referer: String): HttpServerException           = withHeader(HttpHeader.Referer, referer)
-  def withUserAgent(userAgent: String): HttpServerException       = withHeader(HttpHeader.UserAgent, userAgent)
+  def withLastModified(lastModified: String): HttpServerException   = withHeader(HttpHeader.LastModified, lastModified)
+  def withReferer(referer: String): HttpServerException             = withHeader(HttpHeader.Referer, referer)
+  def withUserAgent(userAgent: String): HttpServerException         = withHeader(HttpHeader.UserAgent, userAgent)
   def withXForwardedFor(xForwardedFor: String): HttpServerException =
     withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   def withXForwardedProto(xForwardedProto: String): HttpServerException =

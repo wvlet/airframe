@@ -283,7 +283,7 @@ object Resource {
         throw new IllegalArgumentException("invalid resource URL: " + resourceURL)
       }
 
-      val jarPath = path.substring(0, pos).replaceAll("%20", " ")
+      val jarPath  = path.substring(0, pos).replaceAll("%20", " ")
       val filePath =
         path
           .substring(0, pos)

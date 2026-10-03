@@ -64,7 +64,7 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] with LogSup
     }
   }
 
-  override def toFuture[A](a: A): Future[A] = Future.value(a)
+  override def toFuture[A](a: A): Future[A]                 = Future.value(a)
   override def toScalaFuture[A](a: Future[A]): sc.Future[A] = {
     val promise: sc.Promise[A] = sc.Promise()
     a.respond {

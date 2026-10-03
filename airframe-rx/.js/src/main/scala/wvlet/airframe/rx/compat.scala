@@ -24,8 +24,8 @@ object compat {
 
   def newTimer: Timer = {
     new Timer {
-      private var intervalHandle: Option[SetIntervalHandle] = None
-      private var lastTimeMillis                            = System.currentTimeMillis()
+      private var intervalHandle: Option[SetIntervalHandle]         = None
+      private var lastTimeMillis                                    = System.currentTimeMillis()
       override def schedule[U](millis: Long)(body: Long => U): Unit = {
         val handle = scala.scalajs.js.timers.setInterval(millis.toDouble) {
           val currentTimeMillis = System.currentTimeMillis()

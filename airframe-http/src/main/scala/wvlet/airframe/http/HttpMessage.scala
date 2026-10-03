@@ -178,8 +178,8 @@ object HttpMessage {
     override def toContentBytes: Array[Byte] = content.getBytes(StandardCharsets.UTF_8)
   }
   case class ByteArrayMessage(content: Array[Byte]) extends Message {
-    override def isEmpty: Boolean = content.isEmpty
-    override def toString: String = toContentString
+    override def isEmpty: Boolean        = content.isEmpty
+    override def toString: String        = toContentString
     override def toContentString: String = {
       new String(content, StandardCharsets.UTF_8)
     }
@@ -191,7 +191,7 @@ object HttpMessage {
     private lazy val content: Array[Byte] = contentReader
     override def isEmpty: Boolean         = content.isEmpty
     override def toString: String         = toContentString
-    override def toContentString: String = {
+    override def toContentString: String  = {
       new String(content, StandardCharsets.UTF_8)
     }
     override def toContentBytes: Array[Byte] = content
@@ -258,7 +258,7 @@ object HttpMessage {
       * @param dest
       * @return
       */
-    def withDest(dest: ServerAddress): Request = copyWithAttachments(this.copy(dest = Some(dest)))
+    def withDest(dest: ServerAddress): Request                   = copyWithAttachments(this.copy(dest = Some(dest)))
     def withRemoteAddress(remoteAddress: ServerAddress): Request = copyWithAttachments(
       this.copy(remoteAddress = Some(remoteAddress))
     )

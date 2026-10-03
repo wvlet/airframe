@@ -90,7 +90,7 @@ object SSEStreamLoggingTest extends AirSpec {
   test("log SSE stream completion") { (client: AsyncClient) =>
     streamLogger.clear()
     val eventQueue = new RxBlockingQueue[ServerSentEvent]()
-    val rx = client.send(
+    val rx         = client.send(
       Http
         .POST("/v1/sse-stream")
         .withEventHandler(new ServerSentEventHandler {
@@ -129,7 +129,7 @@ object SSEStreamLoggingTest extends AirSpec {
   test("log SSE stream error") { (client: AsyncClient) =>
     streamLogger.clear()
     val eventQueue = new RxBlockingQueue[ServerSentEvent]()
-    val rx = client.send(
+    val rx         = client.send(
       Http
         .POST("/v1/sse-error-stream")
         .withEventHandler(new ServerSentEventHandler {

@@ -104,7 +104,11 @@ object CurlBindings {
     def easySetoptPtr(curl: CURL, option: CInt, parameter: Ptr[Byte]): CInt = extern
 
     @name("curl_easy_setopt")
-    def easySetoptCallback(curl: CURL, option: CInt, parameter: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize]): CInt = extern
+    def easySetoptCallback(
+        curl: CURL,
+        option: CInt,
+        parameter: CFuncPtr4[Ptr[Byte], CSize, CSize, Ptr[Byte], CSize]
+    ): CInt = extern
 
     @name("curl_easy_setopt")
     def easySetoptSlist(curl: CURL, option: CInt, parameter: Ptr[CurlSlist]): CInt = extern
@@ -153,10 +157,10 @@ object CurlBindings {
   def curl_easy_getinfo_long(curl: CURL, info: CInt, result: Ptr[Long]): CInt =
     Extern.easyGetinfoLong(curl, info, result)
 
-  def curl_easy_strerror(code: CInt): CString       = Extern.easyStrerror(code)
+  def curl_easy_strerror(code: CInt): CString                               = Extern.easyStrerror(code)
   def curl_slist_append(list: Ptr[CurlSlist], str: CString): Ptr[CurlSlist] = Extern.slistAppend(list, str)
-  def curl_slist_free_all(list: Ptr[CurlSlist]): Unit = Extern.slistFreeAll(list)
-  def curl_version(): CString = Extern.version()
+  def curl_slist_free_all(list: Ptr[CurlSlist]): Unit                       = Extern.slistFreeAll(list)
+  def curl_version(): CString                                               = Extern.version()
 }
 
 /**
@@ -173,27 +177,25 @@ object CurlCallbacks {
   /**
     * Write callback for collecting response data
     */
-  val writeCallback: WriteCallback = {
-    (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) =>
-      val realSize = size * nmemb
-      if (userdata != null && realSize.toLong > 0L) {
-        val buffer = userdata.asInstanceOf[Ptr[ResponseBuffer]]
-        appendToBuffer(buffer, ptr, realSize.toLong)
-      }
-      realSize
+  val writeCallback: WriteCallback = { (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) =>
+    val realSize = size * nmemb
+    if (userdata != null && realSize.toLong > 0L) {
+      val buffer = userdata.asInstanceOf[Ptr[ResponseBuffer]]
+      appendToBuffer(buffer, ptr, realSize.toLong)
+    }
+    realSize
   }
 
   /**
     * Header callback for collecting response headers
     */
-  val headerCallback: WriteCallback = {
-    (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) =>
-      val realSize = size * nmemb
-      if (userdata != null && realSize.toLong > 0L) {
-        val buffer = userdata.asInstanceOf[Ptr[ResponseBuffer]]
-        appendToBuffer(buffer, ptr, realSize.toLong)
-      }
-      realSize
+  val headerCallback: WriteCallback = { (ptr: Ptr[Byte], size: CSize, nmemb: CSize, userdata: Ptr[Byte]) =>
+    val realSize = size * nmemb
+    if (userdata != null && realSize.toLong > 0L) {
+      val buffer = userdata.asInstanceOf[Ptr[ResponseBuffer]]
+      appendToBuffer(buffer, ptr, realSize.toLong)
+    }
+    realSize
   }
 
   private def appendToBuffer(buffer: Ptr[ResponseBuffer], data: Ptr[Byte], size: Long): Unit = {

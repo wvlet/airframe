@@ -280,7 +280,7 @@ object GrpcStatus {
   def ofHttpStatus(status: HttpStatus): GrpcStatus = {
     httpStatusCodeMapping.get(status) match {
       case Some(grpcStatus) => grpcStatus
-      case None =>
+      case None             =>
         status match {
           case s if s.isSuccessful =>
             OK_0

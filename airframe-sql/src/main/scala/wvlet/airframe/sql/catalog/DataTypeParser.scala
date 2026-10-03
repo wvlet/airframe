@@ -117,7 +117,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def parse[A](target: Parser[A], input: String): A = {
     parseAll(target, input) match {
       case Success(result, next) => result
-      case Error(msg, next) =>
+      case Error(msg, next)      =>
         throw parseError(s"'${input}': ${msg}")
       case Failure(msg, next) =>
         throw parseError(s"'${input}': ${msg}")

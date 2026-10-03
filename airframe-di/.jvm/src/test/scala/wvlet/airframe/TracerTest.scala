@@ -43,7 +43,7 @@ class TracerTest extends AirSpec {
 
   test("should report design coverage") {
     val stats = new DIStats()
-    val d = newDesign.noLifeCycleLogging
+    val d     = newDesign.noLifeCycleLogging
       .bind[A].toSingleton
       .bind[B].toSingleton
       .onInject(x => debug("inject"))

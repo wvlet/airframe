@@ -17,7 +17,7 @@ import wvlet.airspec.AirSpec
 
 object ControlTest {
   class A extends AutoCloseable {
-    var closed: Boolean = false
+    var closed: Boolean        = false
     override def close(): Unit = {
       closed = true
     }

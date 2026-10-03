@@ -63,8 +63,8 @@ object ServerAddress extends LogSupport {
     if (address == null || address.isEmpty) {
       ServerAddress.empty
     } else if (address.matches("""\w+:\/\/.*""")) {
-      val uri         = URI.create(address)
-      val givenScheme = Option(uri.getScheme)
+      val uri            = URI.create(address)
+      val givenScheme    = Option(uri.getScheme)
       val (port, scheme) = uri.getPort match {
         case 443 =>
           (443, givenScheme.getOrElse("https"))
@@ -84,7 +84,7 @@ object ServerAddress extends LogSupport {
       // Take the last section separated by colon because the address might be IPv6
       val pos = address.lastIndexOf(":")
       if (pos > 0) {
-        val port = address.substring(pos + 1, address.length).toInt
+        val port   = address.substring(pos + 1, address.length).toInt
         val scheme = port match {
           case 443 => "https"
           case _   => "http"

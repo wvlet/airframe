@@ -47,7 +47,7 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
   }
 
   private var cachedResult: Option[Seq[MsgPack]] = None
-  override def result: Seq[MsgPack] = {
+  override def result: Seq[MsgPack]              = {
     synchronized {
       if (cachedResult.isEmpty) {
         cachedResult = Some(Seq(packer.toByteArray))
@@ -56,14 +56,14 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
     }
   }
 
-  override def isObjectContext: Boolean = false
+  override def isObjectContext: Boolean   = false
   override def add(v: Seq[MsgPack]): Unit = {
     v.foreach { b => packer.writePayload(b) }
   }
   override def closeContext(s: JSONSource, end: Int): Unit          = {}
   override def addNull(s: JSONSource, start: Int, end: Int): Unit   = packer.packNil
   override def addString(s: JSONSource, start: Int, end: Int): Unit = packer.packString(s.substring(start, end))
-  override def addUnescapedString(s: String): Unit = {
+  override def addUnescapedString(s: String): Unit                  = {
     packer.packString(s)
   }
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
@@ -85,7 +85,7 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
 
   override def objectContext(s: JSONSource, start: Int): JSONContext[Seq[MsgPack]] = {
     new LocalStructureContext {
-      override def isObjectContext: Boolean = true
+      override def isObjectContext: Boolean                    = true
       override def closeContext(s: JSONSource, end: Int): Unit = {
         // Add msgpack data to the parent
         parent.add(result)

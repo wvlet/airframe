@@ -134,7 +134,7 @@ object HttpRecorder extends LogSupport {
       dropExistingSession: Boolean = false
   ): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
-    val server = new HttpRecorderServer(
+    val server   = new HttpRecorderServer(
       recorder,
       HttpRecorderServer.newRecordProxyService(recorder, destProxyEndpoint(recorderConfig))
     )
@@ -150,7 +150,7 @@ object HttpRecorder extends LogSupport {
       dropExistingSession: Boolean = true
   ): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
-    val server =
+    val server   =
       new HttpRecorderServer(
         recorder,
         HttpRecorderServer.newRecordingService(recorder, destProxyEndpoint(recorderConfig))

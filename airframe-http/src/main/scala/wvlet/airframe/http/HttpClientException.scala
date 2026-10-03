@@ -179,7 +179,7 @@ object HttpClientException extends LogSupport {
     @tailrec
     def iter(cl: Any): Boolean = {
       cl match {
-        case null => false
+        case null         => false
         case e: Throwable =>
           iter(e.getClass)
         case cl: Class[_] if classOf[Throwable].isAssignableFrom(cl) =>

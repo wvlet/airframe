@@ -57,7 +57,7 @@ object JavaStandardCodec {
       val name = u.unpackString
       enumTable.get(CName.toCanonicalName(name)) match {
         case Some(javaEnum) => v.setObject(javaEnum)
-        case _ =>
+        case _              =>
           v.setIncompatibleFormatException(this, s"${name} is not a value of ${enumType}")
       }
     }

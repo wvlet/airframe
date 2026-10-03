@@ -30,7 +30,7 @@ lazy val server =
     .settings(
       Test / fork                 := true,
       airframeHttpGeneratorOption := "-l trace",
-      airframeHttpClients := Seq(
+      airframeHttpClients         := Seq(
         "example.api:grpc"
       ),
       libraryDependencies ++= Seq(

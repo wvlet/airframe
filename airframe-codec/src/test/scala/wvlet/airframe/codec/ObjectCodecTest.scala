@@ -125,7 +125,7 @@ class ObjectCodecTest extends CodecSpec {
 
   test("support @required annotation") {
     val codec = MessageCodec.of[B]
-    val ex = intercept[MessageCodecException] {
+    val ex    = intercept[MessageCodecException] {
       codec.unpackJson("{}")
     }
     warn(ex.getMessage)

@@ -84,7 +84,7 @@ object YAMLFormatter {
     }
 
     private def quoteValue(v: JSONValue): String = {
-      val letterPattern = """[\w]+""".r
+      val letterPattern                = """[\w]+""".r
       def isLetter(s: String): Boolean = {
         s match {
           case letterPattern() => true

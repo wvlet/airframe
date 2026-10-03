@@ -220,10 +220,10 @@ object Gallery extends LogSupport {
         height -> 50,
         rect(x -> 0, y -> 0, width -> 50, height -> 50, fill -> "#336699"),
         circle(
-          cx   -> "50%",
-          cy   -> "50%",
-          r    -> "30%",
-          fill -> circleColor,
+          cx          -> "50%",
+          cy          -> "50%",
+          r           -> "30%",
+          fill        -> circleColor,
           onmouseover -> { () =>
             circleColor.set("#99CCFF")
           },

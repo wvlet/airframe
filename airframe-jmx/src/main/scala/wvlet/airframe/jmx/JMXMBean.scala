@@ -40,7 +40,7 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
   override def getAttribute(attribute: String): AnyRef = {
     attributeTable.get(attribute) match {
       case Some(a) => a.get(obj)
-      case None =>
+      case None    =>
         throw new AttributeNotFoundException(s"${attribute} is not found in ${obj.getClass.getName}")
     }
   }
@@ -82,7 +82,7 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
 
     // Collect JMX parameters from the class
     val mbeanParams = collectMBeanParameters(None, surface, methodSurfaces)
-    val attrInfo = mbeanParams.map { x =>
+    val attrInfo    = mbeanParams.map { x =>
       val desc = new ImmutableDescriptor()
       new MBeanAttributeInfo(
         x.name,

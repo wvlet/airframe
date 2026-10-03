@@ -98,7 +98,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitNamedQuery(ctx: NamedQueryContext): WithQuery = {
-    val name = visitIdentifier(ctx.name).toResolved
+    val name          = visitIdentifier(ctx.name).toResolved
     val columnAliases = Option(ctx.columnAliases()).map { x =>
       x.identifier()
         .asScala
@@ -175,7 +175,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitSortItem(ctx: SortItemContext): SortItem = {
-    val key = expression(ctx.expression())
+    val key      = expression(ctx.expression())
     val ordering = Option(ctx.ordering).map { x =>
       x.getType match {
         case SqlBaseParser.ASC  => Ascending
@@ -411,7 +411,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val alias = Option(ctx.AS())
       .map(_ => visitIdentifier(ctx.identifier()))
       .orElse(Option(ctx.identifier()).map(visitIdentifier))
-    val child = expression(ctx.expression())
+    val child     = expression(ctx.expression())
     val qualifier = child match {
       case a: Attribute => a.qualifier
       case _            => None
@@ -608,7 +608,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitArithmeticUnary(ctx: ArithmeticUnaryContext): Expression = {
-    val e = expression(ctx.valueExpression())
+    val e    = expression(ctx.valueExpression())
     val sign = ctx.operator.getType match {
       case SqlBaseParser.PLUS  => Positive
       case SqlBaseParser.MINUS => Negative
@@ -617,8 +617,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): Expression = {
-    val left  = expression(ctx.left)
-    val right = expression(ctx.right)
+    val left                           = expression(ctx.left)
+    val right                          = expression(ctx.right)
     val binaryExprType: BinaryExprType =
       ctx.operator match {
         case op if ctx.PLUS() != null     => Add
@@ -626,7 +626,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
         case op if ctx.ASTERISK() != null => Multiply
         case op if ctx.SLASH() != null    => Divide
         case op if ctx.PERCENT() != null  => Modulus
-        case _ =>
+        case _                            =>
           throw unknown(ctx)
       }
     ArithmeticBinaryExpr(binaryExprType, left, right, getLocation(ctx))
@@ -766,7 +766,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitFunctionCall(ctx: FunctionCallContext): FunctionCall = {
-    val name = ctx.qualifiedName().getText
+    val name                       = ctx.qualifiedName().getText
     val filter: Option[Expression] = Option(ctx.filter()).map { (f: FilterContext) =>
       expression(f.booleanExpression())
     }
@@ -876,7 +876,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitCreateSchema(ctx: CreateSchemaContext): LogicalPlan = {
     val schemaName  = visitQualifiedName(ctx.qualifiedName())
     val ifNotExists = Option(ctx.EXISTS()).map(_ => true).getOrElse(false)
-    val props = Option(ctx.properties())
+    val props       = Option(ctx.properties())
       .map(
         _.property().asScala
           .map { p =>
@@ -891,7 +891,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitDropSchema(ctx: DropSchemaContext): LogicalPlan = {
     val schemaName = visitQualifiedName(ctx.qualifiedName())
     val ifExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
-    val cascade =
+    val cascade    =
       Option(ctx.CASCADE()).map(x => true).getOrElse(false)
     DropSchema(schemaName, ifExists, cascade, getLocation(ctx))
   }
@@ -903,16 +903,16 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitCreateTable(ctx: CreateTableContext): LogicalPlan = {
-    val ifNotExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
-    val tableName   = visitQualifiedName(ctx.qualifiedName())
+    val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    val tableName     = visitQualifiedName(ctx.qualifiedName())
     val tableElements =
       ctx.tableElement().asScala.toSeq.map(x => visitTableElement(x))
     CreateTable(tableName, ifNotExists, tableElements, getLocation(ctx))
   }
 
   override def visitCreateTableAsSelect(ctx: CreateTableAsSelectContext): LogicalPlan = {
-    val ifNotExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
-    val tableName   = visitQualifiedName(ctx.qualifiedName())
+    val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    val tableName     = visitQualifiedName(ctx.qualifiedName())
     val columnAliases = Option(ctx.columnAliases())
       .map(_.identifier().asScala.toSeq.map(visitIdentifier(_)))
     val q = visitQuery(ctx.query())
@@ -923,8 +923,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     Option(ctx.columnDefinition())
       .map(x => visitColumnDefinition(x))
       .getOrElse {
-        val l         = ctx.likeClause()
-        val tableName = visitQualifiedName(l.qualifiedName())
+        val l              = ctx.likeClause()
+        val tableName      = visitQualifiedName(l.qualifiedName())
         val includingProps =
           Option(l.EXCLUDING()).map(x => false).getOrElse(true)
         ColumnDefLike(tableName, includingProps, getLocation(ctx))
@@ -948,7 +948,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitInsertInto(ctx: InsertIntoContext): LogicalPlan = {
-    val table = visitQualifiedName(ctx.qualifiedName())
+    val table   = visitQualifiedName(ctx.qualifiedName())
     val aliases = Option(ctx.columnAliases())
       .map(x => x.identifier().asScala.toSeq)
       .map(x => x.map(visitIdentifier(_)))
@@ -958,7 +958,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitDelete(ctx: DeleteContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.qualifiedName())
-    val cond = Option(ctx.booleanExpression()).map { x =>
+    val cond  = Option(ctx.booleanExpression()).map { x =>
       expression(x)
     }
     Delete(table, cond, getLocation(ctx))
@@ -1012,8 +1012,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitSpecialDateTimeFunction(ctx: SpecialDateTimeFunctionContext): Expression = {
     ctx.name.getType match {
-      case SqlBaseParser.CURRENT_DATE => CurrentDate(None, getLocation(ctx))
-      case SqlBaseParser.CURRENT_TIME => CurrentTime(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
+      case SqlBaseParser.CURRENT_DATE      => CurrentDate(None, getLocation(ctx))
+      case SqlBaseParser.CURRENT_TIME      => CurrentTime(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
       case SqlBaseParser.CURRENT_TIMESTAMP =>
         CurrentTimestamp(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))
       case SqlBaseParser.LOCALTIME => CurrentLocalTime(Option(ctx.precision).map(_.getText.toInt), getLocation(ctx))

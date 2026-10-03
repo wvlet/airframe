@@ -50,7 +50,7 @@ object ParquetReaderAdapter {
 class ParquetReadSupportAdapter[A](surface: Surface, plan: Option[ParquetQueryPlan]) extends ReadSupport[A] {
   override def init(context: InitContext): ReadSupport.ReadContext = {
     val parquetFileSchema = context.getFileSchema
-    val targetColumns = plan match {
+    val targetColumns     = plan match {
       case Some(p) if p.projectedColumns.nonEmpty =>
         p.projectedColumns.map(c => CName(c).canonicalName).toSet
       case _ =>

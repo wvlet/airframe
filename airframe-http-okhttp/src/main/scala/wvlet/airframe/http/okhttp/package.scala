@@ -19,12 +19,12 @@ package object okhttp {
 
   implicit object OkHttpRequestAdapter extends HttpRequestAdapter[Request] {
     override def methodOf(request: Request): String = toHttpMethod(request.method())
-    override def uriOf(request: Request): String = {
+    override def uriOf(request: Request): String    = {
       val url  = request.url()
       val path = url.encodedPath()
       Option(url.encodedQuery()).map(query => s"${path}?${query}").getOrElse(path)
     }
-    override def pathOf(request: Request): String = request.url().encodedPath()
+    override def pathOf(request: Request): String         = request.url().encodedPath()
     override def headerOf(request: Request): HttpMultiMap = {
       var h = toHttpMultiMap(request.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
@@ -77,7 +77,7 @@ package object okhttp {
     }
     override def contentTypeOf(res: Response): Option[String] = Option(res.body()).map(_.contentType().toString)
     override def wrap(resp: Response): HttpResponse[Response] = OkHttpResponseWrapper(resp)
-    override def headerOf(resp: Response): HttpMultiMap = {
+    override def headerOf(resp: Response): HttpMultiMap       = {
       var h = toHttpMultiMap(resp.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
       for (b <- Option(resp.body)) {

@@ -50,15 +50,15 @@ trait Value {
 
 object Value {
   case object NilValue extends Value {
-    override def toJson               = "null"
-    override def valueType: ValueType = ValueType.NIL
+    override def toJson                        = "null"
+    override def valueType: ValueType          = ValueType.NIL
     override def writeTo(packer: Packer): Unit = {
       packer.packNil
     }
   }
   case class BooleanValue(v: Boolean) extends Value {
-    override def toJson               = if (v) "true" else "false"
-    override def valueType: ValueType = ValueType.BOOLEAN
+    override def toJson                        = if (v) "true" else "false"
+    override def valueType: ValueType          = ValueType.BOOLEAN
     override def writeTo(packer: Packer): Unit = {
       packer.packBoolean(v)
     }
@@ -86,7 +86,7 @@ object Value {
   }
 
   case class LongValue(v: Long) extends IntegerValue {
-    override def toJson = v.toString
+    override def toJson                        = v.toString
     override def writeTo(packer: Packer): Unit = {
       packer.packLong(v)
     }
@@ -121,19 +121,19 @@ object Value {
     def isValidInt: Boolean   = within(INT_MIN, INT_MAX)
     def isValidLong: Boolean  = within(LONG_MIN, LONG_MAX)
 
-    def asByte: Byte             = if (isValidByte) v.byteValue() else throw overflow(v)
-    def asShort: Short           = if (isValidShort) v.shortValue() else throw overflow(v)
-    def asInt: Int               = if (isValidInt) v.intValue() else throw overflow(v)
-    def asLong: Long             = if (isValidLong) v.longValue() else throw overflow(v)
-    def asBigInteger: BigInteger = v
+    def asByte: Byte                           = if (isValidByte) v.byteValue() else throw overflow(v)
+    def asShort: Short                         = if (isValidShort) v.shortValue() else throw overflow(v)
+    def asInt: Int                             = if (isValidInt) v.intValue() else throw overflow(v)
+    def asLong: Long                           = if (isValidLong) v.longValue() else throw overflow(v)
+    def asBigInteger: BigInteger               = v
     override def writeTo(packer: Packer): Unit = {
       packer.packBigInteger(v)
     }
   }
 
   case class DoubleValue(v: Double) extends Value {
-    override def toJson               = if (v.isNaN || v.isInfinite) "null" else v.toString
-    override def valueType: ValueType = ValueType.FLOAT
+    override def toJson                        = if (v.isNaN || v.isInfinite) "null" else v.toString
+    override def valueType: ValueType          = ValueType.FLOAT
     override def writeTo(packer: Packer): Unit = {
       packer.packDouble(v)
     }
@@ -149,10 +149,10 @@ object Value {
   }
 
   case class StringValue(v: String) extends RawValue {
-    override def toString: String         = v
-    override def toUnquotedString: String = v
-    override def toRawString: String      = v
-    override def valueType: ValueType     = ValueType.STRING
+    override def toString: String              = v
+    override def toUnquotedString: String      = v
+    override def toRawString: String           = v
+    override def valueType: ValueType          = ValueType.STRING
     override def writeTo(packer: Packer): Unit = {
       packer.packString(v)
     }
@@ -162,7 +162,7 @@ object Value {
     @transient private var decodedStringCache: String = null
     override def toUnquotedString: String             = toRawString
     override def valueType: ValueType                 = ValueType.BINARY
-    override def writeTo(packer: Packer): Unit = {
+    override def writeTo(packer: Packer): Unit        = {
       packer.packBinaryHeader(v.length)
       packer.writePayload(v)
     }
@@ -194,7 +194,7 @@ object Value {
       val base64 = Base64.getEncoder.encodeToString(v)
       s"""[${extType.toInt},"${base64}"]"""
     }
-    override def valueType: ValueType = ValueType.EXTENSION
+    override def valueType: ValueType          = ValueType.EXTENSION
     override def writeTo(packer: Packer): Unit = {
       packer.packExtensionTypeHeader(extType, v.length)
       packer.writePayload(v)
@@ -220,9 +220,9 @@ object Value {
       b.result()
     }
 
-    override def toUnquotedString: String = toRawString
-    def toRawString                       = v.toString
-    override def valueType: ValueType     = ValueType.EXTENSION // ValueType.TIMESTAMP
+    override def toUnquotedString: String      = toRawString
+    def toRawString                            = v.toString
+    override def valueType: ValueType          = ValueType.EXTENSION // ValueType.TIMESTAMP
     override def writeTo(packer: Packer): Unit = {
       packer.packTimestamp(v)
     }
@@ -238,7 +238,7 @@ object Value {
     override def toJson: String = {
       s"[${elems.map(_.toJson).mkString(",")}]"
     }
-    override def valueType: ValueType = ValueType.ARRAY
+    override def valueType: ValueType          = ValueType.ARRAY
     override def writeTo(packer: Packer): Unit = {
       packer.packArrayHeader(elems.length)
       elems.foreach(x => x.writeTo(packer))
@@ -250,8 +250,8 @@ object Value {
     def get(key: Value): Option[Value] = entries.get(key)
     def size: Int                      = entries.size
 
-    def isEmpty: Boolean  = entries.isEmpty
-    def nonEmpty: Boolean = entries.nonEmpty
+    def isEmpty: Boolean        = entries.isEmpty
+    def nonEmpty: Boolean       = entries.nonEmpty
     override def toJson: String = {
       entries
         .map { kv =>
@@ -261,7 +261,7 @@ object Value {
           s"""${jsonKey.result()}:${kv._2.toJson}"""
         }.mkString("{", ",", "}")
     }
-    override def valueType: ValueType = ValueType.MAP
+    override def valueType: ValueType          = ValueType.MAP
     override def writeTo(packer: Packer): Unit = {
       packer.packMapHeader(entries.size)
       // Ensure using non-parallel collection

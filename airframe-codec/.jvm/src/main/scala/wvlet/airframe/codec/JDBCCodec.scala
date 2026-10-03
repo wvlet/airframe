@@ -23,9 +23,9 @@ object JDBCCodec extends LogSupport {
   def apply(rs: ResultSet): ResultSetCodec = new ResultSetCodec(rs)
 
   class ResultSetCodec(rs: ResultSet) {
-    private lazy val md                      = rs.getMetaData
-    private lazy val columnCount             = md.getColumnCount
-    private def columnTypes: IndexedSeq[Int] = (1 to columnCount).map(i => md.getColumnType(i))
+    private lazy val md                                        = rs.getMetaData
+    private lazy val columnCount                               = md.getColumnCount
+    private def columnTypes: IndexedSeq[Int]                   = (1 to columnCount).map(i => md.getColumnType(i))
     private lazy val columnCodecs: IndexedSeq[JDBCColumnCodec] =
       (1 to columnCount).map(i => toJDBCColumnCodec(md.getColumnType(i), md.getColumnTypeName(i))).toIndexedSeq
     private lazy val columnNames = (1 to columnCount).map(i => md.getColumnName(i))
@@ -86,10 +86,10 @@ object JDBCCodec extends LogSupport {
 
     private class RStoMsgPackIterator[A](f: Array[Byte] => A, packer: Packer => Unit) extends Iterator[A] {
       private var hasNextElem: Option[Boolean] = None
-      override def hasNext: Boolean = {
+      override def hasNext: Boolean            = {
         hasNextElem match {
           case Some(x) => x
-          case None =>
+          case None    =>
             val x = rs.next()
             hasNextElem = Some(x)
             x
@@ -153,7 +153,7 @@ object JDBCCodec extends LogSupport {
       case "TIMESTAMP" | "TIMESTAMP WITH TIME ZONE" => JDBCTimestampCodec
       case x if x.startsWith("DECIMAL")             => JDBCDecimalCodec
       case "BIT"                                    => JDBCBooleanCodec
-      case _ =>
+      case _                                        =>
         sqlType match {
           case Types.BIT | Types.BOOLEAN      => JDBCBooleanCodec
           case Types.TINYINT | Types.SMALLINT => JDBCShortCodec
@@ -173,7 +173,7 @@ object JDBCCodec extends LogSupport {
           case Types.JAVA_OBJECT                                                 => JDBCJavaObjectCodec
           case Types.NULL                                                        => JDBCNullCodec
           case Types.OTHER                                                       => JDBCStringCodec
-          case other =>
+          case other                                                             =>
             warn(s"Unsupported JDBC type: ${other}. Assume string type")
             JDBCStringCodec
         }

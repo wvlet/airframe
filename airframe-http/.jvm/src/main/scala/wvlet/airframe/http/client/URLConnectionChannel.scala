@@ -94,7 +94,7 @@ class URLConnectionChannel(val destination: ServerAddress, config: HttpClientCon
       h += k -> v
     }
     val response = Http.response(status).withHeader(h.result())
-    val is = response.contentEncoding.map(_.toLowerCase) match {
+    val is       = response.contentEncoding.map(_.toLowerCase) match {
       case _ if in == null => in
       case Some("gzip")    => new GZIPInputStream(in)
       case Some("deflate") => new InflaterInputStream(in)

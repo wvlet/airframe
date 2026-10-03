@@ -23,7 +23,7 @@ sealed trait MBeanParameter {
 }
 
 case class MBeanObjectParameter(name: String, description: String, param: ParameterBase) extends MBeanParameter {
-  def valueType = param.surface
+  def valueType                         = param.surface
   override def get(obj: AnyRef): AnyRef = {
     param.call(obj).asInstanceOf[AnyRef]
   }
@@ -35,7 +35,7 @@ case class NestedMBeanParameter(
     parentParam: ParameterBase,
     nestedParam: ParameterBase
 ) extends MBeanParameter {
-  def valueType = nestedParam.surface
+  def valueType                         = nestedParam.surface
   override def get(obj: AnyRef): AnyRef = {
     nestedParam.call(parentParam.call(obj)).asInstanceOf[AnyRef]
   }

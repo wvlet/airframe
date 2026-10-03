@@ -65,7 +65,7 @@ class JavaHttpClientChannel(val destination: ServerAddress, private[http] val co
 
   override def send(req: Request, channelConfig: HttpChannelConfig): Response = {
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
-    val httpRequest = buildRequest(req, channelConfig)
+    val httpRequest                             = buildRequest(req, channelConfig)
     val httpResponse: HttpResponse[InputStream] =
       javaHttpClient.send(httpRequest, BodyHandlers.ofInputStream())
 

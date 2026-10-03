@@ -92,10 +92,10 @@ case class FluentdClientConfig(
     new MetricLoggerFactory(fluentdClient = newConsoleLogger(logLevel))
   }
 
-  def withTagPrefix(tagPrefix: String): FluentdClientConfig    = this.copy(tagPrefix = Some(tagPrefix))
-  def withExtendedEventTime: FluentdClientConfig               = this.copy(useExtendedEventTime = true)
-  def noExtendedEventTime: FluentdClientConfig                 = this.copy(useExtendedEventTime = false)
-  def withMaxBufferSize(bufferSize: Long): FluentdClientConfig = this.copy(maxBufferSize = bufferSize)
+  def withTagPrefix(tagPrefix: String): FluentdClientConfig                  = this.copy(tagPrefix = Some(tagPrefix))
+  def withExtendedEventTime: FluentdClientConfig                             = this.copy(useExtendedEventTime = true)
+  def noExtendedEventTime: FluentdClientConfig                               = this.copy(useExtendedEventTime = false)
+  def withMaxBufferSize(bufferSize: Long): FluentdClientConfig               = this.copy(maxBufferSize = bufferSize)
   def withFlushIntervalMillis(flushIntervalMillis: Int): FluentdClientConfig =
     this.copy(flushIntervalMillis = flushIntervalMillis)
   def withBufferChunkRetentionSize(bufferChunkRetentionSize: Int): FluentdClientConfig =

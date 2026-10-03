@@ -30,7 +30,7 @@ object Http {
 
   // Standard HttpFilter
   abstract class Filter extends HttpFilter[Request, Response, Future] {
-    protected implicit lazy val executorContext: ExecutionContext = compat.defaultExecutionContext
+    protected implicit lazy val executorContext: ExecutionContext          = compat.defaultExecutionContext
     override protected def backend: HttpBackend[Request, Response, Future] =
       HttpBackend.DefaultBackend
   }
@@ -146,7 +146,7 @@ trait HttpRequest[Req] {
   def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
   def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
   def contentString: String        = adapter.contentStringOf(toRaw)
-  def accept: Seq[String] =
+  def accept: Seq[String]          =
     Http.parseAcceptHeader(header.get(HttpHeader.Accept))
   def acceptsMsgPack: Boolean = {
     accept.contains(HttpHeader.MediaType.ApplicationMsgPack) ||
@@ -202,7 +202,7 @@ trait HttpRequestAdapter[Req] {
   def queryOf(request: Req): HttpMultiMap
   def headerOf(request: Req): HttpMultiMap
   def messageOf(request: Req): HttpMessage.Message
-  def contentStringOf(request: Req): String = messageOf(request).toContentString
+  def contentStringOf(request: Req): String     = messageOf(request).toContentString
   def contentBytesOf(request: Req): Array[Byte] =
     messageOf(request).toContentBytes
   def contentTypeOf(request: Req): Option[String]

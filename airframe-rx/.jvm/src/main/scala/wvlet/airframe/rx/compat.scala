@@ -25,11 +25,11 @@ object compat {
 
   def newTimer: Timer =
     new Timer {
-      private val t = new java.util.Timer(true)
+      private val t                                                 = new java.util.Timer(true)
       override def schedule[U](millis: Long)(body: Long => U): Unit = {
         t.schedule(
           new TimerTask {
-            private var lastTime = System.currentTimeMillis()
+            private var lastTime     = System.currentTimeMillis()
             override def run(): Unit = {
               val currentTime = System.currentTimeMillis()
               try {
@@ -49,7 +49,7 @@ object compat {
     }
 
   def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = {
-    val thread = Executors.newScheduledThreadPool(1)
+    val thread   = Executors.newScheduledThreadPool(1)
     val schedule = thread.schedule(
       new Runnable {
         override def run(): Unit = {
@@ -75,7 +75,7 @@ object compat {
     val s     = Seq.newBuilder[A]
     var c     = Cancelable.empty
     c = RxRunner.run(rx) {
-      case OnNext(v) => s += v.asInstanceOf[A]
+      case OnNext(v)  => s += v.asInstanceOf[A]
       case OnError(e) =>
         c.cancel
         throw e

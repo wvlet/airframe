@@ -86,7 +86,7 @@ class LogicalPlanTest extends AirSpec {
   }
 
   test("Transform children") {
-    val l = SQLParser.parse("select * from (select a from x limit 10)")
+    val l       = SQLParser.parse("select * from (select a from x limit 10)")
     val newPlan = l.transformChildren { case l: Limit =>
       l.child
     }
@@ -96,7 +96,7 @@ class LogicalPlanTest extends AirSpec {
   }
 
   test("transform once") {
-    val l = SQLParser.parse("select * from (select * from (select a from x limit 10) limit 100)")
+    val l       = SQLParser.parse("select * from (select * from (select a from x limit 10) limit 100)")
     val newPlan = l.transformOnce { case l: Limit =>
       l.child
     }
@@ -108,7 +108,7 @@ class LogicalPlanTest extends AirSpec {
   }
 
   test("transform only child expressions") {
-    val l = SQLParser.parse("select a from (select a from t)")
+    val l       = SQLParser.parse("select a from (select a from t)")
     val newPlan = l.transformChildExpressions { case s: SingleColumn =>
       s.withAlias("x")
     }
@@ -118,7 +118,7 @@ class LogicalPlanTest extends AirSpec {
   }
 
   test("transform all expressions") {
-    val l = SQLParser.parse("select a from (select a from t)")
+    val l       = SQLParser.parse("select a from (select a from t)")
     val newPlan = l.transformExpressions { case s: SingleColumn =>
       s.withAlias("x")
     }
@@ -128,8 +128,8 @@ class LogicalPlanTest extends AirSpec {
   }
 
   test("transform down child expressions") {
-    val count = new AtomicInteger(0)
-    val l     = SQLParser.parse("select a from (select b from t)")
+    val count   = new AtomicInteger(0)
+    val l       = SQLParser.parse("select a from (select b from t)")
     val newPlan = l.transformExpressions { case s: SingleColumn =>
       s.withAlias(s"x${count.getAndIncrement()}")
     }
@@ -144,8 +144,8 @@ class LogicalPlanTest extends AirSpec {
   }
 
   test("transform up child expressions") {
-    val count = new AtomicInteger(0)
-    val l     = SQLParser.parse("select a from (select b from t)")
+    val count   = new AtomicInteger(0)
+    val l       = SQLParser.parse("select a from (select b from t)")
     val newPlan = l.transformUpExpressions { case s: SingleColumn =>
       s.withAlias(s"x${count.getAndIncrement()}")
     }

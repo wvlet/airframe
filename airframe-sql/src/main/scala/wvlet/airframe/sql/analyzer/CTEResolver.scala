@@ -29,10 +29,10 @@ object CTEResolver extends LogSupport {
         throw SQLErrorCode.UnsupportedSyntax.newException(s"recursive WITH statement is not supported", q.nodeLocation)
       }
 
-      var currentContext = analyzerContext
+      var currentContext  = analyzerContext
       val resolvedQueries = queryDefs.map { x =>
         val resolvedQuery: Relation = TypeResolver.resolveRelation(currentContext, x.query)
-        val cteBody = x.columnNames match {
+        val cteBody                 = x.columnNames match {
           case None =>
             resolvedQuery
           case Some(aliases) =>

@@ -25,7 +25,7 @@ object HttpServerExceptionTest extends AirSpec {
     val json = """{"message":"illegal argument"}"""
 
     val ex = Http.serverException(HttpStatus.BadRequest_400)
-    val e =
+    val e  =
       ex.withHeader("X-MyApp-ErrorCode", "ERR")
         .withJson(json)
 

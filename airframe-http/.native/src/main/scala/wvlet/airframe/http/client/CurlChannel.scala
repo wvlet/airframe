@@ -138,7 +138,7 @@ class CurlChannel(val destination: ServerAddress, config: HttpClientConfig) exte
 
         if (result != CURLE_OK) {
           val errorMsg = fromCString(curl_easy_strerror(result))
-          val status = result match {
+          val status   = result match {
             case CURLE_COULDNT_RESOLVE_HOST | CURLE_COULDNT_RESOLVE_PROXY =>
               HttpStatus.BadGateway_502
             case CURLE_COULDNT_CONNECT =>

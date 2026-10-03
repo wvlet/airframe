@@ -51,7 +51,7 @@ object HttpRequestMapper extends LogSupport {
       val requestParamsInUrl: HttpMultiMap = adapter.queryOf(request) ++ params
       // A MessagePack representation of request parameters will be necessary
       // to construct non-primitive objects
-      lazy val queryParamMsgPack = HttpMultiMapCodec.toMsgPack(requestParamsInUrl)
+      lazy val queryParamMsgPack                 = HttpMultiMapCodec.toMsgPack(requestParamsInUrl)
       lazy val queryParamMap: Map[String, Value] = toCanonicalKeyNameMap(
         ValueCodec.fromMsgPack(queryParamMsgPack).asInstanceOf[MapValue]
       )
@@ -62,7 +62,7 @@ object HttpRequestMapper extends LogSupport {
 
       // Populate http request context parameters first (e.g., HttpMessage.Request, HttpContext, etc.)
       for (arg <- methodSurface.args) {
-        val argSurface = arg.surface
+        val argSurface         = arg.surface
         val value: Option[Any] = argSurface.rawType match {
           case cl if classOf[HttpMessage.Request].isAssignableFrom(cl) =>
             // Bind the current http request instance
@@ -180,7 +180,7 @@ object HttpRequestMapper extends LogSupport {
           readContentBodyAsMsgPack match {
             case Some(msgpack) =>
               // Read the content body as a MessagePack Map value
-              val v = MessagePack.newUnpacker(msgpack).unpackValue
+              val v                = MessagePack.newUnpacker(msgpack).unpackValue
               val opt: Option[Any] = v match {
                 case m: MapValue if m.isEmpty =>
                   None
@@ -221,7 +221,7 @@ object HttpRequestMapper extends LogSupport {
               case m: MapValue =>
                 val mapValue = toCanonicalKeyNameMap(m)
                 while (remainingArgs.nonEmpty) {
-                  val arg = remainingArgs.head
+                  val arg                      = remainingArgs.head
                   val argValueOpt: Option[Any] = mapValue
                     .get(CName.toCanonicalName(arg.name))
                     .map { x =>

@@ -59,7 +59,7 @@ object HttpRequestMatcher extends LogSupport {
 
       httpHeadersForHash match {
         case headers if headers.isEmpty => prefix.hashCode * 13
-        case headers =>
+        case headers                    =>
           val headerHash = headers
             .map { x => s"${x._1.toLowerCase(Locale.ENGLISH)}:${x._2}".hashCode }.reduce { (xor, next) =>
               xor ^ next // Take XOR to compute order-insensitive hash values.

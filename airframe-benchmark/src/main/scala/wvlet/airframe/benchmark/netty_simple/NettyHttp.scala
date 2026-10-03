@@ -114,7 +114,7 @@ object NettyHttp {
       msg match {
         case req: HttpRequest =>
           val keepAlive = HttpUtil.isKeepAlive(req)
-          val response =
+          val response  =
             new DefaultFullHttpResponse(req.protocolVersion, HttpResponseStatus.OK, Unpooled.wrappedBuffer(content))
           response
             .headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN)

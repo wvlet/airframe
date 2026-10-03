@@ -19,7 +19,7 @@ class RecordSurfaceTest extends AirSpec {
     val p1 = RecordParameter(0, "p1", Primitive.Int)
     val p2 = RecordParameter(1, "p2", Primitive.String)
     val p3 = RecordParameter(2, "p3", OptionSurface(classOf[Option[Long]], Primitive.Long))
-    val s = RecordSurface
+    val s  = RecordSurface
       .newSurface("myrecord")
       .addParam(p1)
       .addParam(p2)

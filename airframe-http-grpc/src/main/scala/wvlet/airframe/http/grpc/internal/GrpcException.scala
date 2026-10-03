@@ -73,7 +73,7 @@ object GrpcException extends LogSupport {
           .asRuntimeException()
       case e: HttpServerException =>
         val grpcStatus = GrpcStatus.ofHttpStatus(e.status)
-        val s = Status
+        val s          = Status
           .fromCodeValue(grpcStatus.code)
           .withCause(e)
           .withDescription(e.getMessage)
@@ -88,7 +88,7 @@ object GrpcException extends LogSupport {
         }
       case e: RPCException =>
         val grpcStatus = e.status.grpcStatus
-        val s = Status
+        val s          = Status
           .fromCodeValue(grpcStatus.code)
           .withCause(e.cause.getOrElse(null))
           .withDescription(e.getMessage)

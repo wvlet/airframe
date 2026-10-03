@@ -36,7 +36,7 @@ abstract class MetricLogger extends AutoCloseable {
 
   private def enrichTag(tag: String): String = {
     tagPrefix match {
-      case None => tag
+      case None         => tag
       case Some(prefix) =>
         s"${prefix}.${tag}"
     }
@@ -61,7 +61,7 @@ class MetricLoggerFactory(
 ) extends MetricLoggerFactoryCompat
     with LogSupport
     with AutoCloseable {
-  def getLogger: MetricLogger = fluentdClient
+  def getLogger: MetricLogger                                 = fluentdClient
   def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
     fluentdClient.withTagPrefix(tagPrefix)
 
@@ -77,7 +77,7 @@ class MetricLoggerFactory(
       .getOrElseUpdate(
         surface, {
           // Ensure to serialize as map type of MessagePack
-          val codec = codecFactory.withMapOutput.of(surface).asInstanceOf[MessageCodec[T]]
+          val codec        = codecFactory.withMapOutput.of(surface).asInstanceOf[MessageCodec[T]]
           val metricLogger = tagPrefix match {
             case Some(prefix) => getLoggerWithTagPrefix(prefix)
             case _            => getLogger

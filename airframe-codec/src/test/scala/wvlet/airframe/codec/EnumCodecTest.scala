@@ -24,7 +24,7 @@ object EnumCodecTest extends AirSpec {
   case object Red  extends Color
 
   object Color {
-    def values: Seq[Color] = Seq(Blue, Red)
+    def values: Seq[Color]                = Seq(Blue, Red)
     def unapply(s: String): Option[Color] = {
       values.find(_.toString == s)
     }
@@ -49,7 +49,7 @@ object EnumCodecTest extends AirSpec {
 
   test("detect invalid Strings for the enum") {
     val codec = MessageCodec.of[Status]
-    val e = intercept[IllegalArgumentException] {
+    val e     = intercept[IllegalArgumentException] {
       codec.fromString("unknown")
     }
   }

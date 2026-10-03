@@ -200,7 +200,7 @@ object HttpAccessLogFilter {
   def responseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
 
   def errorLogger(request: Request, e: Throwable): Map[String, Any] = HttpAccessLogWriter.errorLog(e)
-  def rpcLogger(request: Request): Map[String, Any] = {
+  def rpcLogger(request: Request): Map[String, Any]                 = {
     val m = ListMap.newBuilder[String, Any]
     FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { (x: Any) =>
       x match {

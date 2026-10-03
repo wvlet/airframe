@@ -98,7 +98,7 @@ package object finagle {
   implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
     override def methodOf(request: Request): String =
       toHttpMethod(request.method)
-    override def pathOf(request: Request): String = request.path
+    override def pathOf(request: Request): String         = request.path
     override def headerOf(request: Request): HttpMultiMap =
       toHttpMultiMap(request.headerMap)
     override def queryOf(request: Request): HttpMultiMap =
@@ -107,8 +107,8 @@ package object finagle {
       toMessage(request.content)
     override def contentTypeOf(request: Request): Option[String] =
       request.contentType
-    override def requestType: Class[Request]     = classOf[Request]
-    override def uriOf(request: Request): String = request.uri
+    override def requestType: Class[Request]                              = classOf[Request]
+    override def uriOf(request: Request): String                          = request.uri
     override def remoteAddressOf(request: Request): Option[ServerAddress] = {
       Some(ServerAddress(s"${request.remoteAddress}:${request.remotePort}"))
     }
@@ -136,7 +136,7 @@ package object finagle {
   }
 
   implicit object FinagleHttpResponseAdapter extends HttpResponseAdapter[http.Response] {
-    override def statusCodeOf(res: http.Response): Int = res.statusCode
+    override def statusCodeOf(res: http.Response): Int               = res.statusCode
     override def messageOf(resp: http.Response): HttpMessage.Message =
       toMessage(resp.content)
     override def contentTypeOf(res: http.Response): Option[String] =

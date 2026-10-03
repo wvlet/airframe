@@ -50,16 +50,16 @@ class HtmlTest extends AirSpec {
 
   test("embedding attributes") {
     div(
-      cls -> 1,
-      cls -> true,
-      cls -> 10L,
-      cls -> "hello",
-      cls -> 1.0f,
-      cls -> 1.0,
-      cls -> Some(1),
-      cls -> None,
-      cls -> Rx.variable(1),
-      cls -> Iterable(1, 2, 3),
+      cls     -> 1,
+      cls     -> true,
+      cls     -> 10L,
+      cls     -> "hello",
+      cls     -> 1.0f,
+      cls     -> 1.0,
+      cls     -> Some(1),
+      cls     -> None,
+      cls     -> Rx.variable(1),
+      cls     -> Iterable(1, 2, 3),
       onclick -> { () =>
         "hello"
       },

@@ -71,7 +71,7 @@ abstract class UnpackBenchmark extends MsgpackData {
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class AirframeMsgpack extends UnpackBenchmark {
-  private var unpacker: Unpacker = _
+  private var unpacker: Unpacker                               = _
   protected override def initUnpacker(byte: Array[Byte]): Unit = {
     unpacker = MessagePack.newUnpacker(byte)
   }
@@ -85,7 +85,7 @@ class AirframeMsgpack extends UnpackBenchmark {
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class MessagePackJava extends UnpackBenchmark {
-  private var unpacker: MessageUnpacker = _
+  private var unpacker: MessageUnpacker                        = _
   protected override def initUnpacker(byte: Array[Byte]): Unit = {
     unpacker = org.msgpack.core.MessagePack.newDefaultUnpacker(byte)
   }

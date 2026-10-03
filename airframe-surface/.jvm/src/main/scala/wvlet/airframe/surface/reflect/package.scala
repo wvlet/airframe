@@ -43,7 +43,7 @@ package object reflect {
       def loop(cl: Class[_]): Option[Class[_]] = {
         cl match {
           case null => None
-          case _ =>
+          case _    =>
             if (cl.getDeclaredAnnotations.exists(a => c.runtimeClass.isAssignableFrom(a.annotationType()))) {
               Some(cl)
             } else {
@@ -63,7 +63,7 @@ package object reflect {
     def loop(cl: Class[_]): Seq[Annotation] = {
       cl match {
         case null => Seq.empty
-        case _ =>
+        case _    =>
           cl.getDeclaredAnnotations.toIndexedSeq ++ cl.getInterfaces.flatMap(loop)
       }
     }
@@ -114,11 +114,11 @@ package object reflect {
   implicit class ToRuntimeMethodSurface(m: MethodSurface) {
     def annotations: Seq[jl.annotation.Annotation] = {
       Try {
-        val cl             = m.owner.rawType
-        val methodArgTypes = m.args.map(_.surface.rawType)
+        val cl                                  = m.owner.rawType
+        val methodArgTypes                      = m.args.map(_.surface.rawType)
         def loop(cl: Class[_]): Seq[Annotation] = {
           cl match {
-            case null => Seq.empty
+            case null  => Seq.empty
             case other =>
               Try(cl.getMethod(m.name, methodArgTypes: _*)) match {
                 case Success(mt) =>

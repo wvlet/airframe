@@ -60,8 +60,8 @@ object Parquet extends ParquetCompat with LogSupport {
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
     // Read Parquet schema for resolving column types
-    val schema = readSchema(path)
-    val plan   = ParquetQueryPlanner.parse(sql, schema)
+    val schema                      = readSchema(path)
+    val plan                        = ParquetQueryPlanner.parse(sql, schema)
     val b: ParquetReader.Builder[A] =
       ParquetReaderAdapter.builder[A](objectSurface, path, plan = Some(plan))
 

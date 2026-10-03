@@ -26,7 +26,7 @@ object DI_91_Stats extends App {
   class C
 
   val stats = new DIStats()
-  val d = newSilentDesign
+  val d     = newSilentDesign
     .bind[A].toSingleton
     .bind[B].toSingleton
     .bind[C].toSingleton

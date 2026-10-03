@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ExpressionTest extends AirSpec {
   test("transform down") {
-    val f = FunctionCall("count", Seq(UnquotedIdentifier("x", None)), isDistinct = true, None, None, None)
+    val f    = FunctionCall("count", Seq(UnquotedIdentifier("x", None)), isDistinct = true, None, None, None)
     val expr = SingleColumn(
       f,
       None,
@@ -41,7 +41,7 @@ class ExpressionTest extends AirSpec {
     val f1 = FunctionCall("count_a", Seq.empty, false, None, None, None)
     val f2 = FunctionCall("count_b", Seq(f1), false, None, None, None)
 
-    val count = new AtomicInteger(0)
+    val count   = new AtomicInteger(0)
     val newExpr = f2.transformExpression {
       case f: FunctionCall if f.functionName == "count_a" =>
         FunctionCall(s"count_a${count.getAndIncrement()}", f.args, false, None, None, None)
@@ -60,7 +60,7 @@ class ExpressionTest extends AirSpec {
   }
 
   test("transform up") {
-    val f = FunctionCall("count", Seq(UnquotedIdentifier("x", None)), isDistinct = true, None, None, None)
+    val f    = FunctionCall("count", Seq(UnquotedIdentifier("x", None)), isDistinct = true, None, None, None)
     val expr = SingleColumn(
       f,
       None,
@@ -80,7 +80,7 @@ class ExpressionTest extends AirSpec {
     val f1 = FunctionCall("count_a", Seq.empty, false, None, None, None)
     val f2 = FunctionCall("count_b", Seq(f1), false, None, None, None)
 
-    val count = new AtomicInteger(0)
+    val count   = new AtomicInteger(0)
     val newExpr = f2.transformUpExpression {
       case f: FunctionCall if f.functionName == "count_a" =>
         FunctionCall(s"count_a${count.getAndIncrement()}", f.args, false, None, None, None)

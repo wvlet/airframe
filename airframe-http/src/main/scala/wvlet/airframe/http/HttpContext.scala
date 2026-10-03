@@ -63,7 +63,7 @@ object HttpContext {
   ): HttpContext[Req, Resp, F] =
     new HttpContext[Req, Resp, F] {
       override protected def backend: HttpBackend[Req, Resp, F] = baseBackend
-      override def apply(request: Req): F[Resp] = {
+      override def apply(request: Req): F[Resp]                 = {
         backend.rescue {
           body(request)
         }

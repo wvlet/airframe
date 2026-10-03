@@ -124,7 +124,7 @@ class GrpcRequestHandler(
     val result = Try {
       val m: MapValue = readRequestAsValue(grpcContext, request)
       val mapValue    = HttpRequestMapper.toCanonicalKeyNameMap(m)
-      val args = for ((arg, i) <- methodSurface.args.zipWithIndex) yield {
+      val args        = for ((arg, i) <- methodSurface.args.zipWithIndex) yield {
         val argOpt = mapValue.get(CName.toCanonicalName(arg.name)) match {
           case Some(paramValue) =>
             Option(argCodecs(i).fromMsgPack(paramValue.toMsgpack)).orElse {
@@ -166,8 +166,8 @@ class GrpcRequestHandler(
   ): StreamObserver[MsgPack] = {
     val codec = codecFactory.of(clientStreamingType)
     // An observer that receives streaming messages from the client
-    val grpcContext = GrpcContext.current
-    val encoding    = GrpcContext.currentEncoding
+    val grpcContext     = GrpcContext.current
+    val encoding        = GrpcContext.currentEncoding
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted = new AtomicBoolean(false)
       // A queue for passing incoming messages to the application through Rx interface

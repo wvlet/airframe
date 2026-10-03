@@ -36,7 +36,7 @@ class BindLocalTest extends AirSpec {
 
   test("create a new local instance with a provider") {
     val counter = new AtomicInteger()
-    val d = newSilentDesign
+    val d       = newSilentDesign
       .bind[AtomicInteger].toInstance(counter)
 
     d.build[App] { a => counter.get() shouldBe 0 }

@@ -101,7 +101,7 @@ object HttpBackend {
     override protected implicit val httpRequestAdapter: HttpRequestAdapter[HttpMessage.Request] =
       HttpMessage.HttpMessageRequestAdapter
 
-    override def name: String = BACKEND_DEFAULT
+    override def name: String                                                           = BACKEND_DEFAULT
     override def newResponse(status: HttpStatus, content: String): HttpMessage.Response = {
       Http.response(status).withContent(content)
     }
@@ -120,7 +120,7 @@ object HttpBackend {
       f.map(body)
     }
     override def withThreadLocalStore(request: => Future[HttpMessage.Response]): Future[HttpMessage.Response] = ???
-    override def setThreadLocal[A](key: String, value: A): Unit = {
+    override def setThreadLocal[A](key: String, value: A): Unit                                               = {
       // no-op
     }
     override def getThreadLocal[A](key: String): Option[A] = {

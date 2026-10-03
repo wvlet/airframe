@@ -189,7 +189,7 @@ class GrpcClientTest extends AirSpec {
       }
 
       test("async") {
-        val p = Promise[String]()
+        val p               = Promise[String]()
         val requestObserver = client.asyncClientStreaming(
           new StreamObserver[String] {
             private var s = ""
@@ -277,7 +277,7 @@ class GrpcClientTest extends AirSpec {
       }
 
       test("async") {
-        val p = Promise[Seq[DemoResponse]]()
+        val p               = Promise[Seq[DemoResponse]]()
         val requestObserver = client.asyncBidiStreaming(new StreamObserver[DemoResponse] {
           private val s = Seq.newBuilder[DemoResponse]
 
@@ -304,7 +304,7 @@ class GrpcClientTest extends AirSpec {
       }
 
       test("async with RPCException") {
-        val p = Promise[Seq[DemoResponse]]()
+        val p               = Promise[Seq[DemoResponse]]()
         val requestObserver = client.asyncBidiStreaming(new StreamObserver[DemoResponse] {
           private val s = Seq.newBuilder[DemoResponse]
 

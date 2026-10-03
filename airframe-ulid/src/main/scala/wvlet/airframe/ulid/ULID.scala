@@ -112,7 +112,7 @@ object ULID {
     */
   def defaultULIDGenerator: ULIDGenerator = {
     val random: scala.util.Random = compat.random
-    val randGen = { () =>
+    val randGen                   = { () =>
       val r = new Array[Byte](10)
       random.nextBytes(r)
       r

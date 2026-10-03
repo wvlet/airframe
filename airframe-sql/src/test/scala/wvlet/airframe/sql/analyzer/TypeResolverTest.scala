@@ -663,7 +663,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
   test("resolve UDF inputs") {
     def analyzeAndCollectFunctions(sql: String): List[Expression] = {
-      val p = analyze(sql)
+      val p     = analyze(sql)
       val exprs = p.collectExpressions {
         case f: FunctionCall => true
         case c: Cast         => true

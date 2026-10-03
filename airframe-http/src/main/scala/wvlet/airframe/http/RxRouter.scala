@@ -76,7 +76,7 @@ object RxRouter extends RxRouterObjectBase {
       override val filter: Option[FilterNode] = None,
       override val children: List[RxRouter]
   ) extends RxRouter {
-    override def name: String = f"${this.hashCode()}%08x"
+    override def name: String                                       = f"${this.hashCode()}%08x"
     override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
       this.copy(filter = parentFilter.andThenOpt(filter))
     }
@@ -116,10 +116,10 @@ object RxRouter extends RxRouterObjectBase {
   }
 
   case class RxEndpointNode(endpoint: RxHttpEndpoint) extends RxRouter {
-    override def name: String               = f"${this.hashCode()}%08x"
-    override def filter: Option[FilterNode] = None
-    override def children: List[RxRouter]   = Nil
-    override def isLeaf: Boolean            = true
+    override def name: String                                       = f"${this.hashCode()}%08x"
+    override def filter: Option[FilterNode]                         = None
+    override def children: List[RxRouter]                           = Nil
+    override def isLeaf: Boolean                                    = true
     override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
       StemNode(filter = Some(parentFilter), children = List(this))
     }

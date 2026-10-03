@@ -34,7 +34,7 @@ object RPCEncoding {
   val ApplicationJson    = MediaType.ApplicationJson
 
   case object MsgPack extends RPCEncoding {
-    override def applicationType: String = ApplicationMsgPack
+    override def applicationType: String                                       = ApplicationMsgPack
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toMsgPack(v)
     }
@@ -44,7 +44,7 @@ object RPCEncoding {
   }
 
   case object JSON extends RPCEncoding {
-    override def applicationType: String = ApplicationJson
+    override def applicationType: String                                       = ApplicationJson
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toJson(v).getBytes(StandardCharsets.UTF_8)
     }

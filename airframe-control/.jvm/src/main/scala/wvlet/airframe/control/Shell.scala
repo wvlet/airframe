@@ -138,7 +138,7 @@ object Shell extends LogSupport {
         // This part is for JDK8 because java.lang.Process.pid() is available since JDK9.
         // If the current OS is *Nix, the class of p is UNIXProcess and its pid can be obtained
         // from pid field by using reflection.
-        val f = p.getClass().getDeclaredField("pid")
+        val f        = p.getClass().getDeclaredField("pid")
         val pid: Int = withAccessTo(f, p) {
           f.get(p).asInstanceOf[Int]
         }
@@ -310,7 +310,7 @@ object Shell extends LogSupport {
         import OSType.*
         e match {
           case Some(x) => e
-          case None => {
+          case None    => {
             def listJDKIn(path: String) = {
               // TODO Oracle JVM (JRockit) support
               new File(path)
@@ -333,7 +333,7 @@ object Shell extends LogSupport {
 
             OS.getType match {
               case Windows => latestJDK(listJDKIn("c:/Program Files/Java"))
-              case Mac => {
+              case Mac     => {
                 val l =
                   Seq(
                     "/System/Library/Frameworkds/JavaVM.framework/Home",
@@ -352,7 +352,7 @@ object Shell extends LogSupport {
 
       val ret: Option[String] = java_home match {
         case Some(x) => Some(javaBin(x).trim)
-        case None => {
+        case None    => {
           val javaPath = Process("which %s".format(javaCmdName)).!!.trim
           if (javaPath.isEmpty)
             None

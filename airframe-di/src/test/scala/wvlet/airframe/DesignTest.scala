@@ -150,7 +150,7 @@ object DesignTest extends AirSpec {
 
   test("find outer variables in code block") {
     val helloDesign = "hello"
-    val d = newSilentDesign
+    val d           = newSilentDesign
       .bind[String].toInstance(helloDesign)
 
     d.build[String] { x => helloDesign }

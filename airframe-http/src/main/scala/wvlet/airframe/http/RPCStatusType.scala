@@ -52,8 +52,8 @@ object RPCStatusType {
 
   // For successful responses
   case object SUCCESS extends RPCStatusType {
-    override def codeStringPrefix: String = "S"
-    override def codeRange: (Int, Int)    = (0, 1000)
+    override def codeStringPrefix: String                           = "S"
+    override def codeRange: (Int, Int)                              = (0, 1000)
     override def isValidHttpStatus(httpStatus: HttpStatus): Boolean = {
       httpStatus.isSuccessful
     }
@@ -61,8 +61,8 @@ object RPCStatusType {
 
   // User-input or authentication related errors, which are not retryable in general
   case object USER_ERROR extends RPCStatusType {
-    override def codeStringPrefix: String = "U"
-    override def codeRange: (Int, Int)    = (1000, 2000)
+    override def codeStringPrefix: String                           = "U"
+    override def codeRange: (Int, Int)                              = (1000, 2000)
     override def isValidHttpStatus(httpStatus: HttpStatus): Boolean = {
       httpStatus.isClientError
     }

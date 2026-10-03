@@ -88,7 +88,7 @@ class OkHttpChannel(val destination: ServerAddress, config: HttpClientConfig) ex
   }
 
   private def convertRequest(request: HttpMessage.Request): okhttp3.Request = {
-    val query = request.query
+    val query               = request.query
     val queryParams: String = if (query.isEmpty) {
       null
     } else {

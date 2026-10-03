@@ -132,7 +132,7 @@ class CName(val canonicalName: String, val naturalName: String) extends Comparab
   def compareTo(o: CName) = canonicalName.compareTo(o.canonicalName)
   override def toString   = canonicalName
 
-  override def hashCode = canonicalName.hashCode()
+  override def hashCode           = canonicalName.hashCode()
   override def equals(other: Any) = {
     other match {
       case o: CName if canonicalName.equals(o.canonicalName) => true
@@ -140,8 +140,8 @@ class CName(val canonicalName: String, val naturalName: String) extends Comparab
     }
   }
 
-  lazy val snakeCase: String = naturalName.toLowerCase.replace(' ', '_')
-  lazy val dashCase: String  = naturalName.toLowerCase.replace(' ', '-')
+  lazy val snakeCase: String      = naturalName.toLowerCase.replace(' ', '_')
+  lazy val dashCase: String       = naturalName.toLowerCase.replace(' ', '-')
   lazy val upperCamelCase: String = {
     val sb               = new StringBuilder()
     var prevIsWhitespace = false

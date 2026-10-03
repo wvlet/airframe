@@ -89,7 +89,7 @@ object JSONBenchmark extends Timer {
   def jsonBooleanArray  = s"[${(0 until 100).map(_ => r1.nextBoolean()).mkString(",")}]"
   def jsonIntArray      = s"[${(0 until 100).map(_ => r2.nextLong()).mkString(",")}]"
   def jsonDoubleArray   = s"[${(0 until 100).map(_ => r3.nextDouble()).mkString(",")}]"
-  def jsonStringArray = {
+  def jsonStringArray   = {
     // Extract JSON strings from twitter.json
     val j = JSON.parse(twitterJson)
     val b = IndexedSeq.newBuilder[JSONString]

@@ -31,7 +31,7 @@ object LoggerJMX extends LoggerMXBean {
     val l = Logger(loggerName)
     l.setLogLevel(LogLevel(logLevel))
   }
-  override def getDefaultLogLevel(): String = Logger("").getLogLevel.toString
+  override def getDefaultLogLevel(): String               = Logger("").getLogLevel.toString
   override def setDefaultLogLevel(logLevel: String): Unit = {
     val l = Logger("")
     l.setLogLevel(LogLevel(logLevel))

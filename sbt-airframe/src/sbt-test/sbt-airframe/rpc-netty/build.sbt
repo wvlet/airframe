@@ -32,7 +32,7 @@ lazy val server =
     .settings(
       buildSettings,
       airframeHttpGeneratorOption := "-l trace",
-      airframeHttpClients := Seq(
+      airframeHttpClients         := Seq(
         "example.api:rpc:example.api.MyRPCClient"
       ),
       libraryDependencies ++= Seq(

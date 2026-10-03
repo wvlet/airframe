@@ -28,7 +28,7 @@ object MessagePack {
 
   def fromJSON(json: String): MsgPack           = fromJSON(JSONSource.fromString(json))
   def fromJSON(jsonBytes: Array[Byte]): MsgPack = fromJSON(JSONSource.fromBytes(jsonBytes))
-  def fromJSON(json: JSONSource): MsgPack = {
+  def fromJSON(json: JSONSource): MsgPack       = {
     val context = new StreamMessagePackBuilder()
     JSONScanner.scanAny(json, context)
     context.result

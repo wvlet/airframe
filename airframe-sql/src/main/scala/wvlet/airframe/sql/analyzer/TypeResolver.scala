@@ -102,7 +102,7 @@ object TypeResolver extends LogSupport {
   object resolveAggregationIndexes extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
-        var changed = false
+        var changed                                 = false
         val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
           case k @ UnresolvedGroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
             // Use a simpler form of attributes
@@ -141,8 +141,8 @@ object TypeResolver extends LogSupport {
   object resolveAggregationKeys extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
-        val resolvedChild       = resolveRelation(context, child)
-        val resolvedSelectItems = resolveOutputColumns(context, resolvedChild.outputAttributes, selectItems)
+        val resolvedChild        = resolveRelation(context, child)
+        val resolvedSelectItems  = resolveOutputColumns(context, resolvedChild.outputAttributes, selectItems)
         val resolvedGroupingKeys =
           groupingKeys.map { k =>
             val e = resolveExpression(context, k.child, resolvedSelectItems)
@@ -185,7 +185,7 @@ object TypeResolver extends LogSupport {
     def apply(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
       val resolvedChild = resolveRelation(context, child)
       // Sort can access the input relation of the child
-      val inputAttributes = resolvedChild.inputAttributes
+      val inputAttributes   = resolvedChild.inputAttributes
       val resolvedSortItems = sortItems.map { sortItem =>
         val e = resolveExpression(context, sortItem.sortKey, inputAttributes)
         sortItem.copy(sortKey = e)
@@ -333,7 +333,7 @@ object TypeResolver extends LogSupport {
         }
       case u: Union     => u // UNION is resolved later by resolveUnion()
       case u: Intersect => u // INTERSECT is resolved later by resolveIntersect()
-      case r: Relation =>
+      case r: Relation  =>
         r.transformUpExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
     }
   }
@@ -395,7 +395,7 @@ object TypeResolver extends LogSupport {
       case SingleColumn(a: Attribute, qualifier, tableAlias, _) if a.resolved =>
         a.withQualifier(qualifier).withTableAlias(tableAlias)
       case m: MultiSourceColumn =>
-        var changed = false
+        var changed        = false
         val resolvedInputs = m.inputs.map {
           case a: Attribute =>
             val x = resolveAttribute(a)

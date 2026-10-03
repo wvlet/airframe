@@ -60,7 +60,7 @@ object compat:
 //      // timer_create(CLOCK_REALTIME, se, timerId)
 
   def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable =
-    val thread = Executors.newScheduledThreadPool(1)
+    val thread   = Executors.newScheduledThreadPool(1)
     val schedule = thread.schedule(
       new Runnable:
         override def run(): Unit =
@@ -83,7 +83,7 @@ object compat:
     val s     = Seq.newBuilder[A]
     var c     = Cancelable.empty
     c = RxRunner.run(rx) {
-      case OnNext(v) => s += v.asInstanceOf[A]
+      case OnNext(v)  => s += v.asInstanceOf[A]
       case OnError(e) =>
         c.cancel
         throw e

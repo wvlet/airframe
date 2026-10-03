@@ -104,7 +104,7 @@ class SSETest extends AirSpec {
 
   test("read sse-events") { (client: AsyncClient) =>
     val queue = new RxBlockingQueue[ServerSentEvent]()
-    val rx = client.send(
+    val rx    = client.send(
       Http
         .GET("/v1/sse")
         .withEventHandler(new ServerSentEventHandler {
@@ -123,7 +123,7 @@ class SSETest extends AirSpec {
     rx.map { resp =>
       resp.statusCode shouldBe 200
 
-      val events = queue.toSeq.toList
+      val events   = queue.toSeq.toList
       val expected = List(
         ServerSentEvent(data = "hello stream"),
         ServerSentEvent(data = "another stream message\nwith two lines"),
@@ -140,7 +140,7 @@ class SSETest extends AirSpec {
 
   test("read sse-stream") { (client: AsyncClient) =>
     val queue = new RxBlockingQueue[ServerSentEvent]()
-    val rx = client.send(
+    val rx    = client.send(
       Http
         .POST("/v1/sse-stream")
         .withEventHandler(new ServerSentEventHandler {
@@ -160,7 +160,7 @@ class SSETest extends AirSpec {
     rx.map { resp =>
       resp.statusCode shouldBe 200
 
-      val events = queue.toSeq.toList
+      val events   = queue.toSeq.toList
       val expected = List(
         ServerSentEvent(data = "hello stream"),
         ServerSentEvent(data = "another stream message\nwith two lines"),
@@ -179,14 +179,14 @@ class SSETest extends AirSpec {
   test("SSE streaming should not block concurrent requests") { (asyncClient: AsyncClient, syncClient: SyncClient) =>
     // Start a slow SSE stream in the background
     val streamStarted = new CountDownLatch(1)
-    val streamThread = new Thread(new Runnable {
+    val streamThread  = new Thread(new Runnable {
       override def run(): Unit = {
         val rx = asyncClient.send(
           Http
             .POST("/v1/slow-sse-stream")
             .withEventHandler(new ServerSentEventHandler {
-              override def onError(e: Throwable): Unit = {}
-              override def onCompletion(): Unit        = {}
+              override def onError(e: Throwable): Unit       = {}
+              override def onCompletion(): Unit              = {}
               override def onEvent(e: ServerSentEvent): Unit = {
                 // Signal that SSE stream has started
                 streamStarted.countDown()

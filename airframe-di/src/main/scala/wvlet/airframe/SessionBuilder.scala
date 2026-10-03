@@ -85,7 +85,7 @@ class SessionBuilder(
       }
 
     // Add a shutdown hook handler if necessary
-    val lh = lifeCycleEventHandler.removeAll(AddShutdownHook)
+    val lh           = lifeCycleEventHandler.removeAll(AddShutdownHook)
     val eventHandler = if (addShutdownHook) {
       lh andThen AddShutdownHook
     } else {

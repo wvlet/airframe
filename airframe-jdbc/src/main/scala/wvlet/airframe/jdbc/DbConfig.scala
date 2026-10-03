@@ -73,7 +73,7 @@ case class DbConfig(
       `type` match {
         case "postgresql" => 5432
         case "mysql"      => 3306
-        case other =>
+        case other        =>
           throw new IllegalArgumentException(
             s"Unknown jdbc port for ${other}. Specify jdbc port number with withPort(...)"
           )
@@ -98,7 +98,7 @@ case class DbConfig(
           case "duckdb"     => "org.duckdb.DuckDBDriver"
           case "postgresql" => "org.postgresql.Driver"
           case "mysql"      => "com.mysql.jdbc.Driver"
-          case other =>
+          case other        =>
             throw new IllegalArgumentException(
               s"Unknown database type: ${other}. Specify jdbc driver name explicitly with withDriver(...)"
             )

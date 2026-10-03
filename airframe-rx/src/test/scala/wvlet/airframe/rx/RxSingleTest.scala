@@ -21,7 +21,7 @@ import scala.util.{Failure, Success}
 class RxSingleTest extends AirSpec {
   test("Rx.single") {
     val counter = new AtomicInteger(0)
-    val rx = Rx
+    val rx      = Rx
       .single(counter.incrementAndGet())
       .map(_ + 10)
 
@@ -33,7 +33,7 @@ class RxSingleTest extends AirSpec {
 
   test("Rx.single(exception)") {
     val counter = new AtomicInteger(0)
-    val rx = Rx
+    val rx      = Rx
       .single {
         counter.incrementAndGet()
         throw new IllegalStateException("test exception")
@@ -53,7 +53,7 @@ class RxSingleTest extends AirSpec {
 
   test("Rx.const") {
     val counter = new AtomicInteger(0)
-    val rx = Rx
+    val rx      = Rx
       .const(counter.incrementAndGet())
       .map(_ + 10)
 
@@ -65,7 +65,7 @@ class RxSingleTest extends AirSpec {
 
   test("Rx.const(exception)") {
     val counter = new AtomicInteger(0)
-    val rx = Rx
+    val rx      = Rx
       .const {
         counter.incrementAndGet()
         throw new IllegalStateException("test exception")

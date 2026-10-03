@@ -35,7 +35,7 @@ sealed trait OptionSchema extends LogSupport {
 
   def apply(name: String): CLOption = symbolTable.apply(name)
 
-  def findOption(name: String): Option[CLOption] = symbolTable.get(name)
+  def findOption(name: String): Option[CLOption]     = symbolTable.get(name)
   def findFlagOption(name: String): Option[CLOption] = {
     findOption(name) filterNot (_.takesArgument)
   }

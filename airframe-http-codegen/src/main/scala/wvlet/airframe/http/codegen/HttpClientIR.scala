@@ -47,7 +47,7 @@ object HttpClientIR extends LogSupport {
             loop(m.surface)
           case c: ClientClassDef   => c.services.flatMap(loop)
           case x: ClientServiceDef => x.methods.flatMap(loop)
-          case m: ClientMethodDef =>
+          case m: ClientMethodDef  =>
             loop(m.returnType) ++ m.typeArgs.flatMap(loop) ++ m.inputParameters
               .flatMap(loop)
           case _ =>
@@ -111,7 +111,7 @@ object HttpClientIR extends LogSupport {
       ): ClientServicePackages = {
         val (leafServices, remaining) = lst.partition(_._1.isEmpty)
         val node                      = ClientServicePackages(packagePrefix, leafServices.map(_._2), Seq.empty)
-        val children =
+        val children                  =
           for ((prefix, lst) <- remaining.groupBy(_._1.head))
             yield {
               iter(prefix, lst.map(x => (x._1.tail, x._2)))
@@ -132,7 +132,7 @@ object HttpClientIR extends LogSupport {
   ) extends ClientCodeIR {
     def interfaceName: String = TypeName.sanitizeTypeName(interfaceClass.getName)
 
-    def fullServiceName: String = s"${internalPackageName}.${serviceName}"
+    def fullServiceName: String     = s"${internalPackageName}.${serviceName}"
     def internalPackageName: String = {
       if (relativePackageName.isEmpty) {
         "internal"

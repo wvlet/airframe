@@ -37,7 +37,7 @@ private object Compat extends CompatApi {
     if (s == null || s.isEmpty) {
       s
     } else {
-      val sb = new StringBuilder()
+      val sb    = new StringBuilder()
       val bytes = s.getBytes("UTF-8")
       for (b <- bytes) {
         val c = b.toChar
@@ -119,8 +119,8 @@ private object Compat extends CompatApi {
   override def sslExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
 
   /**
-    * Connection exception classifier for Scala Native. Returns an empty classifier since java.net exception classes
-    * may not be fully available on Native.
+    * Connection exception classifier for Scala Native. Returns an empty classifier since java.net exception classes may
+    * not be fully available on Native.
     */
   override def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = PartialFunction.empty
 

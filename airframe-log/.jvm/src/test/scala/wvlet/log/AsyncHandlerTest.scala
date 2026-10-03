@@ -111,7 +111,7 @@ class AsyncHandlerTest extends Spec with Timer {
 }
 
 object HeavyHandler extends java.util.logging.Handler {
-  override def flush(): Unit = {}
+  override def flush(): Unit                                      = {}
   override def publish(record: java.util.logging.LogRecord): Unit = {
     Thread.sleep(5)
   }

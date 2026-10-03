@@ -59,8 +59,8 @@ object SQLErrorCode {
       nodeLocation: Option[NodeLocation] = None,
       metadata: Map[String, Any] = Map.empty
   ) {
-    def withCause(e: Throwable): SQLErrorBuilder                  = this.copy(cause = Option(e))
-    def withMetadata(metadata: Map[String, Any]): SQLErrorBuilder = this.copy(metadata = metadata)
+    def withCause(e: Throwable): SQLErrorBuilder                                    = this.copy(cause = Option(e))
+    def withMetadata(metadata: Map[String, Any]): SQLErrorBuilder                   = this.copy(metadata = metadata)
     def newException(message: String, nodeLocation: Option[NodeLocation]): SQLError =
       SQLError(errorCode, message, cause, nodeLocation, metadata)
     def newException(message: String, cause: Throwable, nodeLocation: Option[NodeLocation]): SQLError =

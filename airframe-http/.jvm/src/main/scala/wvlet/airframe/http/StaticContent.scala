@@ -100,7 +100,7 @@ object StaticContent extends LogSupport {
 
   private def findContentType(filePath: String): String = {
     val leaf = filePath.split("/").lastOption.getOrElse("")
-    val ext = {
+    val ext  = {
       val pos = leaf.lastIndexOf(".")
       if (pos > 0) {
         leaf.substring(pos + 1)
@@ -160,7 +160,7 @@ case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.
     @tailrec
     def loop(lst: List[ResourceType]): Option[URL] = {
       lst match {
-        case Nil => None
+        case Nil              => None
         case resource :: tail =>
           resource.find(relativePath) match {
             case url @ Some(x) =>

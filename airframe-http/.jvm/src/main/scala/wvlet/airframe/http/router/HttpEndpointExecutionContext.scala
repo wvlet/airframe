@@ -39,7 +39,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
     with LogSupport {
 
   override def apply(request: Req): F[Resp] = {
-    val route = routeMatch.route
+    val route  = routeMatch.route
     val result = {
       // Call the method in this controller
       try {

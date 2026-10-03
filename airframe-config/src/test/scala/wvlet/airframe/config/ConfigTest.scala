@@ -251,7 +251,7 @@ class ConfigTest extends AirSpec {
     p.setProperty("sample@appscope.message", "hellohello") // should be unused
 
     var unused: Option[Properties] = None
-    val c = Config(env = "default", configPaths = configPaths)
+    val c                          = Config(env = "default", configPaths = configPaths)
       .register[SampleConfig](SampleConfig(1, "hello"))
       .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello").asInstanceOf[SampleConfig @@ AppScope])
       .overrideWithProperties(p, onUnusedProperties = { (p: Properties) => unused = Some(p) })

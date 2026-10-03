@@ -352,7 +352,7 @@ class FinagleServerFactory(session: Session) extends AutoCloseable with LogSuppo
 
   def newFinagleServer(config: FinagleServerConfig): FinagleServer = {
     val baseInitializer = config.serverInitializer
-    val server =
+    val server          =
       config
         .withServerInitializer { baseInitializer.andThen(initServer) }
         .newFinagleServer(session)

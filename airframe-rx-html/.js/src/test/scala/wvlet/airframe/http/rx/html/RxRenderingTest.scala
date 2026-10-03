@@ -313,7 +313,7 @@ object RxRenderingTest extends AirSpec {
 
   test("refresh attribute with RxVar") {
     val show = Rx.variable(true)
-    val e = new RxElement {
+    val e    = new RxElement {
       override def render: RxElement = {
         div(
           show.when(_ == true).map(_ => cls += "active")
@@ -330,7 +330,7 @@ object RxRenderingTest extends AirSpec {
 
   test("append cls attribute") {
     val selected = Rx.variable("home")
-    val e = new RxElement {
+    val e        = new RxElement {
       override def render: RxElement = {
         div(
           cls -> "item",
@@ -352,7 +352,7 @@ object RxRenderingTest extends AirSpec {
 
   test("append style attribute") {
     val selected = Rx.variable("home")
-    val e = new RxElement {
+    val e        = new RxElement {
       override def render: RxElement = {
         div(
           style -> "color: white;",
@@ -371,7 +371,7 @@ object RxRenderingTest extends AirSpec {
 
   test("append and completely remove cls attribute") {
     val selected = Rx.variable("home")
-    val e = new RxElement {
+    val e        = new RxElement {
       override def render: RxElement = {
         div(
           selected.when(_ == "home").map(x => cls += "active"),

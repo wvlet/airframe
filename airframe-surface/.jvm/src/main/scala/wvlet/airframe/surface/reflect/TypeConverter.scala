@@ -94,7 +94,7 @@ object TypeConverter extends LogSupport {
         val v = m.invoke(co, Array(value.toString): _*).asInstanceOf[Option[A]]
         v match {
           case Some(c) => v
-          case None =>
+          case None    =>
             debug(s"cannot create an instance of $targetType from $value")
             None
         }
@@ -114,7 +114,7 @@ object TypeConverter extends LogSupport {
     if (value == null) {
       None
     } else {
-      val s = value.toString
+      val s      = value.toString
       val v: Any = targetType match {
         case Primitive.String                  => s
         case Primitive.Boolean                 => s.toBoolean
@@ -126,7 +126,7 @@ object TypeConverter extends LogSupport {
         case Primitive.Byte                    => s.toByte
         case Primitive.Char if (s.length == 1) => s(0).toChar
         case t if t.rawType == classOf[File]   => new File(s)
-        case t if t.rawType == classOf[Date] =>
+        case t if t.rawType == classOf[Date]   =>
           DateFormat.getDateInstance().parse(s)
         case _ =>
           warn(s"""Failed to convert "$s" to ${targetType.toString}""")

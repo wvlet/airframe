@@ -79,7 +79,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     case (a: Array[Boolean], b: Array[Boolean]) => check(util.Arrays.equals(a, b))
     case (a: Array[Float], b: Array[Float])     => check(util.Arrays.equals(a, b))
     case (a: Array[Double], b: Array[Double])   => check(util.Arrays.equals(a, b))
-    case (a: Array[AnyRef], b: Array[AnyRef]) =>
+    case (a: Array[AnyRef], b: Array[AnyRef])   =>
       check(
         util.Arrays
           .deepEquals(a.asInstanceOf[Array[java.lang.Object]], b.asInstanceOf[Array[java.lang.Object]])
@@ -107,7 +107,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 
     def shouldBe(expected: Any)(implicit code: SourceCode): Boolean = {
       test(expected) match {
-        case Ok => true
+        case Ok     => true
         case Failed =>
           throw matchFailure(expected, code)
       }

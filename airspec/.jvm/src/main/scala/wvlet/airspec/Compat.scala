@@ -84,7 +84,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
 
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match {
-      case Success(x) => Some(x)
+      case Success(x)                                                  => Some(x)
       case Failure(e: InvocationTargetException) if e.getCause != null =>
         if (classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass)) {
           // For assertion failrues, throw it as is

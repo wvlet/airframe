@@ -164,7 +164,7 @@ object GrpcServer {
       // The number of threads
       config.maxThreads,
       new ForkJoinWorkerThreadFactory() {
-        private val threadCount = new AtomicInteger()
+        private val threadCount                                          = new AtomicInteger()
         override def newThread(pool: ForkJoinPool): ForkJoinWorkerThread = {
           val thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool)
           val name   = s"grpc-${config.name}-${threadCount.getAndIncrement()}"

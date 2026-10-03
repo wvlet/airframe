@@ -33,7 +33,7 @@ import wvlet.airframe.surface.reflect.Path
   * }}}
   */
 sealed trait StringTree {
-  def +(e: (Path, StringTree)): StringTree = setNode(e._1, e._2)
+  def +(e: (Path, StringTree)): StringTree             = setNode(e._1, e._2)
   def ++(it: Iterable[(Path, StringTree)]): StringTree =
     it.foldLeft[StringTree](this) { (h, e) =>
       h.setNode(e._1, e._2)
@@ -160,7 +160,7 @@ object StringTree extends LogSupport {
   }
 
   private[launcher] case class Leaf(value: String) extends StringTree {
-    override def toString = value.toString
+    override def toString                                           = value.toString
     override def setNode(path: Path, value: StringTree): StringTree = {
       SeqLeaf(Seq(this, EmptyNode.setNode(path, value)))
     }

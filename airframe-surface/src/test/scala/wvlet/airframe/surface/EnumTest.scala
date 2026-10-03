@@ -24,7 +24,7 @@ object EnumTest {
   case object Red  extends Color
 
   object Color {
-    def values: Seq[Color] = Seq(Blue, Red)
+    def values: Seq[Color]                = Seq(Blue, Red)
     def unapply(s: String): Option[Color] = {
       values.find(_.toString == s)
     }

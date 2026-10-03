@@ -30,7 +30,7 @@ object DI_12_ReusingService extends App {
 
   class DB extends LogSupport with AutoCloseable {
     def query(sql: String) = {}
-    def connect: Unit = {
+    def connect: Unit      = {
       info("connected")
     }
     override def close(): Unit = {
@@ -39,7 +39,7 @@ object DI_12_ReusingService extends App {
   }
   class HttpClient extends LogSupport with AutoCloseable {
     def send(request: String) = {}
-    def connect: Unit = {
+    def connect: Unit         = {
       info("connected")
     }
     override def close(): Unit = {

@@ -47,7 +47,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       shrink: Shrink[Array[T]],
       pp: Array[T] => Pretty
   ): Unit = {
-    val codec = MessageCodec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
+    val codec    = MessageCodec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
     val seqCodec =
       MessageCodec.ofSurface(new GenericSurface(classOf[Seq[_]], Seq(surface))).asInstanceOf[MessageCodec[Seq[T]]]
     val javaListCodec = MessageCodec

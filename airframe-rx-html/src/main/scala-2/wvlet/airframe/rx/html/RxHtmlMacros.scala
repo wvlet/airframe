@@ -23,15 +23,15 @@ private[html] object RxHtmlMacros {
     import c.universe.*
 
     val codes = for (rxElement <- rxElements) yield {
-      val pos = rxElement.pos
-      val src = pos.source
+      val pos        = rxElement.pos
+      val src        = pos.source
       val lineBlocks = src.content
         .slice(pos.start, pos.`end`)
         .mkString
         .replaceAll("^\\{\\n", "")
         .replaceAll("\\}$", "")
 
-      val lines = lineBlocks.split("\n")
+      val lines              = lineBlocks.split("\n")
       val columnOffsetInLine = lines.headOption
         .map { firstLine =>
           firstLine.size - firstLine.stripLeading().size

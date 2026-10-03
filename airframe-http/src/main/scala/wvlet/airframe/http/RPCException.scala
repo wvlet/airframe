@@ -57,7 +57,7 @@ case class RPCException(
   def shouldReportStackTrace: Boolean = {
     _includeStackTrace match {
       case Some(b) => b
-      case None =>
+      case None    =>
         status.shouldReportStackTrace
     }
   }

@@ -219,7 +219,7 @@ class HttpCodeGenerator(
   @command(description = "Generate HTTP client codes")
   def generate(option: HttpCodeGeneratorOption): Unit = {
     try {
-      val cl = newClassLoader(option.classpath.mkString(":"))
+      val cl        = newClassLoader(option.classpath.mkString(":"))
       val artifacts = for (x <- option.targets) yield {
         val config = HttpClientGeneratorConfig(x)
         debug(config)

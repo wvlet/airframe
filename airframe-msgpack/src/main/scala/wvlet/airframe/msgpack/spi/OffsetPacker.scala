@@ -197,7 +197,7 @@ object OffsetPacker {
     packTimestampEpochSecond(cursor, v.getEpochSecond, v.getNano)
   }
 
-  private val NANOS_PER_SECOND = 1000000000L
+  private val NANOS_PER_SECOND                                                                    = 1000000000L
   def packTimestampEpochSecond(cursor: WriteCursor, epochSecond: Long, nanoAdjustment: Int): Unit = {
     val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, NANOS_PER_SECOND))
     val nsec = Math.floorMod(nanoAdjustment.toLong, NANOS_PER_SECOND)

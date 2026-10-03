@@ -144,13 +144,13 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
               case 1 =>
                 // Append array elements to the buffer
                 val elementType = targetType.typeArgs(0)
-                val lst = value match {
+                val lst         = value match {
                   case a if isArrayCls(value.getClass) =>
                     a.asInstanceOf[Array[_]].toIndexedSeq
                   case a if isJavaCollection(value.getClass) =>
                     a.asInstanceOf[java.util.Collection[_]].asScala.toIndexedSeq
                   case s if isSeq(value.getClass) => s.asInstanceOf[Seq[_]]
-                  case other =>
+                  case other                      =>
                     Seq(other)
                 }
                 lst
@@ -166,8 +166,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                   case m if isMap(m.getClass) => m.asInstanceOf[Map[_, _]]
                   case other                  => Seq(other)
                 }
-                val keyType   = targetType.typeArgs(0)
-                val valueType = targetType.typeArgs(1)
+                val keyType      = targetType.typeArgs(0)
+                val valueType    = targetType.typeArgs(1)
                 val tupleSurface =
                   TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
                 lst
@@ -206,8 +206,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   def get(name: String): Option[Any] = {
     val paramName = name.canonicalName
     holder.get(paramName) flatMap {
-      case Holder(h) => Some(h.build)
-      case Value(v)  => Some(v)
+      case Holder(h)      => Some(h.build)
+      case Value(v)       => Some(v)
       case ArrayHolder(h) => {
         val p = getParameterTypeOf(paramName)
         debug(s"convert array holder:$h into $p")
@@ -243,7 +243,7 @@ class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardB
   def build: Any = {
     trace(s"holder contents: $holder")
     val factory = surface.objectFactory.get
-    val args = for (p <- surface.params) yield {
+    val args    = for (p <- surface.params) yield {
       get(p.name.canonicalName).getOrElse(Zero.zeroOf(p.surface))
     }
     trace(s"build: ${surface} from args:${args.mkString(", ")}")

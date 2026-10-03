@@ -156,7 +156,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
 
 class AsyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends AsyncClient {
   override protected def build(newConfig: HttpClientConfig): AsyncClient = new AsyncClientImpl(channel, newConfig)
-  override def close(): Unit = {
+  override def close(): Unit                                             = {
     super.close()
     channel.close()
   }

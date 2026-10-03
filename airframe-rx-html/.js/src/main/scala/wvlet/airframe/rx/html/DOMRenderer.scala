@@ -94,7 +94,7 @@ object DOMRenderer extends LogSupport {
           val cancelable     = h.traverseModifiers(m => renderTo(node, m))
           (node, cancelable)
         case l: LazyRxElement[_] => render(l)
-        case Embedded(v) =>
+        case Embedded(v)         =>
           traverse(v)
         case r: RxElement =>
           r.beforeRender
@@ -155,7 +155,7 @@ object DOMRenderer extends LogSupport {
         case rx: RxOps[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
-          val c2 = RxRunner.runContinuously(rx) { ev =>
+          val c2           = RxRunner.runContinuously(rx) { ev =>
             // Remove the previous binding from the DOM
             node.clearMountSection(start, end)
             // Cancel the previous binding
@@ -252,7 +252,7 @@ object DOMRenderer extends LogSupport {
           // Wrap entity ref with a span tag.
           // This is a workaround if the text is inserted in the middle of text element.
           val domNode = dom.document.createElement("span");
-          val entity = {
+          val entity  = {
             var x = entityName.trim
             if (!x.startsWith("&")) {
               x = s"&${x}"
@@ -460,8 +460,8 @@ object DOMRenderer extends LogSupport {
     }
 
     def setEventListener[A, U](key: String, listener: A => U): Cancelable = {
-      val dyn = node.asInstanceOf[js.Dynamic]
-      var c1  = Cancelable.empty
+      val dyn         = node.asInstanceOf[js.Dynamic]
+      var c1          = Cancelable.empty
       val newListener = { (e: A) =>
         c1.cancel
         c1 = eval(listener(e))

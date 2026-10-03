@@ -76,7 +76,7 @@ trait Path extends Iterable[String] {
   def isRelative: Boolean
   def isAbsolute: Boolean = !isRelative
   def parent: Option[Path]
-  def isLeaf = size == 1
+  def isLeaf         = size == 1
   def tailPath: Path =
     if (isEmpty) {
       Path.Current
@@ -90,7 +90,7 @@ trait Path extends Iterable[String] {
       case None    => Iterator.single(name)
     }
 
-  override def hashCode = fullPath.hashCode
+  override def hashCode           = fullPath.hashCode
   override def equals(other: Any) = {
     val o = other.asInstanceOf[AnyRef]
     if (this eq o) {

@@ -12,7 +12,7 @@ import io.grpc.stub.StreamObserver
 
 object GreeterApiTest extends AirSpec {
   class GreeterApiImpl extends GreeterApi {
-    def sayHello(message: String): String = s"Hello ${message}!"
+    def sayHello(message: String): String            = s"Hello ${message}!"
     def serverStreaming(message: String): Rx[String] = {
       Rx.sequence("Hello", "See you").map { x => s"${x} ${message}!" }
     }

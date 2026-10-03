@@ -253,7 +253,7 @@ class ProviderRefTest extends AirSpec {
 
   test("eagerly build singleton from provider") {
     var p1Initialized = false
-    val s1 = providerDesign
+    val s1            = providerDesign
       .bind[App].toEagerSingletonProvider { (d1: D1) => p1Initialized = true; App(d1) }
       .newSession
     p1Initialized shouldBe true
@@ -262,7 +262,7 @@ class ProviderRefTest extends AirSpec {
     p1 shouldBeTheSameInstanceAs s1.build[App]
 
     var p2Initialized = false
-    val s2 = providerDesign
+    val s2            = providerDesign
       .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2) => p2Initialized = true; App(d1, d2) }
       .newSession
     p2Initialized shouldBe true
@@ -271,7 +271,7 @@ class ProviderRefTest extends AirSpec {
     p2 shouldBeTheSameInstanceAs s2.build[App]
 
     var p3Initialized = false
-    val s3 = providerDesign
+    val s3            = providerDesign
       .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2, d3: D3) => p3Initialized = true; App(d1, d2, d3) }
       .newSession
     p3Initialized shouldBe true
@@ -280,7 +280,7 @@ class ProviderRefTest extends AirSpec {
     p3 shouldBeTheSameInstanceAs s3.build[App]
 
     var p4Initialized = false
-    val s4 = providerDesign
+    val s4            = providerDesign
       .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2, d3: D3, d4: D4) =>
         p4Initialized = true; App(d1, d2, d3, d4)
       }
@@ -291,7 +291,7 @@ class ProviderRefTest extends AirSpec {
     p4 shouldBeTheSameInstanceAs s4.build[App]
 
     var p5Initialized = false
-    val s5 = providerDesign
+    val s5            = providerDesign
       .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
         p5Initialized = true; App(d1, d2, d3, d4, d5)
       }

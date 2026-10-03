@@ -31,7 +31,7 @@ object StreamMessagePackBuilder {
   sealed abstract class ParseContext(val offset: Long) {
     private var elementCount: Int = 0
     def isObject: Boolean         = false
-    def increment: Unit = {
+    def increment: Unit           = {
       elementCount += 1
     }
     def numElements: Int = elementCount

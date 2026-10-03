@@ -138,7 +138,7 @@ case class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: 
     this.copy(config = config.copy(codecFactory = newCodecFactory))
   }
 
-  def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute(argLine: String): LauncherResult     = execute(CommandLineTokenizer.tokenize(argLine))
   def execute(args: Array[String]): LauncherResult = {
     mainLauncher.execute(config, List.empty, args.toSeq, showHelp = false)
   }
@@ -321,8 +321,8 @@ class CommandLauncher(
         } else {
           try {
             // parseTree -> msgpack -> method arguments
-            val methodSurface = m.method
-            val paramCodecs   = methodSurface.args.map { x => launcherConfig.codecFactory.of(x.surface) }
+            val methodSurface  = m.method
+            val paramCodecs    = methodSurface.args.map { x => launcherConfig.codecFactory.of(x.surface) }
             val methodArgCodec = new ParamListCodec(
               methodSurface.name,
               methodSurface.args.toIndexedSeq,

@@ -349,7 +349,7 @@ object NettyRequestHandler extends LogSupport {
       case HttpMethod.TRACE   => Http.request(wvlet.airframe.http.HttpMethod.TRACE, msg.uri())
       case HttpMethod.OPTIONS => Http.request(wvlet.airframe.http.HttpMethod.OPTIONS, msg.uri())
       case HttpMethod.HEAD    => Http.request(wvlet.airframe.http.HttpMethod.HEAD, msg.uri())
-      case _ =>
+      case _                  =>
         throw RPCStatus.INVALID_REQUEST_U1.newException(s"Unsupported HTTP method: ${msg.method()}")
     }
 
@@ -414,7 +414,7 @@ object NettyRequestHandler extends LogSupport {
     TimeUnit.SECONDS,
     new SynchronousQueue[Runnable](),
     new ThreadFactory {
-      private val counter = new AtomicInteger(0)
+      private val counter                         = new AtomicInteger(0)
       override def newThread(r: Runnable): Thread = {
         val t = new Thread(r, s"airframe-netty-sse-${counter.getAndIncrement()}")
         t.setDaemon(true)
