@@ -1,0 +1,29 @@
+name: Scala Steward
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  scala-steward:
+    runs-on: ubuntu-latest
+    name: Scala Steward
+    env:
+      # Building multiple sbt roots requires more JVM memory
+      SBT_OPTS: -Xmx2048m -XX:+UseG1GC
+    steps:
+      # Need to checkout the repo for reading .scala-steward.conf
+      - uses: actions/checkout@v7
+      - name: Launch Scala Steward
+        uses: scala-steward-org/scala-steward-action@v2
+        with:
+          # Client ID is accepted in place of the numeric App ID for JWT auth
+          github-app-id: ${{ vars.APP_CLIENT_ID }}
+          github-app-installation-id: ${{ secrets.APP_INSTALLATION_ID }}
+          github-app-key: ${{ secrets.APP_PRIVATE_KEY }}
+          # Necessary to process only this repository
+          github-app-auth-only: true
+          author-name: 'scala-steward'
+          author-email: 'leo+bot@xerial.org'
+          other-args: '--do-not-fork --add-labels'
