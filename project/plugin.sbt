@@ -9,14 +9,14 @@ addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.14.5")
 addDependencyTreePlugin
 
 // For Scala.js and Scala Native cross-building (sbt 2.x native)
-addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.14")
+addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.23")
 
 // For background fork-run (sbt-revolver replacement) and HTTP/RPC client code generation
-addSbtPlugin("org.wvlet.uni" % "sbt-uni" % "2026.1.14")
+addSbtPlugin("org.wvlet.uni" % "sbt-uni" % "2026.1.23")
 
 // For Scala.js DOM tests. Replaces scalajs-env-jsdom-nodejs, which has no Scala 3 build and is
 // no longer binary-compatible with current Scala.js jsenv APIs. Provides PlaywrightJSEnv.
-addSbtPlugin("org.wvlet.uni" % "sbt-uni-playwright" % "2026.1.14")
+addSbtPlugin("org.wvlet.uni" % "sbt-uni-playwright" % "2026.1.23")
 
 // For Scala.js
 val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.22.0")

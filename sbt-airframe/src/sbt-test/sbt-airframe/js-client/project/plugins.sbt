@@ -6,6 +6,6 @@ sys.props.get("plugin.version") match {
 }
 
 // For Scala.js
-addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.14")
+addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.23")
 val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.22.0")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
