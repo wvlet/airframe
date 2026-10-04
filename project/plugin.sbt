@@ -34,7 +34,7 @@ addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.2")
 
 // For JMH benchmark
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.8")
-addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "1.0.0")
+addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "1.0.1")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4) via a custom sourceGenerators task,
 // as sbt-antlr4 has no sbt 2.x build
