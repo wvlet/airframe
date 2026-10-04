@@ -37,7 +37,7 @@ class HttpClientLoggingFilterTest extends AirSpec {
         req: HttpMessage.Request,
         channelConfig: HttpChannelConfig
     ): Rx[HttpMessage.Response] = ???
-    override def close(): Unit = {}
+    override def close(): Unit  = {}
   }
 
   protected override def design: Design = {
