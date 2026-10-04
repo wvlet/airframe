@@ -44,7 +44,7 @@ object HttpRequestMapperTest extends AirSpec {
         request: Request,
         context: HttpContext[Request, Response, Future],
         req: HttpRequest[Request]
-    ): Unit = {}
+    ): Unit                              = {}
     def rpc8(p1: Int): Unit              = {}
     def rpc9(p1: Option[Int]): Unit      = {}
     def rpc10(r: RequestValidator): Unit = {}

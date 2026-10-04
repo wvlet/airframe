@@ -590,7 +590,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q):
 
     // println(s"======= ${t.typeSymbol.memberMethods}")
 
-    val paramExprs = for ((field, i) <- methodArgs.zipWithIndex) yield
+    val paramExprs = for (field, i) <- methodArgs.zipWithIndex yield
       val paramType = field.tpe
       val paramName = field.name
 

@@ -100,7 +100,7 @@ ThisBuild / dynverSeparator := "-"
 val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
-  scmInfo := Some(
+  scmInfo  := Some(
     ScmInfo(
       browseUrl = url("https://github.com/wvlet/airframe"),
       connection = "scm:git@github.com:wvlet/airframe.git"
@@ -211,7 +211,7 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate((jvmProjects ++ jsProjects ++ itProjects)*)
+    .aggregate((jvmProjects ++ jsProjects ++ itProjects) *)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
@@ -299,7 +299,7 @@ lazy val communityBuild =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(communityBuildProjects*)
+    .aggregate(communityBuildProjects *)
 
 // For Scala 2.12
 lazy val projectJVM =
@@ -309,7 +309,7 @@ lazy val projectJVM =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(jvmProjects*)
+    .aggregate(jvmProjects *)
 
 lazy val projectJS =
   project
@@ -318,7 +318,7 @@ lazy val projectJS =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(jsProjects*)
+    .aggregate(jsProjects *)
 
 lazy val projectNative =
   project
@@ -327,7 +327,7 @@ lazy val projectNative =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(nativeProjects*)
+    .aggregate(nativeProjects *)
 
 lazy val projectIt =
   project
@@ -336,7 +336,7 @@ lazy val projectIt =
       // Skip importing aggregated projects in IntelliJ IDEA
       ideSkipProject := true
     )
-    .aggregate(itProjects*)
+    .aggregate(itProjects *)
 
 // A scoped project only for Dotty (Scala 3).
 // This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects
@@ -930,9 +930,9 @@ lazy val benchmark =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      crossScalaVersions := targetScalaVersions,
-      name               := "airframe-benchmark",
-      packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      crossScalaVersions         := targetScalaVersions,
+      name                       := "airframe-benchmark",
+      packMain                   := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       packJvmVersionSpecificOpts := Map(
         "airframe-benchmark" -> Map(
           24 -> java24PlusJvmOptions
@@ -982,7 +982,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
-        // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
+          // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
           exclude ("junit", "junit"),
         // Necessary for td-client-java, which is used in fluency-treasuredata
         "com.fasterxml.jackson.datatype" % "jackson-datatype-json-org" % JACKSON_VERSION % Provided,
@@ -1072,7 +1072,7 @@ lazy val sql =
           val grammarDir   = baseDirectory.value / "src" / "main" / "antlr4"
           val outDir       = (Compile / sourceManaged).value / "antlr4"
           val grammarFiles = (grammarDir ** "*.g4").get()
-          val gen = FileFunction.cached(streams.value.cacheDirectory / "antlr4") { (_: Set[File]) =>
+          val gen          = FileFunction.cached(streams.value.cacheDirectory / "antlr4") { (_: Set[File]) =>
             IO.createDirectory(outDir)
             val args = Array(
               "-o",
