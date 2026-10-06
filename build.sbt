@@ -955,7 +955,7 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
         "io.github.json4s" %% "json4s-jackson" % "4.1.1",
-        "io.circe"         %% "circe-parser"   % "0.14.16",
+        "io.circe"         %% "circe-parser"   % "0.14.17",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
