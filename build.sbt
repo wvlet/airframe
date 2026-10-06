@@ -1041,7 +1041,7 @@ lazy val parquet =
         ("org.apache.hadoop.thirdparty" % "hadoop-shaded-guava" % "1.5.0")
           .excludeAll(ExclusionRule(organization = "*")),
         // For Apple Silicon (M1)
-        "org.xerial.snappy"  % "snappy-java"  % "1.1.10.10",
+        "org.xerial.snappy"  % "snappy-java"  % "1.1.10.11",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
         "org.apache.parquet" % "parquet-avro" % PARQUET_VERSION % Test
       ),
