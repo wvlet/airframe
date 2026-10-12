@@ -643,10 +643,6 @@ lazy val log: wvlet.uni.sbt.crossproject.CrossProject =
     .settings(
       name        := "airframe-log",
       description := "Fancy logger for Scala",
-      scalacOptions ++= {
-        if (scalaVersion.value.startsWith("3.")) Seq("-source:3.0-migration")
-        else Nil
-      },
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
