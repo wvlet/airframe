@@ -25,3 +25,7 @@ object all extends HtmlTags with HtmlAttrs with RxEmbedding
 object svgTags extends HtmlSvgTags
 
 object svgAttrs extends HtmlSvgAttrs
+
+// Unified import that includes both HTML and SVG with conflict resolution
+// For conflicting names, SVG versions are prefixed with 'svg' (e.g., svgStyle, svgClass)
+object unifiedAll extends UnifiedTags

@@ -19,7 +19,7 @@ package wvlet.airframe.rx.html
 trait HtmlSvgAttrs {
   import HtmlTags.*
 
-  // private def attr(name: String): HtmlAttributeOf = html.attr(name, Namespace.svg)
+  private def attr(name: String): HtmlAttributeOf = new HtmlAttributeOf(name, Namespace.svg)
 
   /**
     * This attribute defines the distance from the origin to the top of accent characters, measured by a distance within
@@ -521,16 +521,14 @@ trait HtmlSvgAttrs {
   /**
     * MDN
     */
-  // Conflicts with Attr.height
-  // lazy val height = attr("height")
+  lazy val height = attr("height")
 
   /**
     * MDN
     */
   lazy val imageRendering = attr("imageRendering")
 
-  // id is already available in Attrs
-  // lazy val id = attr("id")
+  lazy val id = attr("id")
 
   /**
     * MDN
@@ -998,8 +996,7 @@ trait HtmlSvgAttrs {
    *
    * MDN
    */
-  // width conflicts with Attr.width
-  // lazy val width = attr("width")
+  lazy val width = attr("width")
 
   /*
    *
@@ -1048,7 +1045,7 @@ trait HtmlSvgAttrs {
    *
    * MDN
    */
-  lazy val xLinkHref = attr("xlink:href", namespace = Namespace.svgXLink)
+  lazy val xLinkHref = new HtmlAttributeOf("xlink:href", Namespace.svgXLink)
 
   /*
    *
