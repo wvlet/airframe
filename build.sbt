@@ -98,16 +98,16 @@ ThisBuild / dynverSonatypeSnapshots := true
 ThisBuild / dynverSeparator := "-"
 
 val buildSettings = Seq[Setting[?]](
-  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-  homepage := Some(url("https://wvlet.org/airframe")),
+  licenses += ("Apache-2.0", uri("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  homepage := Some(uri("https://wvlet.org/airframe")),
   scmInfo := Some(
     ScmInfo(
-      browseUrl = url("https://github.com/wvlet/airframe"),
+      browseUrl = uri("https://github.com/wvlet/airframe"),
       connection = "scm:git@github.com:wvlet/airframe.git"
     )
   ),
   developers := List(
-    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
+    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = uri("http://xerial.org/leo"))
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
