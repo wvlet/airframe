@@ -90,6 +90,8 @@ case class NettyServerConfig(
     // Maximum size of a decoded request body in bytes, applied only to compressed requests (default: 64MB)
     maxDecompressedRequestSize: Int = 64 * 1024 * 1024
 ) {
+  require(maxDecompressedRequestSize > 0, "maxDecompressedRequestSize must be positive")
+
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
   /**

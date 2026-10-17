@@ -66,10 +66,8 @@ private[netty] class NettyRequestDecompression(maxDecompressedRequestSize: Int) 
         // The connection is being closed. Drop the rest of the rejected request
         ReferenceCountUtil.release(msg)
       } else {
-        msg match {
-          case _: HttpMessage =>
-            decodedBytes = 0L
-          case _ =>
+        if (msg.isInstanceOf[HttpMessage]) {
+          decodedBytes = 0L
         }
         msg match {
           case c: HttpContent if decoding =>
@@ -102,6 +100,8 @@ private[netty] class NettyRequestDecompression(maxDecompressedRequestSize: Int) 
 
     private def reject(ctx: ChannelHandlerContext, status: HttpResponseStatus, message: String): Unit = {
       rejected = true
+      // Stop reading so that the decompressor does not keep inflating the rest of the rejected body
+      ctx.channel().config().setAutoRead(false)
       debug(s"Rejecting a request from ${ctx.channel().remoteAddress()}: ${status} ${message}")
       val resp = new DefaultFullHttpResponse(
         HttpVersion.HTTP_1_1,
