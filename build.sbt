@@ -2,7 +2,7 @@ import xerial.sbt.pack.PackPlugin.{projectSettings, publishPackArchiveTgz}
 import wvlet.uni.jsenv.playwright.PlaywrightJSEnv
 
 val SCALA_2_12          = "2.12.21"
-val SCALA_2_13          = "2.13.18"
+val SCALA_2_13          = "3.10.0"
 val SCALA_3             = sys.env.getOrElse("SCALA_VERSION", "3.3.8")
 val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_3 :: uptoScala2
