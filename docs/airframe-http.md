@@ -166,6 +166,22 @@ server.start { server =>
 }
 ```
 
+### Compressed Requests
+
+Netty servers decode request bodies sent with `Content-Encoding: gzip` (or `x-gzip`, `deflate`, `x-deflate`) before dispatching them, so endpoints and filters receive the decoded body without the `Content-Encoding` header. Other encodings are passed through as raw bytes.
+
+The decoded size of a compressed request is limited to 64MB by default. A request exceeding the limit is rejected with `413 Payload Too Large`, and a malformed compressed body is rejected with `400 Bad Request`. Uncompressed requests are not affected by this limit.
+
+```scala
+Netty.server
+  // [optional] Change the maximum decoded size of compressed requests
+  .withMaxDecompressedRequestSize(16 * 1024 * 1024)
+  // [optional] Pass compressed request bodies to endpoints as raw bytes
+  .noRequestDecompression
+```
+
+Decoding runs at the transport layer, before any filter or authentication. If unauthenticated clients must not be able to make the server inflate request bodies, use `.noRequestDecompression` and decode bodies in your own filter after authentication. The gzip decoder follows Netty's semantics: it accepts concatenated gzip members, and does not reject a stream that ends before its trailer or is followed by trailing bytes.
+
 ## Integration with Airframe DI
 
 By calling `.design`, you can get a design for Airframe DI:

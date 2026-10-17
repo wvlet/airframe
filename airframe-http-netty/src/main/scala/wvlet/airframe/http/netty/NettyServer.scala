@@ -84,8 +84,14 @@ case class NettyServerConfig(
     // upgraded to a WebSocket connection after passing through the route's filter.
     webSocketRoutes: List[WebSocketRoute] = Nil,
     // Maximum WebSocket frame payload size in bytes (default: 1MB)
-    webSocketMaxFrameSize: Int = 1024 * 1024
+    webSocketMaxFrameSize: Int = 1024 * 1024,
+    // Decode request bodies sent with Content-Encoding: gzip or deflate before dispatching them
+    requestDecompression: Boolean = true,
+    // Maximum size of a decoded request body in bytes, applied only to compressed requests (default: 64MB)
+    maxDecompressedRequestSize: Int = 64 * 1024 * 1024
 ) {
+  require(maxDecompressedRequestSize > 0, "maxDecompressedRequestSize must be positive")
+
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
   /**
@@ -132,6 +138,37 @@ case class NettyServerConfig(
   def withWebSocketMaxFrameSize(sizeInBytes: Int): NettyServerConfig = {
     this.copy(webSocketMaxFrameSize = sizeInBytes)
   }
+
+  /**
+    * Decode request bodies sent with `Content-Encoding: gzip` (or `x-gzip`, `deflate`, `x-deflate`) so that endpoints
+    * receive the decoded body (enabled by default). Other content encodings are passed through as raw bytes.
+    *
+    * Decoding happens at the transport layer, before any HTTP filter or authentication runs. The decoded size of a
+    * compressed request is bounded by [[withMaxDecompressedRequestSize]]. If an application needs to authenticate
+    * requests before inflating them, use [[noRequestDecompression]] and decode the body in its own filter.
+    */
+  def withRequestDecompression: NettyServerConfig = {
+    this.copy(requestDecompression = true)
+  }
+
+  /**
+    * Disable request body decoding. Compressed request bodies are passed to endpoints as raw bytes together with the
+    * original Content-Encoding header.
+    */
+  def noRequestDecompression: NettyServerConfig = {
+    this.copy(requestDecompression = false)
+  }
+
+  /**
+    * Set the maximum size of a decoded request body in bytes (default: 64MB). This limit applies only to requests
+    * decoded by request decompression; uncompressed requests are not limited. A compressed request exceeding this limit
+    * is rejected with 413 Payload Too Large and the connection is closed.
+    */
+  def withMaxDecompressedRequestSize(sizeInBytes: Int): NettyServerConfig = {
+    require(sizeInBytes > 0, "maxDecompressedRequestSize must be positive")
+    this.copy(maxDecompressedRequestSize = sizeInBytes)
+  }
+
   def withHttpLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): NettyServerConfig = {
     this.copy(httpLoggerConfig = f(httpLoggerConfig))
   }
@@ -439,6 +476,13 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
           )
         )
         pipeline.addLast(new HttpServerKeepAliveHandler())
+        if (config.requestDecompression) {
+          // Decode compressed request bodies before aggregation. The limiter bounds the decoded size
+          // of compressed requests only, so uncompressed requests keep the unlimited aggregation below.
+          val decompression = new NettyRequestDecompression(config.maxDecompressedRequestSize)
+          pipeline.addLast(decompression.decompressor)
+          pipeline.addLast(decompression.limiter)
+        }
         pipeline.addLast(new HttpObjectAggregator(Int.MaxValue))
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
