@@ -115,8 +115,8 @@ const config = {
         additionalLanguages: ['java', 'scala', 'bash', 'json', 'sql', 'protobuf'],
       },
       algolia: {
-        appId: 'ALGOLIA_APP_ID',
-        apiKey: 'ALGOLIA_SEARCH_API_KEY',
+        appId: 'APVP6D1QXJ',
+        apiKey: '299dc4061927f2a4ac27acdd7e4b07a9',
         indexName: 'airframe',
       },
     }),
