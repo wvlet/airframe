@@ -8,6 +8,13 @@ const config = {
   title: 'Airframe',
   tagline: 'Essential Building Blocks For Scala',
   favicon: 'img/favicon.ico',
+  // Browsers with SVG favicon support pick this over the .ico, and it follows the light/dark color scheme
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {rel: 'icon', type: 'image/svg+xml', href: '/airframe/img/logos/airframe-icon.svg'},
+    },
+  ],
 
   url: 'https://wvlet.org',
   baseUrl: '/airframe/',
@@ -77,7 +84,8 @@ const config = {
         title: 'Airframe',
         logo: {
           alt: 'Airframe',
-          src: 'img/favicon.png',
+          src: 'img/logos/airframe-icon-light.svg',
+          srcDark: 'img/logos/airframe-icon-dark.svg',
         },
         items: [
           {to: '/docs', label: 'Docs', position: 'left'},

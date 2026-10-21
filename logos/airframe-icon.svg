@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Airframe">
+  <title>Airframe</title>
+  <style>
+    .g0{stop-color:#9eafb8} .g1{stop-color:#616d73}
+    .t0{stop-color:#00d2e9} .t1{stop-color:#045962}
+    .txt{fill:#666666}
+    @media (prefers-color-scheme: dark) {
+      .g0{stop-color:#c1d5e1} .g1{stop-color:#8697a0}
+      .t0{stop-color:#00e5ff} .t1{stop-color:#046c84}
+      .txt{fill:#f2f2f2}
+    }
+  </style>
+  <defs>
+    <linearGradient id="af-gray" gradientUnits="userSpaceOnUse" x1="0" y1="53.20" x2="0" y2="458.80"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient>
+    <linearGradient id="af-teal" gradientUnits="userSpaceOnUse" x1="0" y1="53.20" x2="0" y2="458.80"><stop offset="0" class="t0"/><stop offset="1" class="t1"/></linearGradient>
+  </defs>
+  <path fill="url(#af-gray)" d="M23.8 458.8 L116.28 250.58 L206.1 53.2 L258.07 53.2 L77.93 458.8 Z"/>
+  <path fill="url(#af-teal)" d="M407.06 298.69 L282.67 53.2 L206.1 53.2 L177.68 115.64 L270.44 298.69 Z M488.2 458.79 L418.33 320.91 L281.7 320.91 L351.57 458.79 Z"/>
+</svg>
