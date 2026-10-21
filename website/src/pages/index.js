@@ -86,14 +86,13 @@ export default function Home() {
     <Layout description={siteConfig.tagline}>
       <header className="hero hero--airframe">
         <div className="container">
-          <img className="hero__logo" src={useBaseUrl('img/logos/airframe-logo-tr.png')} alt="Airframe logo" />
           <h1 className="hero__title">{siteConfig.title}</h1>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
           <div className="hero__buttons">
-            <Link className="button button--secondary button--lg" to="/docs">
+            <Link className="button button--outline hero__button" to="/docs">
               Get Started
             </Link>
-            <Link className="button button--outline button--secondary button--lg" href="https://github.com/wvlet/airframe/">
+            <Link className="button button--outline hero__button" href="https://github.com/wvlet/airframe/">
               GitHub
             </Link>
           </div>

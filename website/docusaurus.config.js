@@ -77,7 +77,7 @@ const config = {
         title: 'Airframe',
         logo: {
           alt: 'Airframe',
-          src: 'img/logos/airframe_icon_small.png',
+          src: 'img/favicon.png',
         },
         items: [
           {to: '/docs', label: 'Docs', position: 'left'},

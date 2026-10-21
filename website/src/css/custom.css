@@ -11,6 +11,7 @@
   --ifm-navbar-link-color: #ffffff;
   --ifm-navbar-link-hover-color: #a8e4ef;
   --ifm-code-font-size: 95%;
+  --ifm-h1-font-size: 2.25rem;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
@@ -39,27 +40,41 @@ article p img {
   display: inline;
 }
 
+/* Hero banner carried over from the Docusaurus 1 site */
 .hero--airframe {
-  background-color: #07405b;
+  background: #00394f url('../../static/img/jumbotron_pattern.png') no-repeat center / cover;
   color: #ffffff;
-  padding: 4rem 0;
+  padding: 3rem 0;
   text-align: center;
 }
 
-.hero--airframe .hero__subtitle {
-  color: #d6eef3;
+.hero--airframe .hero__title {
+  font-size: 2.5rem;
 }
 
-.hero__logo {
-  width: 160px;
-  margin-bottom: 1rem;
+.hero--airframe .hero__subtitle {
+  font-size: 1.25rem;
+  color: #ffffff;
 }
 
 .hero__buttons {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.hero--airframe .hero__button {
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  background-color: transparent;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.hero--airframe .hero__button:hover {
+  color: #07405b;
+  background-color: #ffffff;
 }
 
 .features {
@@ -78,12 +93,8 @@ article p img {
   margin-bottom: 1rem;
 }
 
-.hero--airframe .button--outline {
-  color: #ffffff;
-  border-color: #ffffff;
-}
 
-.hero--airframe .button--outline:hover {
-  color: #07405b;
-  background-color: #ffffff;
+/* Docusaurus sizes the page title at 3rem, which is too large for long module titles */
+.markdown h1:first-child {
+  --ifm-h1-font-size: 2.25rem;
 }
