@@ -1,12 +1,10 @@
 import Link from '@docusaurus/Link';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 
 const features = [
   {
     title: 'Designed for Scala, Scala.js, and Scala Native',
-    image: 'img/features/scala-logo-red-spiral-dark.png',
     description: (
       <>
         Airframe extends capability of Scala to the next level. Have you ever used{' '}
@@ -20,7 +18,6 @@ const features = [
   },
   {
     title: 'RPC and REST Framework',
-    image: 'img/airframe-rpc/rpc-overview.png',
     description: (
       <>
         <Link to="/docs/airframe-rpc">Airframe RPC</Link> supports seamless integration of server and clients using
@@ -30,7 +27,6 @@ const features = [
   },
   {
     title: 'Simple Testing Framework',
-    image: 'img/features/airspec.png',
     description: (
       <>
         <Link to="/docs/airspec">AirSpec</Link> is a simple unit testing framework. No need to remember complex DSLs
@@ -40,7 +36,6 @@ const features = [
   },
   {
     title: 'Object Serialization',
-    image: 'img/features/msgpack.png',
     description: (
       <>
         Airframe uses <Link to="/docs/airframe-codec">MessagePack-based schema-on-read codec</Link> for fast and
@@ -50,7 +45,6 @@ const features = [
   },
   {
     title: 'Time Series Data Management',
-    image: 'img/features/undraw_time_management_30iu.svg',
     description: (
       <>
         <Link to="/docs/airframe-metrics">airframe-metrics</Link> provides human-friendly time range selectors (e.g.,
@@ -60,7 +54,6 @@ const features = [
   },
   {
     title: 'Fluentd Logging',
-    image: 'img/features/Fluentd_square.svg',
     description: (
       <>
         <Link to="/docs/airframe-fluentd">airframe-fluentd</Link> supports logging your metrics to fluentd in a
@@ -70,10 +63,9 @@ const features = [
   },
 ];
 
-function Feature({title, image, description}) {
+function Feature({title, description}) {
   return (
     <div className="col col--6 feature">
-      <img src={useBaseUrl(image)} alt="" />
       <h3>{title}</h3>
       <p>{description}</p>
     </div>
