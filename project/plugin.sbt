@@ -44,7 +44,7 @@ libraryDependencies += "org.antlr" % "antlr4" % "4.13.2"
 // Keep this pinned to a RELEASED sbt-airframe on Maven Central (like AIRSPEC_VERSION) — do NOT
 // bump it to the in-development version, or the metabuild can't load while that version is being
 // built (a release-time deadlock). Building sbt-airframe from this repo's source is not required.
-val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.2.3")
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "2026.2.5")
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 
 scalacOptions ++= Seq("-deprecation", "-feature")
