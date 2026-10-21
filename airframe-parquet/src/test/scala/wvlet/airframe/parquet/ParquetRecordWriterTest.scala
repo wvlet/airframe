@@ -21,6 +21,8 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
+import java.io.IOException
+
 /**
   */
 object ParquetRecordWriterTest extends AirSpec {
@@ -50,28 +52,27 @@ object ParquetRecordWriterTest extends AirSpec {
   }
 
   test("throw an exception for an invalid input") {
-    IOUtil.withTempFile("target/tmp-record-invalid", ".parquet") { file =>
-      withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
-        intercept[IllegalArgumentException] {
-          writer.write("{broken json data}")
-        }
-        intercept[IllegalArgumentException] {
-          writer.write("not a json data")
-        }
-        intercept[IllegalArgumentException] {
-          // Broken MessagePack data
-          writer.write(Array[Byte](0x1))
-        }
-        intercept[IllegalArgumentException] {
-          // Insufficient array size
-          writer.write(Array(1))
-        }
-        intercept[IllegalArgumentException] {
-          // Too large array size
-          writer.write(Array(1, 2, 3))
-        }
-        intercept[IllegalArgumentException] {
-          writer.write(null)
+    val invalidInputs: Seq[Any] = Seq(
+      "{broken json data}",
+      "not a json data",
+      // Broken MessagePack data
+      Array[Byte](0x1),
+      // Insufficient array size
+      Array(1),
+      // Too large array size
+      Array(1, 2, 3),
+      null
+    )
+    // Since parquet-java 1.18, a writer is aborted after any write error, so use a new writer for each input
+    invalidInputs.foreach { input =>
+      IOUtil.withTempFile("target/tmp-record-invalid", ".parquet") { file =>
+        withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
+          intercept[IllegalArgumentException] {
+            writer.write(input)
+          }
+          intercept[IOException] {
+            writer.write(Map("id" -> 1, "name" -> "leo"))
+          }
         }
       }
     }
