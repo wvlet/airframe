@@ -1,6 +1,6 @@
 ---
 id: airframe-metrics
-title: airframe-metrics: Human-Friendly Measures for Time and Data Size
+title: "airframe-metrics: Human-Friendly Measures for Time and Data Size"
 ---
 
 *airframe-metrics* is a library for human-readable representations of time, data byte size, etc.

@@ -1,6 +1,6 @@
 ---
 id: airframe-control
-title: airframe-control: Retry/Rate Control
+title: "airframe-control: Retry/Rate Control"
 ---
 
 airframe-control is a colleciton of libraries to manage control flows, that are especially useul for making remote API calls.

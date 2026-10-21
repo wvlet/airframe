@@ -387,9 +387,11 @@ lazy val docs =
       publishArtifact := false,
       publish         := {},
       publishLocal    := {},
+      // A fixed output path for website/docusaurus.config.js (docs.path)
+      mdocOut := baseDirectory.value / "target" / "mdoc",
       mdoc / watchTriggers += ((ThisBuild / baseDirectory).value / "docs").toGlob / ** / "*.md"
     )
-    .enablePlugins(MdocPlugin, DocusaurusPlugin)
+    .enablePlugins(MdocPlugin)
 
 def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {

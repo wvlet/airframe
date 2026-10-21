@@ -1,6 +1,6 @@
 ---
 id: airframe-ulid
-title: airframe-ulid: ULID Generator
+title: "airframe-ulid: ULID Generator"
 ---
 
 airframe-ulid is an [ULID](https://github.com/ulid/spec) generator for Scala and Scala.js. 

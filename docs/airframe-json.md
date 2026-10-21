@@ -1,6 +1,6 @@
 ---
 id: airframe-json
-title: airframe-json: Pure-Scala JSON Parser
+title: "airframe-json: Pure-Scala JSON Parser"
 ---
 
 airframe-json is a pure-Scala json parser.

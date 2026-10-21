@@ -1,6 +1,6 @@
 ---
 id: airframe-http
-title: airframe-http: Creating REST Service
+title: "airframe-http: Creating REST Service"
 ---
 
 airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-netty is an extension of airframe-http to use Netty as a backend HTTP server.

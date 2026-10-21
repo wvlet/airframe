@@ -1,6 +1,6 @@
 ---
 id: airframe-fluentd
-title: airframe-fluentd: Fluentd Logger
+title: "airframe-fluentd: Fluentd Logger"
 ---
 
 airframe-fluentd is a logging library for sending metrics to [Fluentd](https://www.fluentd.org/) or 

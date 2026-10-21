@@ -1,7 +1,6 @@
 ---
 id: airframe-di
-layout: docs
-title: airframe-di: Dependency Injection
+title: "airframe-di: Dependency Injection"
 ---
 Airframe DI is a dependency-injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on behalf of you.
 
@@ -123,7 +122,7 @@ d.build[MyApp]{ (app: MyApp) =>
 
 > ### Why only supports constructor injection?
 > 
-> In the previous version of Airframe DI, we supported [in-trait injections](airframe-di-legacy.md). This design, however, introduces the complexity of application design because you need to worry about which type of injections (constructor or in-trait injection?) is appropriate. And also, your application needs to depend on Airframe DI. 
+> In the previous version of Airframe DI, we supported [in-trait injections](https://github.com/wvlet/airframe/blob/8b85a9ea6/docs/airframe-di-legacy.md). This design, however, introduces the complexity of application design because you need to worry about which type of injections (constructor or in-trait injection?) is appropriate. And also, your application needs to depend on Airframe DI. 
 >
 > If we only use constructor-injection, no Airframe DI dependency is required to your application interface. Only when binding actual implementations to your application, you need to use Airframe DI Design. This achieves a clear separation of application logic and its construction design.
 >
