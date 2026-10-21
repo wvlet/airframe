@@ -5,6 +5,10 @@ on:
     - cron: '0 */4 * * *'
   workflow_dispatch:
 
+# Scala Steward pushes and opens PRs with the GitHub App token, not GITHUB_TOKEN
+permissions:
+  contents: read
+
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
