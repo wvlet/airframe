@@ -19,6 +19,9 @@ import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.rx.{OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airspec.AirSpec
 
+import java.io.ByteArrayOutputStream
+import java.net.Socket
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
 class SSEApi {
@@ -208,6 +211,51 @@ class SSETest extends AirSpec {
     val resp = syncClient.send(Http.GET("/v1/health"))
     resp.statusCode shouldBe 200
     resp.contentString shouldBe "ok"
+  }
+
+  /**
+    * Send a raw HTTP request to the SSE stream endpoint and read the whole response until the server closes the socket
+    */
+  private def readRawSseResponse(server: NettyServer, httpVersion: String): String = {
+    val socket = new Socket("localhost", server.localAddress.split(":").last.toInt)
+    try {
+      // Fail the test instead of hanging if the server keeps the connection open
+      socket.setSoTimeout(10000)
+      val out = socket.getOutputStream
+      out.write(
+        s"POST /v1/sse-stream ${httpVersion}\r\nHost: localhost\r\nContent-Length: 0\r\n\r\n"
+          .getBytes(StandardCharsets.UTF_8)
+      )
+      out.flush()
+      val in   = socket.getInputStream
+      val buf  = new Array[Byte](8192)
+      val body = new ByteArrayOutputStream()
+      var n    = in.read(buf)
+      // read() returns -1 (EOF) only after the server closes the connection
+      while (n != -1) {
+        body.write(buf, 0, n)
+        n = in.read(buf)
+      }
+      new String(body.toByteArray, StandardCharsets.UTF_8)
+    } finally {
+      socket.close()
+    }
+  }
+
+  private def checkSseConnectionClose(response: String): Unit = {
+    val (header, body) = response.splitAt(response.indexOf("\r\n\r\n"))
+    val headerLines    = header.split("\r\n").map(_.toLowerCase).toSeq
+    headerLines.find(_.startsWith("connection:")) shouldBe Some("connection: close")
+    body shouldContain "data: hello stream"
+    body shouldContain "data: need to retry"
+  }
+
+  test("advertise Connection: close for SSE streams, which close the channel at the end") { (server: NettyServer) =>
+    checkSseConnectionClose(readRawSseResponse(server, "HTTP/1.1"))
+  }
+
+  test("advertise Connection: close for SSE streams with HTTP/1.0 requests") { (server: NettyServer) =>
+    checkSseConnectionClose(readRawSseResponse(server, "HTTP/1.0"))
   }
 
 }

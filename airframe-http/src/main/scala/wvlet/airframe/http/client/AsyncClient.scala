@@ -84,15 +84,14 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
   }
 
   /**
-    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    * Send an HTTP request and returns a response (or the last response if the request is retried). If no response has
+    * been received from the server (e.g., connection failures), it returns an HttpClientException error.
     *
     * @param req
     * @return
     */
   def sendSafe(req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Response] = {
-    send(req, context).toRx.recover { case e: HttpClientException =>
-      e.response.toHttpResponse
-    }
+    send(req, context).toRx.recover(HttpClients.sendSafeErrorHandler)
   }
 
   def readAsInternal[Resp](
@@ -142,6 +141,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
           rpcInput = Some(requestContent)
         )
         sendSafe(request, ctx).toRx
+          .recover[Response](HttpClients.rpcNoResponseErrorHandler)
           .map { (response: Response) =>
             if (response.status.isSuccessful) {
               val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
