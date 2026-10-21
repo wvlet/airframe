@@ -728,7 +728,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.duckdb"     % "duckdb_jdbc" % "1.5.6.0",
+        "org.duckdb"     % "duckdb_jdbc" % "2.0.0.0",
         "org.postgresql" % "postgresql"  % "42.7.14",
         "com.zaxxer"     % "HikariCP"    % "7.1.0",
         // For routing slf4j log to airframe-log
@@ -928,8 +928,8 @@ lazy val benchmark =
     // in `++2.x; projectJVM/test` hangs the task scheduler with sbt 2.0.9 or later
     .settings(scala3Only)
     .settings(
-      name               := "airframe-benchmark",
-      packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      name     := "airframe-benchmark",
+      packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       packJvmVersionSpecificOpts := Map(
         "airframe-benchmark" -> Map(
           24 -> java24PlusJvmOptions
