@@ -4,6 +4,11 @@ on:
     # Scala Steward adds labels after opening a PR, so re-evaluate on label changes
     types: [opened, reopened, synchronize, labeled]
 
+# Merges use the GitHub App token, so GITHUB_TOKEN only needs read access
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   auto-merge-dependabot:
     name: Auto-Merge Dependabot PRs
