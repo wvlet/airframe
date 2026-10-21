@@ -3,7 +3,7 @@ id: index
 title: Overview
 ---
 
-<img style = "float: right; padding: 10px;" width="150px" src="/airframe/img/logos/airframe_icon_small.png"/>
+<img style = "float: right; padding: 10px;" width="150px" src="/airframe/img/favicon.png"/>
 
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Native.
 
