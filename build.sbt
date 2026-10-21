@@ -246,7 +246,6 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
 // Other JVM projects supporting Scala 2.12 - Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   finagle,
-  benchmark,
   sql
 )
 
@@ -925,8 +924,10 @@ lazy val benchmark =
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
     .settings(noPublish)
+    // Scala 3 only, and not aggregated in projectJVM: Running Test / compile -> Jmh / compile
+    // in `++2.x; projectJVM/test` hangs the task scheduler with sbt 2.0.9 or later
+    .settings(scala3Only)
     .settings(
-      crossScalaVersions := targetScalaVersions,
       name               := "airframe-benchmark",
       packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       packJvmVersionSpecificOpts := Map(
