@@ -1,6 +1,6 @@
 ---
 id: airframe-sql
-title: airframe-sql: SQL Parser
+title: "airframe-sql: SQL Parser"
 ---
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-sql_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-sql_2.12/)

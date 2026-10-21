@@ -1,6 +1,6 @@
 ---
 id: airframe-launcher
-title: airframe-launcher: Command-Line Program Launcher
+title: "airframe-launcher: Command-Line Program Launcher"
 ---
 
 *airframe-laucnher* is a handy command-line program launcher. 

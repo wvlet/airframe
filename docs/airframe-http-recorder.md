@@ -1,6 +1,6 @@
 ---
 id: airframe-http-recorder
-title: airframe-http-recorder: Web Request/Response Recorder
+title: "airframe-http-recorder: Web Request/Response Recorder"
 ---
 
 airframe-http-recorder is an HTTP server for recording and replaying HTTP responses.

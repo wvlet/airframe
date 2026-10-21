@@ -1,6 +1,6 @@
 ---
 id: airframe-msgpack
-title: airframe-msgpack: Pure-Scala MessagePack Parser
+title: "airframe-msgpack: Pure-Scala MessagePack Parser"
 ---
 
 airframe-msgpack is a pure-Scala MessagePack reader and writer.  

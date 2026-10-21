@@ -1,7 +1,6 @@
 ---
 id: airframe-walkthrough
-layout: docs
-title: Airframe Walkthrough: Building Applications Step by Step
+title: "Airframe Walkthrough: Building Applications Step by Step"
 ---
 
 # Airframe Walkthrough: Building Applications Step by Step

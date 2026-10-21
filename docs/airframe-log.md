@@ -1,11 +1,11 @@
 ---
 id: airframe-log
-title: airframe-log: Application Logger
+title: "airframe-log: Application Logger"
 ---
 
 *airframe-log* is a library for enhancing your Scala application logging with colors and source code locations.
 
-![image](../img/airframe-log/demo.png)
+![image](/img/airframe-log/demo.png)
 
 airframe-log also supports [Scala.js](https://www.scala-js.org/) to see the logs in the debug window of web browsers:
 
@@ -302,7 +302,7 @@ Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
 To change the log levels outside the JVM process, you can use the JMX interface of `wvlet.log.Logger`.
 
 For example, by using [jconsole](https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html) you can access the JMX interface and change the log levels:
-![image](../img/airframe-log/jmx.png)
+![image](/img/airframe-log/jmx.png)
 
 ## Internals
 

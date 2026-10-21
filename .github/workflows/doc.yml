@@ -8,29 +8,64 @@ on:
       - 'docs/**'
       - 'website/**'
       - '.github/workflows/doc.yml'
+  # Build only (no deploy) to catch broken links and front matter before merge
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'website/**'
+      - '.github/workflows/doc.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 permissions:
-  # Push to gh-pages happens via the GIT_DEPLOY_KEY SSH key, not GITHUB_TOKEN
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  doc:
-    name: Update docs
+  build:
+    name: Build docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Setup Git
-        run: |
-          git config --global user.email "leo@xerial.org"
-          git config --global user.name "Taro L. Saito"
-          git config --global push.default simple
-      - name: Setup Deploy
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - name: Publish doc
-        env:
-          GIT_DEPLOY_KEY: ${{ secrets.GIT_DEPLOY_KEY }}
-        run: ./sbt docs/docusaurusPublishGhpages
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: website/pnpm-lock.yaml
+      - name: Generate docs with mdoc
+        run: ./sbt docs/mdoc
+      - name: Install website dependencies
+        run: pnpm --dir website install --frozen-lockfile
+      - name: Build website
+        run: pnpm --dir website build
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: website/build
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

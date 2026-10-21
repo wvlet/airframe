@@ -1,10 +1,9 @@
 ---
 id: index
-layout: docs
 title: Overview
 ---
 
-<img style = "float: right; padding: 10px;" width="150px" src="../img/logos/airframe_icon_small.png"/>
+<img style = "float: right; padding: 10px;" width="150px" src="/airframe/img/logos/airframe_icon_small.png"/>
 
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Native.
 
@@ -169,7 +168,7 @@ codec.fromJson(json) // Person(2, "Bob")
 
 Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:
 
-![schema](../img/airframe-codec/schema-on-read.png)
+![schema](/img/airframe-codec/schema-on-read.png)
 
 ### Querying JSON and MessagePack Data 
 
@@ -237,7 +236,7 @@ Mapping from HTTP responses to case classes is handled by [airframe-codec](airfr
 
 ### RPC 
 
-![rpc](../img/airframe-rpc/rpc-overview.png)
+![rpc](/img/airframe-rpc/rpc-overview.png)
 
 
 [Airframe RPC](airframe-rpc.md) is a framework built on top of [airframe-http](airframe-http.md) for using Scala as a unified RPC interface between servers and clients. You can use plain Scala interfaces for building RPC servers and clients, and it provides seamless RPC communication using schema-on-read codec. Not only Scala JVM, Airframe RPC also supports Scala.js.  

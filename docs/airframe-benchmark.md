@@ -1,6 +1,6 @@
 ---
 id: airframe-benchmark
-title: airframe-benchmark: JMH Benchmark
+title: "airframe-benchmark: JMH Benchmark"
 ---
 
 Airframe benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).

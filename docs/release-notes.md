@@ -1,6 +1,5 @@
 ---
 id: release-notes
-layout: docs
 title: Release Notes
 ---
 
@@ -1875,7 +1874,7 @@ internal changes:
 -  Update sbt to 1.3.4 ([#826](https://github.com/wvlet/airframe/issues/826)) [[7610c99](https://github.com/wvlet/airframe/commit/7610c99)]
 
 ## 19.11.2
--  airframe-codec: [#156](https://github.com/wvlet/airframe/issues/156) Suppress null value output for None:Option[X] ([#811](https://github.com/wvlet/airframe/issues/811)) [[6e8f70e](https://github.com/wvlet/airframe/commit/6e8f70e)]
+-  airframe-codec: [#156](https://github.com/wvlet/airframe/issues/156) Suppress null value output for `None: Option[X]` ([#811](https://github.com/wvlet/airframe/issues/811)) [[6e8f70e](https://github.com/wvlet/airframe/commit/6e8f70e)]
 -  internal: Use GitHub Action cache ([#808](https://github.com/wvlet/airframe/issues/808)) [[574b5a9](https://github.com/wvlet/airframe/commit/574b5a9)]
 
 ## 19.11.1

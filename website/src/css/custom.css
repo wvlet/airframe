@@ -1,0 +1,89 @@
+/* Airframe brand colors carried over from the Docusaurus 1 site (primary #07405b, secondary #0e859b) */
+:root {
+  --ifm-color-primary: #0e859b;
+  --ifm-color-primary-dark: #0d788c;
+  --ifm-color-primary-darker: #0c7184;
+  --ifm-color-primary-darkest: #0a5d6c;
+  --ifm-color-primary-light: #0f92aa;
+  --ifm-color-primary-lighter: #1099b2;
+  --ifm-color-primary-lightest: #13aecb;
+  --ifm-navbar-background-color: #07405b;
+  --ifm-navbar-link-color: #ffffff;
+  --ifm-navbar-link-hover-color: #a8e4ef;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #3fc1d9;
+  --ifm-color-primary-dark: #2bb8d2;
+  --ifm-color-primary-darker: #28aec7;
+  --ifm-color-primary-darkest: #218fa4;
+  --ifm-color-primary-light: #57c9de;
+  --ifm-color-primary-lighter: #63cde0;
+  --ifm-color-primary-lightest: #87d9e8;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.navbar {
+  --ifm-navbar-search-input-color: #ffffff;
+}
+
+.navbar .navbar__title,
+.navbar .navbar__toggle {
+  color: #ffffff;
+}
+
+/* Inline images in docs (badges, diagrams) */
+article p img {
+  display: inline;
+}
+
+.hero--airframe {
+  background-color: #07405b;
+  color: #ffffff;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.hero--airframe .hero__subtitle {
+  color: #d6eef3;
+}
+
+.hero__logo {
+  width: 160px;
+  margin-bottom: 1rem;
+}
+
+.hero__buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.features {
+  padding: 3rem 0;
+}
+
+.feature {
+  text-align: center;
+  padding: 1rem 1.5rem 2rem;
+}
+
+.feature img {
+  height: 120px;
+  max-width: 100%;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.hero--airframe .button--outline {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.hero--airframe .button--outline:hover {
+  color: #07405b;
+  background-color: #ffffff;
+}
