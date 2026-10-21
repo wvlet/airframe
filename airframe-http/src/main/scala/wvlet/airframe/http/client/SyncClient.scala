@@ -90,13 +90,15 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     * retryable responses (e.g., 5xx) this continues retry until the max retry count.
     *
     * After reaching the max retry count, it will return a the last response even for 5xx status code.
+    *
+    * @throws HttpClientException
+    *   if no response has been received from the server (e.g., connection failures)
     */
   def sendSafe(req: Request, context: HttpClientContext = HttpClientContext.empty): Response = {
     try {
       send(req, context)
     } catch {
-      case e: HttpClientException =>
-        e.response.toHttpResponse
+      HttpClients.sendSafeErrorHandler
     }
   }
 
@@ -144,7 +146,12 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       rpcInput = Some(requestContent)
     )
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
-    val response: Response = sendSafe(request, context = ctx)
+    val response: Response =
+      try {
+        sendSafe(request, context = ctx)
+      } catch {
+        HttpClients.rpcNoResponseErrorHandler
+      }
 
     // Parse the RPC response
     if (response.status.isSuccessful) {

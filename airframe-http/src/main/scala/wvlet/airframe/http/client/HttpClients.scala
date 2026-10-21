@@ -69,6 +69,33 @@ object HttpClients extends LogSupport {
     )
   }
 
+  // A placeholder response for errors without any response from the server (e.g., connection failures).
+  // sendSafe compares it by reference, so that it does not hide the cause of the error as if the server returned 500.
+  private val noResponse: Response = Http.response(HttpStatus.InternalServerError_500)
+
+  // HttpClientException wraps Response with HttpResponse[_], so compare the raw response object
+  private[client] def hasNoResponse(e: HttpClientException): Boolean =
+    e.response.toRaw.asInstanceOf[AnyRef] eq noResponse
+
+  /**
+    * Error handler for sendSafe: return the last response received from the server, or rethrow the error if no response
+    * has been received.
+    */
+  private[client] val sendSafeErrorHandler: PartialFunction[Throwable, Response] = {
+    case e: HttpClientException if !hasNoResponse(e) =>
+      e.response.toHttpResponse
+  }
+
+  /**
+    * Error handler for RPC calls: report errors without any response from the server as UNAVAILABLE RPCException,
+    * preserving the original cause.
+    */
+  private[client] val rpcNoResponseErrorHandler: PartialFunction[Throwable, Nothing] = {
+    case e: HttpClientException if hasNoResponse(e) =>
+      val cause = Option(e.getCause).getOrElse(e)
+      throw RPCStatus.UNAVAILABLE_I2.newException(s"No response from the server: ${cause.getMessage}", cause)
+  }
+
   private[client] def defaultHttpClientErrorHandler(
       // Need to evaluate the last response lazily because it may not be available when this method is called
       lastResponse: () => Option[Response]
@@ -98,12 +125,12 @@ object HttpClients extends LogSupport {
       )
     case e: MaxRetryException =>
       throw HttpClientMaxRetryException(
-        lastResponse().getOrElse(Http.response(HttpStatus.InternalServerError_500)),
+        lastResponse().getOrElse(noResponse),
         e.retryContext,
         e.retryContext.lastError
       )
     case NonFatal(e) =>
-      val resp = lastResponse().getOrElse(Http.response(HttpStatus.InternalServerError_500))
+      val resp = lastResponse().getOrElse(noResponse)
       throw new HttpClientException(
         resp,
         status = resp.status,

@@ -315,8 +315,9 @@ class NettyRequestHandler(
         .flatMap(h => Option(h.get(HttpHeader.ContentType)))
         .exists(_.contains("text/event-stream"))
 
+    val isSuccessful       = HttpStatus.ofCode(resp.status().code()).isSuccessful
     val keepAlive: Boolean =
-      HttpStatus.ofCode(resp.status().code()).isSuccessful && (HttpUtil.isKeepAlive(req) || isEventStream)
+      isSuccessful && HttpUtil.isKeepAlive(req) && !isEventStream
 
     if (keepAlive) {
       if (!req.protocolVersion().isKeepAliveDefault) {
@@ -326,7 +327,8 @@ class NettyRequestHandler(
       resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
     }
     val f = ctx.writeAndFlush(resp)
-    if (!keepAlive) {
+    // A successful event stream keeps the channel open until the stream writes its last chunk and closes the channel
+    if (!keepAlive && !(isEventStream && isSuccessful)) {
       f.addListener(ChannelFutureListener.CLOSE)
     }
   }
@@ -466,7 +468,8 @@ object NettyRequestHandler extends LogSupport {
       res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/event-stream")
       res.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED)
       res.headers().set(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
-      res.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
+      // The channel is closed after the last chunk of the stream, so the connection must not be reused
+      res.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
       res
     } else if (response.message.isEmpty) {
       val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))

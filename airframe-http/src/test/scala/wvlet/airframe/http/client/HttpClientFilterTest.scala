@@ -21,6 +21,7 @@ import wvlet.airspec.AirSpec
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.TimeoutException
+import scala.util.Failure
 
 object HttpClientFilterTest extends AirSpec {
 
@@ -106,8 +107,12 @@ object HttpClientFilterTest extends AirSpec {
       { case req: Request => throw new TimeoutException("timeout") }
     )
 
-    client.sendSafe(Http.request("/")).map { resp =>
-      resp.status shouldBe HttpStatus.InternalServerError_500
+    // Without any response from the server, sendSafe should report the error instead of a synthetic 500 response
+    client.sendSafe(Http.request("/")).transform {
+      case Failure(e: HttpClientException) =>
+        e.getCause shouldMatch { case _: TimeoutException => }
+      case other =>
+        fail(s"should not reach here: ${other}")
     }
   }
 
