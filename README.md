@@ -14,7 +14,12 @@
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
 
-<p><img src="https://github.com/wvlet/airframe/raw/main/logos/airframe-badge-light.png" alt="logo" width="300px"></p>
+<p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logos/airframe-logo-dark.svg">
+    <img src="logos/airframe-logo-light.svg" alt="Airframe" width="300px">
+  </picture>
+</p>
 
 Airframe https://wvlet.org/airframe is essential building blocks for developing applications in Scala, including logging, object serialization using JSON or MessagePack, dependency injection, http server/client with RPC support, functional testing with AirSpec, etc. 
 
