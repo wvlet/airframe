@@ -31,8 +31,13 @@
 }
 
 .navbar .navbar__title,
-.navbar .navbar__toggle {
+.navbar .navbar__toggle,
+.navbar [class*='colorModeToggle'] button {
   color: #ffffff;
+}
+
+.navbar [class*='colorModeToggle'] button:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Inline images in docs (badges, diagrams) */
@@ -86,12 +91,6 @@ article p img {
   padding: 1rem 1.5rem 2rem;
 }
 
-.feature img {
-  height: 120px;
-  max-width: 100%;
-  object-fit: contain;
-  margin-bottom: 1rem;
-}
 
 
 /* Docusaurus sizes the page title at 3rem, which is too large for long module titles */
