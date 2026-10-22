@@ -781,7 +781,7 @@ lazy val http =
           case Some((2, major)) if major <= 12 =>
             Seq()
           case _ =>
-            Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0")
+            Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.3.0")
         }
       }
     )
