@@ -23,6 +23,10 @@
 
 Airframe https://wvlet.org/airframe is essential building blocks for developing applications in Scala, including logging, object serialization using JSON or MessagePack, dependency injection, http server/client with RPC support, functional testing with AirSpec, etc. 
 
+> [!TIP]
+> **For new Scala 3 projects, use Uni.** [Uni](https://github.com/wvlet/uni) is the Scala 3 successor of Airframe, providing DI, logging, codec, and more. Airframe continues to be maintained for existing Scala 2 and Scala 3 users.
+> [Uni documentation](https://wvlet.org/uni/) · [Airframe → Uni migration guide](https://wvlet.org/uni/guide/for-ai-agents#how-do-i-migrate-from-airframe) · [llms.txt](https://wvlet.org/uni/llms.txt)
+
 ## Resources
 
 - [Airframe Home](https://wvlet.org/airframe/)
