@@ -469,7 +469,7 @@ lazy val di =
     .settings(buildSettings)
     .settings(
       name        := "airframe",
-      description := "Dependency injection library tailored to Scala",
+      description := "Object wiring with lifecycle management, tailored to Scala",
       // For PreDestroy, PostConstruct annotations
       libraryDependencies ++= airframeDIDependencies
     )
