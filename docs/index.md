@@ -8,7 +8,7 @@ title: Overview
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala, Scala.js, and Scala Native.
 
 :::tip[For new Scala 3 projects, use Uni]
-[Uni](https://github.com/wvlet/uni) is the Scala 3 successor of Airframe, providing DI, logging, codec, and more. Airframe continues to be maintained for existing Scala 2 and Scala 3 users.
+[Uni](https://github.com/wvlet/uni) is the Scala 3 successor of Airframe, providing object wiring, logging, JSON/MessagePack codecs, and more. Airframe continues to be maintained for existing Scala 2 and Scala 3 users.
 
 [Uni documentation](https://wvlet.org/uni/) · [Airframe → Uni migration guide](https://wvlet.org/uni/guide/for-ai-agents#how-do-i-migrate-from-airframe) · [llms.txt](https://wvlet.org/uni/llms.txt)
 :::
