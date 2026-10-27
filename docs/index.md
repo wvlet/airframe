@@ -45,7 +45,7 @@ val AIRFRAME_VERSION="(version)"
 
 // For Scala 2.12, 2.13, 3.x
 libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Object wiring with lifecycle management
   "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
   "org.wvlet.airframe" %% "airframe-config"        % AIRFRAME_VERSION, // YAML-based configuration
   "org.wvlet.airframe" %% "airframe-control"       % AIRFRAME_VERSION, // Library for retryable execution

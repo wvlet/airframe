@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Airframe is a collection of essential building blocks for developing applications in Scala, including:
-- Dependency injection (DI) framework
+- Object wiring with lifecycle management (`airframe-di`)
 - HTTP/RPC framework
 - Object serialization (JSON/MessagePack)
 - Logging framework
@@ -104,7 +104,7 @@ airframe/
 
 ### Core Infrastructure
 - `airframe-core` - A new core module of Airframe for Scala 3
-- `airframe-di` - Dependency injection framework
+- `airframe-di` - Object wiring with lifecycle management
 - `airframe-log` - Logging framework (minimal dependencies)
 - `airframe-surface` - Object structure extraction
 
