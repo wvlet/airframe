@@ -1037,7 +1037,7 @@ lazy val parquet =
           .excludeAll(ExclusionRule(organization = "*")),
         ("org.apache.hadoop" % "hadoop-mapreduce-client-core" % "3.5.0")
           .excludeAll(ExclusionRule(organization = "*")),
-        ("org.apache.hadoop.thirdparty" % "hadoop-shaded-guava" % "1.5.0")
+        ("org.apache.hadoop.thirdparty" % "hadoop-shaded-guava" % "1.6.0")
           .excludeAll(ExclusionRule(organization = "*")),
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.10.12",
