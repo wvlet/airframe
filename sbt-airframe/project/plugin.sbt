@@ -9,6 +9,10 @@ addDependencyTreePlugin
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 
+// Strip unused Scaladoc assets (fonts, inkuire.js) from -javadoc.jar to stay within Maven Central
+// publishing limits. See https://github.com/scala/scala3/issues/26387
+addSbtPlugin("com.eed3si9n" % "sbt-salad-days" % "0.2.0")
+
 // ScriptedPlugin is bundled with sbt 2.x itself, no separate scripted-plugin dependency needed
 
 scalacOptions ++= Seq("-deprecation", "-feature")
