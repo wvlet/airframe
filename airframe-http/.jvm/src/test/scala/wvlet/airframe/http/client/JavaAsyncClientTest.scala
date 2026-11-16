@@ -18,8 +18,6 @@ import wvlet.airframe.http.*
 import wvlet.airframe.json.JSON
 import wvlet.airframe.{Design, newDesign}
 import wvlet.airspec.AirSpec
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -32,40 +30,16 @@ object JavaAsyncClientTest extends AirSpec {
 
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
-  // Use a public REST test server - skip tests if unavailable
-  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
-
-  private def isServiceAvailable: Boolean = {
-    try {
-      val client = Http.client
-        .withBackend(JavaHttpClientBackend)
-        .withJSONEncoding
-        .withConnectTimeout(Duration(5, TimeUnit.SECONDS))
-        .withReadTimeout(Duration(5, TimeUnit.SECONDS))
-        .newSyncClient(PUBLIC_REST_SERVICE)
-      val resp = client.sendSafe(Http.GET("/get"))
-      resp.status.isSuccessful
-    } catch {
-      case _: Exception => false
-    }
-  }
-
   override def design: Design =
     Design.newDesign
       .bind[AsyncClient].toInstance {
         Http.client
           .withBackend(JavaHttpClientBackend)
           .withJSONEncoding
-          .newAsyncClient(PUBLIC_REST_SERVICE)
+          .newAsyncClient(LocalHttpbin.address)
       }
 
   test("java http sync client") { (client: AsyncClient) =>
-    if (!isServiceAvailable) {
-      pending(
-        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
-      )
-    }
-
     test("GET") {
       client
         .send(Http.GET("/get?id=1&name=leo"))
@@ -140,12 +114,6 @@ object JavaAsyncClientTest extends AirSpec {
   }
 
   test("retry test") { (client: AsyncClient) =>
-    if (!isServiceAvailable) {
-      pending(
-        s"External service ${PUBLIC_REST_SERVICE} is not available. Use integration tests with local Netty server instead."
-      )
-    }
-
     test("handle max retry") {
       client
         .withRetryContext(_.withMaxRetry(1))
