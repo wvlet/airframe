@@ -18,4 +18,14 @@ addSbtPlugin("org.scala-native" % "sbt-scala-native" % SCALA_NATIVE_VERSION)
 // For setting explicit versions for each commit
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 
+// Strip unused Scaladoc assets (fonts, inkuire.js) from -javadoc.jar to stay within Maven Central
+// publishing limits. See https://github.com/scala/scala3/issues/26387
+addSbtPlugin("com.eed3si9n" % "sbt-salad-days" % "0.2.0")
+
+// Compile the root build's javadoc settings into this build, so airspec follows the same policy
+Compile / unmanagedSources ++= {
+  val rootProject = baseDirectory.value.getParentFile.getParentFile / "project"
+  Seq(rootProject / "MinimizeJavadoc.scala", rootProject / "MinimizeScaladoc.scala")
+}
+
 scalacOptions ++= Seq("-deprecation", "-feature")

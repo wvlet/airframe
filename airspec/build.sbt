@@ -95,7 +95,9 @@ val buildSettings = Seq[Setting[?]](
     else
       Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0")
   }
-)
+) ++
+  // Keep -javadoc.jar small for Maven Central publishing limits (see ../project/MinimizeJavadoc.scala)
+  MinimizeScaladoc.minimizeScaladoc ++ MinimizeJavadoc.settings
 
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head

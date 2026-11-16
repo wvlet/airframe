@@ -151,7 +151,10 @@ val buildSettings = Seq[Setting[?]](
     else
       Seq("org.scala-lang.modules" %% "scala-collection-compat" % "2.14.0")
   }
-)
+) ++
+  // Keep -javadoc.jar small for Maven Central publishing limits: shrink the full Scaladoc, and
+  // publish it only for one artifact per module (see project/MinimizeJavadoc.scala)
+  MinimizeScaladoc.minimizeScaladoc ++ MinimizeJavadoc.settings
 
 val scala2Only = Seq[Setting[?]](
   scalaVersion       := SCALA_2_13,
@@ -1122,6 +1125,7 @@ lazy val widgetJS =
       name        := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js",
       jsBuildSettings,
+      MinimizeJavadoc.jsOnlyModule,
       Test / jsEnv := Def.uncached(new PlaywrightJSEnv("chromium", headless = true))
       // npmDependencies in Compile += "monaco-editor" -> "0.21.3",
       // useYarn := true
