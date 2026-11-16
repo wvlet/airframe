@@ -32,6 +32,10 @@ addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 // Documentation
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.2")
 
+// Strip unused Scaladoc assets (fonts, inkuire.js) from -javadoc.jar to stay within Maven Central
+// publishing limits. See https://github.com/scala/scala3/issues/26387
+addSbtPlugin("com.eed3si9n" % "sbt-salad-days" % "0.2.0")
+
 // For JMH benchmark
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.8")
 addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "1.0.1")
