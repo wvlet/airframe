@@ -86,5 +86,10 @@ lazy val sbtAirframe =
             s"-Dairspec.version=${AIRSPEC_VERSION}"
           )
       },
-      scriptedBufferLog := false
+      scriptedBufferLog := false,
+      // Keep -javadoc.jar small for Maven Central publishing limits
+      MinimizeJavadoc.minimizePluginJavadoc(
+        guide = "docs/airframe-rpc",
+        sourceDir = "sbt-airframe/src/main/scala"
+      )
     )
