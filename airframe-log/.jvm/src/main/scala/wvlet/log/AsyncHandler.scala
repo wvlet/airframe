@@ -5,6 +5,7 @@ import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
 import java.util.{logging => jl}
+import scala.util.control.NonFatal
 
 /**
   * Logging using a background thread
@@ -37,11 +38,19 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
           queue.pollFirst()
         }
         if (record != null) {
-          parent.publish(record)
+          // Keep the poller thread alive if the parent handler fails, otherwise no further logs are written
+          try {
+            parent.publish(record)
+          } catch {
+            case NonFatal(e) =>
+              reportError(null, toException(e), jl.ErrorManager.WRITE_FAILURE)
+          }
         }
       }
     }
   })
+
+  private def toException(t: Throwable) = new Exception(t.getMessage, t)
 
   override def flush(): Unit = {
     val records = Seq.newBuilder[jl.LogRecord]
