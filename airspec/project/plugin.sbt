@@ -8,7 +8,7 @@ addDependencyTreePlugin
 addSbtPlugin("org.wvlet.uni" % "sbt-uni-crossproject" % "2026.1.41")
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.22.0")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.23.0")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
 
 // For Scala native
