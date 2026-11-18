@@ -342,6 +342,18 @@ class RxRunner(
               effect(OnError(e))
           }
         }
+      case DelayOp(in, interval, unit) =>
+        val delayMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        run(in) {
+          case OnNext(v) =>
+            // Delay the emission of the value
+            compat.scheduleOnce(delayMillis) {
+              effect(OnNext(v.asInstanceOf[A]))
+            }
+            RxResult.Continue
+          case other =>
+            effect(other)
+        }
       case ThrottleFirstOp(in, interval, unit) =>
         var lastUpdateTimeNanos = -interval
         run(in) {
