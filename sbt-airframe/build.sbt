@@ -23,7 +23,7 @@ ThisBuild / publishTo := {
 val buildSettings = Seq[Setting[?]](
   licenses += ("Apache-2.0", uri("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(uri("https://wvlet.org/airframe")),
-  scmInfo  := Some(
+  scmInfo := Some(
     ScmInfo(
       browseUrl = uri("https://github.com/wvlet/airframe"),
       connection = "scm:git@github.com:wvlet/airframe.git"
@@ -66,7 +66,7 @@ lazy val sbtAirframe =
       libraryDependencies ++= Seq(
         // coursier has no Scala 3 build yet. Its scala-xml/scala-collection-compat (_2.13) transitive
         // deps conflict with the _3 variants pulled in natively, so exclude and re-add them for Scala 3.
-        ("io.get-coursier" %% "coursier" % "2.1.26")
+        ("io.get-coursier" %% "coursier" % "2.1.27")
           .cross(CrossVersion.for3Use2_13)
           .excludeAll(ExclusionRule(organization = "org.scala-lang.modules")),
         "org.scala-lang.modules" %% "scala-xml"               % "2.5.0",
