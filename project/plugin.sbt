@@ -27,7 +27,7 @@ val SCALA_NATIVE_VERSION = sys.env.getOrElse("SCALA_NATIVE_VERSION", "0.5.12")
 addSbtPlugin("org.scala-native" % "sbt-scala-native" % SCALA_NATIVE_VERSION)
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
+addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.2.0")
 
 // Documentation
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.2")
