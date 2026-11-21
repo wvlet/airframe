@@ -130,7 +130,12 @@ val buildSettings = Seq[Setting[?]](
     // Use this flag for debugging Macros
     // "-Xcheck-macros",
   ) ++ {
-    if (scalaVersion.value.startsWith("3.")) {
+    if (scalaVersion.value.startsWith("3.3.") && platform.?.value.forall(!_.startsWith("native"))) {
+      Seq(
+        "-Yfuture-lazy-vals",
+        "-release:11"
+      )
+    } else if (scalaVersion.value.startsWith("3.")) {
       Seq.empty
     } else {
       Seq(
@@ -609,6 +614,10 @@ lazy val jmx =
     .settings(
       name        := "airframe-jmx",
       description := "A library for exposing Scala object data through JMX",
+      scalacOptions --= Seq(
+        "-Yfuture-lazy-vals",
+        "-release:11"
+      ),
       // Do not run tests concurrently to avoid JMX registration failures
       runTestSequentially
     )
