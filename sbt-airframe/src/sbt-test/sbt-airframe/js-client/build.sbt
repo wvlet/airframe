@@ -1,5 +1,3 @@
-ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
-
 ThisBuild / scalaVersion := "3.3.2"
 
 lazy val root =
