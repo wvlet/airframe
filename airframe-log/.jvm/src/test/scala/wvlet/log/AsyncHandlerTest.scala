@@ -1,6 +1,8 @@
 package wvlet.log
 
 import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.ErrorManager
 import wvlet.log.LogFormatter.{BareFormatter, ThreadLogFormatter}
 import wvlet.log.io.IOUtil.*
 import wvlet.log.io.Timer
@@ -34,6 +36,39 @@ class AsyncHandlerTest extends Spec with Timer {
       logs(0).contains(l1) shouldBe true
       logs(1).contains(l2) shouldBe true
     }
+  }
+
+  test("keep publishing logs after the parent handler fails") {
+    val buf          = new BufferedLogHandler(FailingFormatter)
+    val writeFailure = new AtomicInteger(0)
+
+    val logs = withResource(new AsyncHandler(buf)) { h =>
+      h.setErrorManager(new ErrorManager {
+        override def error(msg: String, ex: Exception, code: Int): Unit = {
+          if (code == ErrorManager.WRITE_FAILURE) {
+            writeFailure.incrementAndGet()
+          }
+        }
+      })
+      val logger = Logger("internal.asyncerrortest")
+      logger.resetHandler(h)
+      logger.setLogLevel(LogLevel.INFO)
+
+      logger.info("l1")
+      logger.info("boom")
+      logger.info("l3")
+
+      // Wait for the poller thread. close() flushes the remaining records in the calling thread,
+      // so the logs need to be read before the handler is closed.
+      val deadline = System.currentTimeMillis() + 5000
+      while (buf.logs.size < 2 && System.currentTimeMillis() < deadline) {
+        Thread.sleep(10)
+      }
+      buf.logs
+    }
+
+    logs shouldBe Seq("l1", "l3")
+    writeFailure.get() shouldBe 1
   }
 
   test("not block at the logging code") {
@@ -116,4 +151,13 @@ object HeavyHandler extends java.util.logging.Handler {
     Thread.sleep(5)
   }
   override def close(): Unit = {}
+}
+
+object FailingFormatter extends LogFormatter {
+  override def formatLog(r: LogRecord): String = {
+    if (r.getMessage() == "boom") {
+      throw new IllegalStateException("formatter failure")
+    }
+    r.getMessage()
+  }
 }
