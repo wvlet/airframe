@@ -7,7 +7,7 @@ addSbtPlugin("com.eed3si9n"   % "sbt-buildinfo" % "0.13.2")
 addDependencyTreePlugin
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
+addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.2.0")
 
 // Compile the root build's MinimizeJavadoc into this build, for the plugin's link-only javadoc page
 Compile / unmanagedSources +=

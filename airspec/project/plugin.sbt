@@ -16,7 +16,7 @@ val SCALA_NATIVE_VERSION = sys.env.getOrElse("SCALA_NATIVE_VERSION", "0.5.13")
 addSbtPlugin("org.scala-native" % "sbt-scala-native" % SCALA_NATIVE_VERSION)
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
+addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.2.0")
 
 // Strip unused Scaladoc assets (fonts, inkuire.js) from -javadoc.jar to stay within Maven Central
 // publishing limits. See https://github.com/scala/scala3/issues/26387
