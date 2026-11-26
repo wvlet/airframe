@@ -48,6 +48,8 @@ jobs:
     if: needs.changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v7
+      - name: scalafmt build files
+        run: ./sbt scalafmtSbtCheck
       - name: scalafmt in Scala 2.x
         run: ./sbt "++ 2.13; scalafmtCheckAll"
       - name: scalafmt in Scala 3
