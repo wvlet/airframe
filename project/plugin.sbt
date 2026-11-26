@@ -30,7 +30,7 @@ addSbtPlugin("org.scala-native" % "sbt-scala-native" % SCALA_NATIVE_VERSION)
 addSbtPlugin("com.github.sbt" % "sbt-dynver" % "5.1.1")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.2")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.9.3")
 
 // Strip unused Scaladoc assets (fonts, inkuire.js) from -javadoc.jar to stay within Maven Central
 // publishing limits. See https://github.com/scala/scala3/issues/26387
